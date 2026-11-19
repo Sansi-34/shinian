@@ -23,6 +23,7 @@ import GraphPage from './pages/GraphPage';
 import TopicsPage from './pages/TopicsPage';
 import TopicPage from './pages/TopicPage';
 import ThemeSwitcher from './ThemeSwitcher';
+import HomeV2Page from './v2/HomeV2Page';
 import api from './api';
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
@@ -92,7 +93,8 @@ function Shell() {
 
   const graphMode = location.pathname.startsWith('/graph');
   // 登录页不显示侧栏；图谱页保留原有深色全屏视觉。
-  const showShell = !graphMode && location.pathname !== '/login';
+  const v2Mode = location.pathname.startsWith('/v2');
+  const showShell = !graphMode && !v2Mode && location.pathname !== '/login';
 
   return (
     <div
@@ -102,7 +104,7 @@ function Shell() {
         location.pathname.startsWith('/topics')
           ? ' wide'
           : ''
-      }${graphMode ? ' graph-mode' : ''}${showShell ? '' : ' no-shell'}`}
+      }${graphMode ? ' graph-mode' : ''}${v2Mode ? ' v2-mode' : ''}${showShell ? '' : ' no-shell'}`}
     >
       {showShell && (
         <aside className={`app-sidebar${menuOpen ? ' open' : ''}`} aria-label="主导航">
@@ -215,6 +217,7 @@ function Shell() {
           <Route path="/research" element={<ResearchIndexPage />} />
           <Route path="/research/:researchId" element={<ResearchPage />} />
           <Route path="/settings/ai" element={<SettingsAiPage />} />
+          <Route path="/v2" element={<HomeV2Page />} />
         </Routes>
       </main>
     </div>

@@ -1,0 +1,105 @@
+/* ============================================================================
+   拾念 V2 · token 层（暗色优先 + 调色板重映射）
+   - 所有页面只允许使用这里的变量；禁止在组件里写字面色值
+   - 两套调色板共用同一份 DOM：[data-v2-theme="dark"（默认）| "paper"]
+   - 状态色只保留 5 个语义：active / done / partial / fail / idle
+   ========================================================================== */
+
+.v2-root {
+  /* 间距：只有 6 档 */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+
+  /* 字号：只有 4 级（20 只给品牌字） */
+  --fs-brand: 20px;
+  --fs-title: 15px;
+  --fs-body: 14px;
+  --fs-meta: 12px;
+
+  /* 圆角：只有 2 档 */
+  --r-1: 6px;
+  --r-2: 10px;
+  --r-pill: 9999px;
+
+  --rail: 60px;
+  --status: 40px;
+
+  --font-sans: 'Geist', 'Inter', 'Segoe UI', 'Microsoft YaHei', system-ui, sans-serif;
+  --font-serif: 'Instrument Serif', Georgia, 'Songti SC', 'SimSun', serif;
+}
+
+/* ---------- 暗色（默认） ---------- */
+.v2-root,
+.v2-root[data-v2-theme='dark'] {
+  color-scheme: dark;
+  --bg: #000000;
+  --panel: #0a0a0a;
+  --raise: #141414;
+  --raise-2: #1c1c1c;
+  --sunk: #050505;
+  --ink: #ededed;
+  --ink-2: rgba(255, 255, 255, 0.64);
+  --ink-3: rgba(255, 255, 255, 0.38);
+  --line: rgba(255, 255, 255, 0.06);
+  --line-2: rgba(255, 255, 255, 0.1);
+  --hover: rgba(255, 255, 255, 0.05);
+  --accent: #22d3ee;
+  --accent-ink: #04121a;
+  --accent-soft: rgba(34, 211, 238, 0.12);
+
+  /* 状态色：B 方案的暗色镜像 */
+  --st-active: #5eead4;
+  --st-active-bg: rgba(94, 234, 212, 0.1);
+  --st-done: #bef264;
+  --st-done-bg: rgba(190, 242, 100, 0.1);
+  --st-partial: #fbbf24;
+  --st-partial-bg: rgba(251, 191, 36, 0.1);
+  --st-fail: #fca5a5;
+  --st-fail-bg: rgba(252, 165, 165, 0.1);
+  --st-idle: rgba(255, 255, 255, 0.5);
+  --st-idle-bg: transparent;
+}
+
+/* ---------- 纸张（暖纸 + 墨；面不用纯白，状态栏用下沉面） ---------- */
+.v2-root[data-v2-theme='paper'] {
+  color-scheme: light;
+  --bg: #f1ede4;
+  --panel: #f6f2e9;
+  --raise: #efeade;
+  --raise-2: #e9e4d7;
+  --sunk: #e9e4d7;
+  --ink: #161d19;
+  --ink-2: #424c46;
+  --ink-3: #7d766b;
+  --line: #e2ded3;
+  --line-2: #d3cfc2;
+  --hover: rgba(22, 29, 25, 0.045);
+  --accent: #1d4ed8;
+  --accent-ink: #f7f5ef;
+  --accent-soft: rgba(29, 78, 216, 0.08);
+
+  /* 状态色：B 方案的纸张取值（全部 ≥5.1:1，WCAG AA 需 4.5） */
+  --st-active: #24564a;
+  --st-active-bg: rgba(47, 111, 94, 0.1);
+  --st-done: #3d6209;
+  --st-done-bg: rgba(77, 124, 15, 0.1);
+  --st-partial: #8a4e12;
+  --st-partial-bg: rgba(168, 98, 26, 0.11);
+  --st-fail: #8a2b19;
+  --st-fail-bg: rgba(163, 52, 31, 0.1);
+  --st-idle: #645d55;
+  --st-idle-bg: transparent;
+}
+
+/* V2 外壳自己管背景与留白：让应用主区不再加内边距 */
+.app.v2-mode .app-main {
+  padding: 0;
+  max-width: none;
+}
+.app.v2-mode {
+  background: #000;
+}

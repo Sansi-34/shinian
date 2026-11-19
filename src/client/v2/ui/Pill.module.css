@@ -1,0 +1,50 @@
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line-2);
+  font-size: var(--fs-meta);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.pill::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  background: currentColor;
+  flex: none;
+}
+
+.active {
+  color: var(--st-active);
+  background: var(--st-active-bg);
+  border-color: color-mix(in srgb, var(--st-active) 45%, transparent);
+}
+
+.done {
+  color: var(--st-done);
+  background: var(--st-done-bg);
+  border-color: color-mix(in srgb, var(--st-done) 35%, transparent);
+}
+
+.partial {
+  color: var(--st-partial);
+  background: var(--st-partial-bg);
+  border-color: color-mix(in srgb, var(--st-partial) 35%, transparent);
+}
+
+.fail {
+  color: var(--st-fail);
+  background: var(--st-fail-bg);
+  border-color: color-mix(in srgb, var(--st-fail) 35%, transparent);
+}
+
+.idle {
+  color: var(--st-idle);
+  background: var(--st-idle-bg);
+}
