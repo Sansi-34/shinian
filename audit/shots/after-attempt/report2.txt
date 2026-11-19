@@ -1,0 +1,5 @@
+进入页面：{"right":"无改动","saveDisabled":true}
+点了状态分段（未开始）：{"right":"修改未保存","saveDisabled":false}
+还原后：{"right":"无改动","saveDisabled":true}
+纸张主题：{"theme":"paper","delColor":"rgb(138, 43, 25)","delBorder":"rgb(138, 43, 25)","delRight":964,"statusBar":"无改动"}
+errors: none

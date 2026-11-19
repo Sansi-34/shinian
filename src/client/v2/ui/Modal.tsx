@@ -1,7 +1,8 @@
-// V2 弹层：portal 到 body（避免被模块 overflow 裁切），Esc / 点遮罩关闭
+// V2 弹层：portal 到 .v2-root（避免被模块 overflow 裁切，同时保住颜色 token），Esc / 点遮罩关闭
 import { useEffect, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './Modal.module.css';
+import { v2PortalHost } from './portalHost';
 
 export default function Modal({
   open,
@@ -50,6 +51,6 @@ export default function Modal({
         {footer && <div className={styles.foot}>{footer}</div>}
       </div>
     </div>,
-    document.body
+    v2PortalHost()
   );
 }

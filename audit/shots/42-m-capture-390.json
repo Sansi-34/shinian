@@ -1,0 +1,472 @@
+{
+  "url": "/capture/cap-1795079007673-q27riy",
+  "title": "拾念 SHINIAN",
+  "viewport": {
+    "w": 390,
+    "h": 844
+  },
+  "scrollWidth": 390,
+  "horizontalOverflow": 0,
+  "scrollHeight": 844,
+  "text": "拾\n\n压测念头 15：用来验证左栏会不会被截断，以及计数是否和列表条数一致。\n\n编辑\n复制正文\n归档\n删除…\n开始一步\n0\n+\n自己写一步\nAI 帮我试一步 / 参考旧经验 / 研究一下 —— 还没搬进新版\n尝试记录\n0\n\n还没有尝试。先用上面的「自己写一步」记下第一个小尝试。\n\n有结果的尝试\n0\n\n还没有记录结果的尝试。结果只能手动填，不会因为时间过去自动变成失败。",
+  "texts": [
+    {
+      "t": "拾",
+      "tag": "div",
+      "fs": 20,
+      "fw": "400",
+      "color": "rgb(233, 236, 241)",
+      "contrast": 15.17,
+      "x": 20,
+      "y": 16,
+      "w": 20,
+      "h": 20,
+      "clipped": false,
+      "sel": "._brand_vh1gc_15"
+    },
+    {
+      "t": "压测念头 15：用来验证左栏会不会被截断，以及计数是否和列表条数一致。",
+      "tag": "p",
+      "fs": 18,
+      "fw": "400",
+      "color": "rgb(233, 236, 241)",
+      "contrast": 16.09,
+      "x": 16,
+      "y": 16,
+      "w": 358,
+      "h": 58,
+      "clipped": false,
+      "sel": ".v2-captureText"
+    },
+    {
+      "t": "编辑",
+      "tag": "button",
+      "fs": 14,
+      "fw": "500",
+      "color": "rgba(233, 236, 241, 0.68)",
+      "contrast": 16.09,
+      "x": 16,
+      "y": 86,
+      "w": 62,
+      "h": 40,
+      "clipped": false,
+      "sel": "._btn_xhvgk_1._ghost_xhvgk_30"
+    },
+    {
+      "t": "复制正文",
+      "tag": "span",
+      "fs": 12,
+      "fw": "400",
+      "color": "rgba(233, 236, 241, 0.68)",
+      "contrast": 16.09,
+      "x": 115,
+      "y": 96,
+      "w": 48,
+      "h": 20,
+      "clipped": false,
+      "sel": "._label_jh9fe_30"
+    },
+    {
+      "t": "归档",
+      "tag": "button",
+      "fs": 14,
+      "fw": "500",
+      "color": "rgba(233, 236, 241, 0.68)",
+      "contrast": 16.09,
+      "x": 180,
+      "y": 86,
+      "w": 62,
+      "h": 40,
+      "clipped": false,
+      "sel": "._btn_xhvgk_1._ghost_xhvgk_30"
+    },
+    {
+      "t": "删除…",
+      "tag": "button",
+      "fs": 14,
+      "fw": "500",
+      "color": "rgba(233, 236, 241, 0.68)",
+      "contrast": 16.09,
+      "x": 250,
+      "y": 86,
+      "w": 73,
+      "h": 40,
+      "clipped": false,
+      "sel": "._btn_xhvgk_1._ghost_xhvgk_30"
+    },
+    {
+      "t": "开始一步",
+      "tag": "h2",
+      "fs": 14,
+      "fw": "500",
+      "color": "rgb(233, 236, 241)",
+      "contrast": 16.09,
+      "x": 16,
+      "y": 151,
+      "w": 56,
+      "h": 23,
+      "clipped": false,
+      "sel": "._title_1tbcg_22"
+    },
+    {
+      "t": "0",
+      "tag": "span",
+      "fs": 12,
+      "fw": "400",
+      "color": "rgba(233, 236, 241, 0.45)",
+      "contrast": 16.09,
+      "x": 80,
+      "y": 153,
+      "w": 6,
+      "h": 20,
+      "clipped": false,
+      "sel": "._count_1tbcg_28"
+    },
+    {
+      "t": "+",
+      "tag": "span",
+      "fs": 12,
+      "fw": "400",
+      "color": "rgba(233, 236, 241, 0.45)",
+      "contrast": 16.09,
+      "x": 33,
+      "y": 213,
+      "w": 8,
+      "h": 20,
+      "clipped": false,
+      "sel": "._plus_1cz1o_28"
+    },
+    {
+      "t": "自己写一步",
+      "tag": "button",
+      "fs": 12,
+      "fw": "400",
+      "color": "rgba(233, 236, 241, 0.68)",
+      "contrast": 16.09,
+      "x": 16,
+      "y": 203,
+      "w": 110,
+      "h": 40,
+      "clipped": false,
+      "sel": "._chip_1cz1o_1"
+    },
+    {
+      "t": "AI 帮我试一步 / 参考旧经验 / 研究一下 —— 还没搬进新版",
+      "tag": "span",
+      "fs": 12,
+      "fw": "400",
+      "color": "rgba(233, 236, 241, 0.68)",
+      "contrast": 16.09,
+      "x": 16,
+      "y": 251,
+      "w": 331,
+      "h": 40,
+      "clipped": false,
+      "sel": ".v2-ghostLink"
+    },
+    {
+      "t": "尝试记录",
+      "tag": "h2",
+      "fs": 14,
+      "fw": "500",
+      "color": "rgb(233, 236, 241)",
+      "contrast": 16.09,
+      "x": 16,
+      "y": 320,
+      "w": 56,
+      "h": 23,
+      "clipped": false,
+      "sel": "._title_1tbcg_22"
+    },
+    {
+      "t": "0",
+      "tag": "span",
+      "fs": 12,
+      "fw": "400",
+      "color": "rgba(233, 236, 241, 0.45)",
+      "contrast": 16.09,
+      "x": 80,
+      "y": 322,
+      "w": 6,
+      "h": 20,
+      "clipped": false,
+      "sel": "._count_1tbcg_28"
+    },
+    {
+      "t": "还没有尝试。先用上面的「自己写一步」记下第一个小尝试。",
+      "tag": "p",
+      "fs": 12,
+      "fw": "400",
+      "color": "rgba(233, 236, 241, 0.68)",
+      "contrast": 16.09,
+      "x": 0,
+      "y": 356,
+      "w": 390,
+      "h": 52,
+      "clipped": false,
+      "sel": ".v2-state"
+    },
+    {
+      "t": "有结果的尝试",
+      "tag": "h2",
+      "fs": 14,
+      "fw": "500",
+      "color": "rgb(233, 236, 241)",
+      "contrast": 16.09,
+      "x": 16,
+      "y": 421,
+      "w": 84,
+      "h": 23,
+      "clipped": false,
+      "sel": "._title_1tbcg_22"
+    },
+    {
+      "t": "0",
+      "tag": "span",
+      "fs": 12,
+      "fw": "400",
+      "color": "rgba(233, 236, 241, 0.45)",
+      "contrast": 16.09,
+      "x": 108,
+      "y": 423,
+      "w": 6,
+      "h": 20,
+      "clipped": false,
+      "sel": "._count_1tbcg_28"
+    },
+    {
+      "t": "还没有记录结果的尝试。结果只能手动填，不会因为时间过去自动变成失败。",
+      "tag": "p",
+      "fs": 12,
+      "fw": "400",
+      "color": "rgba(233, 236, 241, 0.68)",
+      "contrast": 16.09,
+      "x": 0,
+      "y": 457,
+      "w": 390,
+      "h": 73,
+      "clipped": false,
+      "sel": ".v2-state"
+    }
+  ],
+  "lowContrast": [],
+  "clipped": [],
+  "tiny": [
+    {
+      "label": "首页",
+      "w": 40,
+      "h": 40,
+      "tag": "a"
+    },
+    {
+      "label": "念头",
+      "w": 40,
+      "h": 40,
+      "tag": "a"
+    },
+    {
+      "label": "主题",
+      "w": 40,
+      "h": 40,
+      "tag": "a"
+    },
+    {
+      "label": "问记录",
+      "w": 40,
+      "h": 40,
+      "tag": "a"
+    },
+    {
+      "label": "知识网络",
+      "w": 40,
+      "h": 40,
+      "tag": "a"
+    },
+    {
+      "label": "周期回顾",
+      "w": 40,
+      "h": 40,
+      "tag": "a"
+    },
+    {
+      "label": "设置",
+      "w": 40,
+      "h": 40,
+      "tag": "a"
+    },
+    {
+      "label": "更多",
+      "w": 40,
+      "h": 40,
+      "tag": "button"
+    },
+    {
+      "label": "编辑",
+      "w": 62,
+      "h": 40,
+      "tag": "button"
+    },
+    {
+      "label": "复制正文",
+      "w": 86,
+      "h": 28,
+      "tag": "button"
+    },
+    {
+      "label": "归档",
+      "w": 62,
+      "h": 40,
+      "tag": "button"
+    },
+    {
+      "label": "删除…",
+      "w": 73,
+      "h": 40,
+      "tag": "button"
+    },
+    {
+      "label": "+ 自己写一步",
+      "w": 110,
+      "h": 40,
+      "tag": "button"
+    }
+  ],
+  "heads": [
+    {
+      "t": "开始一步",
+      "tag": "h2",
+      "fs": 14,
+      "fw": "500",
+      "y": 151
+    },
+    {
+      "t": "尝试记录",
+      "tag": "h2",
+      "fs": 14,
+      "fw": "500",
+      "y": 320
+    },
+    {
+      "t": "有结果的尝试",
+      "tag": "h2",
+      "fs": 14,
+      "fw": "500",
+      "y": 421
+    }
+  ],
+  "buttons": [
+    {
+      "label": "首页",
+      "cls": "_link_vh1gc_42",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgba(233, 236, 241, 0.45)",
+      "y": 60
+    },
+    {
+      "label": "念头",
+      "cls": "_link_vh1gc_42",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgba(233, 236, 241, 0.45)",
+      "y": 108
+    },
+    {
+      "label": "主题",
+      "cls": "_link_vh1gc_42",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgba(233, 236, 241, 0.45)",
+      "y": 156
+    },
+    {
+      "label": "问记录",
+      "cls": "_link_vh1gc_42",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgba(233, 236, 241, 0.45)",
+      "y": 204
+    },
+    {
+      "label": "知识网络",
+      "cls": "_link_vh1gc_42",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgba(233, 236, 241, 0.45)",
+      "y": 277
+    },
+    {
+      "label": "周期回顾",
+      "cls": "_link_vh1gc_42",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgba(233, 236, 241, 0.45)",
+      "y": 325
+    },
+    {
+      "label": "设置",
+      "cls": "_link_vh1gc_42",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgba(233, 236, 241, 0.45)",
+      "y": 700
+    },
+    {
+      "label": "更多",
+      "cls": "_link_vh1gc_42",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgba(233, 236, 241, 0.45)",
+      "y": 748
+    },
+    {
+      "label": "编辑",
+      "cls": "_btn_xhvgk_1._ghost_xhvgk_30",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgba(233, 236, 241, 0.68)",
+      "y": 86
+    },
+    {
+      "label": "复制正文",
+      "cls": "_btn_jh9fe_1",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgba(233, 236, 241, 0.68)",
+      "y": 92
+    },
+    {
+      "label": "归档",
+      "cls": "_btn_xhvgk_1._ghost_xhvgk_30",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgba(233, 236, 241, 0.68)",
+      "y": 86
+    },
+    {
+      "label": "删除…",
+      "cls": "_btn_xhvgk_1._ghost_xhvgk_30",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgba(233, 236, 241, 0.68)",
+      "y": 86
+    },
+    {
+      "label": "开始一步 0",
+      "cls": "_head_1tbcg_5",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(233, 236, 241)",
+      "y": 139
+    },
+    {
+      "label": "+ 自己写一步",
+      "cls": "_chip_1cz1o_1",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgba(233, 236, 241, 0.68)",
+      "y": 203
+    },
+    {
+      "label": "尝试记录 0",
+      "cls": "_head_1tbcg_5",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(233, 236, 241)",
+      "y": 308
+    },
+    {
+      "label": "有结果的尝试 0",
+      "cls": "_head_1tbcg_5",
+      "bg": "rgba(0, 0, 0, 0)",
+      "color": "rgb(233, 236, 241)",
+      "y": 409
+    }
+  ],
+  "unlabeled": []
+}

@@ -7,6 +7,8 @@ import api from '../api';
 import type { GraphLink, GraphNode, GraphResponse, GraphSearchHit, GraphNodeType } from '../types';
 import { GRAPH_TYPE_LABEL, formatTime } from '../types';
 import { readTopicNav } from '../components/topicNav';
+// 节点详情面板的补充样式（副标题 / 按钮层级 / 画布空态提示）。只作用于本页。
+import '../graph-detail.css';
 
 const DEFAULT_W = 1200;
 const DEFAULT_H = 820;
@@ -161,6 +163,44 @@ function relationText(link: GraphLink, outgoing: boolean): string {
 }
 
 type Camera = { x: number; y: number; k: number };
+
+/** 节点数不超过它时，画布给一行空态提示（再少就真的显得像没加载出来）。 */
+const SMALL_CANVAS_NODES = 5;
+
+function normText(text: string): string {
+  return text.replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * 节点详情面板的两段文字。
+ * 大标题（h2）已经完整说过节点名，所以：
+ * - 副标题只说「这条记录属于谁、什么时候来的」，不再复述标题；
+ * - 正文只放标题里没出现过的那段文字；标题已经把正文说完时整段不显示，
+ *   避免同一句话在大标题和 14px 灰字里各说一遍。
+ */
+function nodePanelText(node: GraphNode | null): { subtitle: string; body: string } {
+  if (!node) return { subtitle: '', body: '' };
+  const label = normText(node.label);
+  const head = label.replace(/…$/, '');
+  const detail = normText(node.detail);
+  // 剪掉正文开头「标题已经说过」的那一截，剩下的才是新信息。
+  const rest = detail.startsWith(head) ? detail.slice(head.length).trim() : detail;
+  const fresh = rest === label ? '' : rest;
+  // 已撤下正文的回顾，正文区另有专门的提示块，这里不重复。
+  const body =
+    fresh && node.origin !== 'content_withheld'
+      ? `${label.endsWith('…') ? '…' : ''}${fresh.replace(/^[。，、；：,.;:!?！？\s]+/, '')}`
+      : '';
+
+  const parts: string[] = [];
+  const parent = node.captureLabel ? normText(node.captureLabel) : '';
+  // 念头的 captureLabel 就是它自己，经验的 captureLabel 是它自己的标题：都不必说「属于」。
+  if (node.type !== 'capture' && node.type !== 'experience' && parent && parent !== label) {
+    parts.push(`属于「${parent}」`);
+  }
+  parts.push(`${node.type === 'schedule' ? '安排在' : '创建于'} ${formatTime(node.createdAt)}`);
+  return { subtitle: parts.join(' · '), body };
+}
 
 function hash(str: string): number {
   let h = 2166136261;
@@ -774,6 +814,8 @@ export default function GraphPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [motionKey]);
   const selected = view?.nodes.find((n) => n.id === selectedId) ?? null;
+  // 详情面板的副标题 / 正文：只补标题没说过的信息（见 nodePanelText）。
+  const nodeText = nodePanelText(selected);
   // 局部图的中心是请求时那个稳定 ID，不一定等于用户此刻选中的节点。
   // 标题与「一跳 / 两跳」都必须说中心，才能和实际画出来的范围对得上。
   const focusCenter =
@@ -1514,6 +1556,16 @@ export default function GraphPage() {
           </div>
         )}
 
+        {/*
+          C · 节点很少时画布几乎全空，第一眼像没加载出来。
+          这一行只是提示：pointer-events: none，拖拽 / 缩放全部穿透到 svg。
+        */}
+        {!loading && !error && nodes.length > 0 && nodes.length <= SMALL_CANVAS_NODES && (
+          <p className="gd-scope gd-canvas-hint" data-testid="graph-small-hint">
+            当前只有 {nodes.length} 个节点 · 在首页记念头、或在右侧「投入网络」写一条，网络就会长出来
+          </p>
+        )}
+
         <svg
           ref={svgRef}
           className="graph-svg"
@@ -1759,7 +1811,10 @@ export default function GraphPage() {
               </p>
             )}
             <h2>{selected.label}</h2>
-            <p className="graph-detail">{selected.detail}</p>
+            {nodeText.subtitle && (
+              <p className="gd-scope gd-sub">{nodeText.subtitle}</p>
+            )}
+            {nodeText.body && <p className="graph-detail gd-body">{nodeText.body}</p>}
 
             {selected.type === 'attempt' && selected.resultText && (
               <div className="graph-observation">
@@ -1783,15 +1838,11 @@ export default function GraphPage() {
               </div>
             )}
 
-            {selected.captureLabel && selected.type !== 'capture' && (
-              <p className="graph-parent">
-                所属念头：<span>{selected.captureLabel}</span>
-              </p>
-            )}
+            {/* 所属念头已并入副标题（见 nodePanelText），这里不再重复一行。 */}
 
             <dl className="graph-meta">
               <div><dt>连接</dt><dd>{selected.degree} 条</dd></div>
-              <div><dt>时间</dt><dd>{formatTime(selected.createdAt)}</dd></div>
+              {/* 创建时间已由副标题给出（见 nodePanelText），这里不再重复一行「时间」。 */}
               {selected.state && (
                 <div><dt>状态</dt><dd>{STATE_LABEL[selected.state] ?? selected.state}</dd></div>
               )}
@@ -1815,32 +1866,37 @@ export default function GraphPage() {
               </p>
             )}
 
-            <div className="graph-actions">
-              <Link to={selected.href} className="graph-open">
+            {/* 三个动作统一成 1 主 + 2 次、同尺寸并排：主按钮只有「打开原记录」。 */}
+            <div className="gd-scope graph-actions gd-actions">
+              <Link to={selected.href} className="graph-open gd-btn gd-btn-primary">
                 {selected.type === 'experience' ? '打开经验' : '打开原记录'}
               </Link>
-              <button type="button" className="graph-secondary" onClick={() => void copyNodeLink()}>
+              <button
+                type="button"
+                className="graph-secondary gd-btn gd-btn-secondary"
+                onClick={() => void copyNodeLink()}
+              >
                 {copyStatus === 'copied' ? '已复制链接' : '复制节点链接'}
               </button>
+              {!focusData && (
+                <button
+                  type="button"
+                  className="graph-secondary gd-btn gd-btn-secondary graph-center-btn"
+                  onClick={() => void focusNode(selected.id, true, includeArchived, depth)}
+                >
+                  查看局部图（{depth === 2 ? '两跳' : '一跳'}）
+                </button>
+              )}
+              {focusData && focusData.meta?.focus !== selected.id && (
+                <button
+                  type="button"
+                  className="graph-secondary gd-btn gd-btn-secondary graph-center-btn"
+                  onClick={() => void focusNode(selected.id, true, includeArchived, depth)}
+                >
+                  以它为中心查看局部图
+                </button>
+              )}
             </div>
-            {!focusData && (
-              <button
-                type="button"
-                className="graph-secondary graph-center-btn"
-                onClick={() => void focusNode(selected.id, true, includeArchived, depth)}
-              >
-                查看局部图（{depth === 2 ? '两跳' : '一跳'}）
-              </button>
-            )}
-            {focusData && focusData.meta?.focus !== selected.id && (
-              <button
-                type="button"
-                className="graph-secondary graph-center-btn"
-                onClick={() => void focusNode(selected.id, true, includeArchived, depth)}
-              >
-                以它为中心查看局部图
-              </button>
-            )}
 
             {selected.type === 'attempt' && selected.resultText && (
               <div className="graph-reuse">

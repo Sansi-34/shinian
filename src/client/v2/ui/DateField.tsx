@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import styles from './DateField.module.css';
+import { v2PortalHost } from './portalHost';
 
 const WEEK = ['日', '一', '二', '三', '四', '五', '六'];
 const POP_W = 264;
@@ -41,11 +42,14 @@ export default function DateField({
   onChange,
   timezone,
   label = '发生时间',
+  dateOnly = false,
 }: {
   value: string;
   onChange: (next: string) => void;
   timezone: string;
   label?: string;
+  /** 只选日期：不显示时间输入，也不会写入时间部分 */
+  dateOnly?: boolean;
 }) {
   const { date, time } = splitValue(value);
   const [open, setOpen] = useState(false);
@@ -181,7 +185,7 @@ export default function DateField({
             </button>
           </div>
         </div>,
-        document.body
+        v2PortalHost()
       )
     : null;
 
@@ -206,6 +210,7 @@ export default function DateField({
           <span className={date ? styles.dateValue : styles.dateEmpty}>{date || '未设置日期'}</span>
         </button>
 
+        {!dateOnly && (
         <input
           className={styles.timeInput}
           value={timeDraft}
@@ -218,10 +223,13 @@ export default function DateField({
           inputMode="numeric"
           aria-label={label + '：时间'}
         />
+        )}
 
-        <button type="button" className={styles.quick} onClick={() => onChange(`${today}T${nowTimeOf(timezone)}`)}>
-          现在
-        </button>
+        {!dateOnly && (
+          <button type="button" className={styles.quick} onClick={() => onChange(`${today}T${nowTimeOf(timezone)}`)}>
+            现在
+          </button>
+        )}
         {value && (
           <button type="button" className={styles.quick} onClick={() => onChange('')}>
             清空

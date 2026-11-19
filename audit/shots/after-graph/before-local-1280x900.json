@@ -1,0 +1,89 @@
+{
+  "url": "http://127.0.0.1:5181/graph?node=capture%3Acap-1795080134483-6tci5v&depth=1",
+  "nodeCount": 1,
+  "panelText": "节点详情\n念头\n输入法候选态里的半成品文字\n输入法候选态里的半成品文字\n连接\n0 条\n时间\n2026-11-19 17:22\n打开原记录\n复制节点链接\n关联到 0 条\n没有主动关联出去的记录。\n被关联 0 条\n还没有其他记录关联到这里。\n孤立节点不会被隐藏，仍可打开原记录或用于新的尝试。\n把一个念头投进网络\n只保存在本机\n投入网络",
+  "title": {
+    "text": "输入法候选态里的半成品文字",
+    "box": {
+      "x": 915,
+      "y": 98,
+      "w": 341,
+      "h": 32
+    },
+    "css": {
+      "font-size": "25.6px",
+      "color": "rgb(251, 249, 245)",
+      "font-weight": "300"
+    }
+  },
+  "sub": {
+    "box": null,
+    "css": null
+  },
+  "body": {
+    "text": "输入法候选态里的半成品文字",
+    "box": {
+      "x": 915,
+      "y": 142,
+      "w": 341,
+      "h": 25
+    },
+    "css": {
+      "font-size": "14px",
+      "color": "rgba(251, 249, 245, 0.86)",
+      "line-height": "24.5px"
+    }
+  },
+  "duplicateTitle": null,
+  "actions": [
+    {
+      "tag": "A",
+      "cls": "graph-open",
+      "text": "打开原记录",
+      "box": {
+        "x": 915,
+        "y": 316,
+        "w": 94,
+        "h": 40
+      },
+      "css": {
+        "background-color": "rgb(251, 249, 245)",
+        "color": "rgb(24, 24, 27)",
+        "border": "1px solid rgb(56, 58, 64)",
+        "border-radius": "0px",
+        "font-size": "12.4px",
+        "min-height": "40px",
+        "padding": "0px 12px"
+      }
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "graph-secondary",
+      "text": "复制节点链接",
+      "box": {
+        "x": 1017,
+        "y": 316,
+        "w": 106,
+        "h": 40
+      },
+      "css": {
+        "background-color": "rgba(0, 0, 0, 0)",
+        "color": "rgba(251, 249, 245, 0.82)",
+        "border": "1px solid rgba(251, 249, 245, 0.28)",
+        "border-radius": "0px",
+        "font-size": "12.4px",
+        "min-height": "40px",
+        "padding": "0px 12px"
+      }
+    }
+  ],
+  "strayButtons": [],
+  "hint": null,
+  "stageBox": {
+    "x": 0,
+    "y": 0,
+    "w": 890,
+    "h": 777
+  },
+  "scopeVars": {}
+}

@@ -1,0 +1,14 @@
+shot 02-home ← /
+[首页] {"inputBorder":"1px rgba(233, 236, 241, 0.24)","inputBg":"rgb(10, 12, 15)","leftMore":"查看全部 86 条 →","ghostChips":["A:/experiences","A:/topics","A:/schedule"]}
+shot 03-attempt ← /attempt/att-1795078914914-9w4eto
+[尝试页状态栏] 
+[弹窗] {"panelBg":"rgb(27, 31, 38)","panelColor":"rgb(233, 236, 241)","panelBorder":"rgba(233, 236, 241, 0.24)","overlayBg":"rgba(0, 0, 0, 0.6)","panelInsideV2":true,"primaryBg":"rgb(157, 184, 255)","primaryColor":"rgb(14, 16, 19)","primaryText":"加入"}
+shot 05-review ← /review
+[回顾] {"badges":["念头 | color=rgb(29, 78, 216) bg=rgb(238, 242, 255)","新建 | color=rgb(71, 85, 105) bg=rgb(243, 239, 232)","尝试 | color=rgb(109, 40, 217) bg=rgb(245, 243, 255)","开始 | color=rgb(71, 85, 105) bg=rgb(243, 239, 232)","结果 | color=rgb(71, 85, 105) bg=rgb(243, 239, 232)","待尝试 | color=rgb(75, 85, 99) bg=rgb(243, 244, 246)"],"labelH":17,"labelText":"记录的念头"}
+[更多菜单] {"items":["经验","日程","操作动态","深度研究"],"hasScrim":true}
+shot 07-topics ← /topics
+[主题页] BUTTON:我的主题
+6
++
+新建主题
+[ink-3 实际色] {"color":"rgba(233, 236, 241, 0.62)","size":"12px"}

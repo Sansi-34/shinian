@@ -62,15 +62,12 @@ export default function LoginPage({ onLogin }: { onLogin: (username: string) => 
           </button>
         </form>
 
+        {/* 五个步骤已经自带序号，箭头只会带来换行后悬空的问题，去掉 */}
         <div className="login-loop-steps">
           <div className="step-pill">1. 记下念头</div>
-          <span className="step-arrow">→</span>
           <div className="step-pill">2. 试一步</div>
-          <span className="step-arrow">→</span>
           <div className="step-pill">3. 记录真实结果</div>
-          <span className="step-arrow">→</span>
           <div className="step-pill">4. 整理经验</div>
-          <span className="step-arrow">→</span>
           <div className="step-pill">5. 召唤存档</div>
         </div>
       </div>

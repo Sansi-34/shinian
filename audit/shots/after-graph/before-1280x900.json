@@ -1,0 +1,57 @@
+{
+  "url": "http://127.0.0.1:5181/graph",
+  "nodeCount": 130,
+  "panelText": "节点详情\n等待信号\n点一个节点\n选中念头、尝试或研究，查看它和哪些事件真正连在一起。\n把一个念头投进网络\n只保存在本机\n投入网络",
+  "h2": {
+    "text": "点一个节点",
+    "box": {
+      "x": 915,
+      "y": 98,
+      "w": 341,
+      "h": 32
+    },
+    "css": {
+      "font-size": "25.6px",
+      "color": "rgb(251, 249, 245)",
+      "font-weight": "300"
+    }
+  },
+  "detail": {
+    "text": "选中念头、尝试或研究，查看它和哪些事件真正连在一起。",
+    "box": {
+      "x": 915,
+      "y": 142,
+      "w": 341,
+      "h": 49
+    },
+    "css": {
+      "font-size": "14px",
+      "color": "rgba(251, 249, 245, 0.86)",
+      "line-height": "24.5px"
+    }
+  },
+  "detailEqualsTitle": false,
+  "actions": [],
+  "stage": {
+    "x": 0,
+    "y": 0,
+    "w": 890,
+    "h": 738
+  },
+  "hint": null,
+  "cssVarCheck": {
+    "--ink": "#18181b",
+    "--ink-2": "",
+    "--ink-3": "",
+    "--line": "rgba(251, 249, 245, 0.22)",
+    "--line-2": "",
+    "--raise": "",
+    "--raise-2": "",
+    "--accent": "#002fa7",
+    "--accent-soft": "#eef2ff",
+    "--hover": "",
+    "--fs-title": "",
+    "--r-1": "",
+    "--r-2": ""
+  }
+}

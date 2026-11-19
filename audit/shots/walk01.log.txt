@@ -1,0 +1,104 @@
+--- 01-login /login ---
+把规矩先立住，这样做起来才不烧心。
+念
+拾念
+SHINIAN
+
+灵感来了？先丢进拾念，别让它像“我刚才要干啥来着”一样人间蒸发。
+
+单人本机空间 · 数据完全保存在当前电脑本地，无云端泄露之忧。
+
+你的称呼 / 名字
+首次使用将以此身份开启你的本地知识实践库
+开启拾念之旅
+1. 记下念头
+→
+2. 试一步
+→
+3. 记录真实结果
+→
+4. 整理经验
+→
+5. 召唤存档
+[可点元素] button: 开启拾念之旅
+[表单] input type=text name= ph="例如：我、阿念" label="你的称呼 / 名字
+首次使用将以此身份开启你的本地知识实践库"
+--- 03-home-empty / ---
+拾
+记录
+0
+
+还没有念头。在中间输入框写一句开始。
+
+记下
+现在要做
+0
+日程
+
+没有进行中的尝试，也没有今天的安排。
+
+最近记录
+0
+全部
+
+还没有内容。写下第一条念头，或记录一次尝试的结果。
+
++
+我整理的经验
+0
++
+我的主题
+0
++
+今日日程
+0
+关系
+主题
+
+还没有主题。主题是围绕一个问题收起来的一组记录。
+
+经验
+
+还没有沉淀的经验。从有结果的尝试里整理。
+
+本地库 · 0 念头 · 0 主题 · 0 经验
+纸张主题
+今天没有安排
+[可点元素] a[/]: 首页 | a[/search]: 念头 | a[/topics]: 主题 | a[/ask]: 问记录 | a[/graph]: 知识网络 | a[/review]: 周期回顾 | a[/settings/ai]: 设置 | button: 更多 | button: 记下 | button: 现在要做 0 日程 | a[/schedule]: 日程 | button: 最近记录 0 全部 | a[/search]: 全部 | button: + 我整理的经验 0 | button: + 我的主题 0 | button: + 今日日程 0 | button: 纸张主题
+[表单] input type=text name= ph="记一句：刚才试了什么，结果如何" label="记录一句"
+--- 03-home-empty-390 / ---
+拾
+记下
+现在要做
+0
+日程
+
+没有进行中的尝试，也没有今天的安排。
+
+最近记录
+0
+全部
+
+还没有内容。写下第一条念头，或记录一次尝试的结果。
+
++
+我整理的经验
+0
++
+我的主题
+0
++
+今日日程
+0
+[可点元素] a[/]: 首页 | a[/search]: 念头 | a[/topics]: 主题 | a[/ask]: 问记录 | a[/graph]: 知识网络 | a[/review]: 周期回顾 | a[/settings/ai]: 设置 | button: 更多 | button: 记下 | button: 现在要做 0 日程 | a[/schedule]: 日程 | button: 最近记录 0 全部 | a[/search]: 全部 | button: + 我整理的经验 0 | button: + 我的主题 0 | button: + 今日日程 0
+[表单] input type=text name= ph="记一句：刚才试了什么，结果如何" label="记录一句"
+=== console errors ===
+[
+  "Failed to load resource: the server responded with a status of 404 (Not Found)",
+  "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+  "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+  "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+  "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+  "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+  "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+]

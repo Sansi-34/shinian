@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
 import type { Attempt, AttemptDeletePreview, Capture, ScheduleBlock } from '../types';
-import { formatScheduleTimeRange, sortSchedules, useDisplayTimezone } from '../scheduleTime';
+import { formatScheduleTimeRange, sortSchedules, timeInTimezone, useDisplayTimezone } from '../scheduleTime';
 import { dayTimeLabel, fromLocalInputValue, toLocalInputValue } from './format';
 import V2Shell from './V2Shell';
 import Module from './ui/Module';
@@ -54,6 +54,24 @@ function statusOf(a: Attempt): { kind: StatusKind; label: string } {
   return { kind: 'idle', label: '未开始' };
 }
 
+/** 会随「保存」一起提交的四个字段，用来做脏检查 */
+type Draft = {
+  state: Attempt['state'];
+  result: string;
+  outcome: 'success' | 'failure' | 'undetermined';
+  observedAt: string;
+};
+
+/** 载入时的快照：result 取 trim 后的值，与保存时实际发送的值保持一致 */
+function draftOf(a: Attempt, timezone: string): Draft {
+  return {
+    state: a.state,
+    result: (a.resultText ?? '').trim(),
+    outcome: (a.outcome as Draft['outcome']) ?? 'undetermined',
+    observedAt: toLocalInputValue(a.observedAt, timezone),
+  };
+}
+
 export default function AttemptV2Page() {
   const { attemptId = '' } = useParams();
   const navigate = useNavigate();
@@ -87,6 +105,9 @@ export default function AttemptV2Page() {
   // 同一弹窗会话复用同一个 operationId：服务端冲突 token 把它算进签名，换 id 会永远对不上
   const [schedOpId, setSchedOpId] = useState('');
   const [delPreview, setDelPreview] = useState<AttemptDeletePreview | null>(null);
+  // 脏检查基准：载入（或保存成功）时的草稿快照。为 null 表示还没有可信基准，
+  // 此时一律当作「没有改动」，避免刚进页面就报「修改未保存」。
+  const [snapshot, setSnapshot] = useState<Draft | null>(null);
 
   const load = useCallback(async () => {
     if (!attemptId) return;
@@ -100,6 +121,8 @@ export default function AttemptV2Page() {
       setOutcome((res.attempt.outcome as 'success' | 'failure' | 'undetermined') ?? 'undetermined');
       setState(res.attempt.state);
       setObservedAt(toLocalInputValue(res.attempt.observedAt, timezone));
+      // 表单值和快照同时从同一个响应写入，保证「刚载入」必然是不脏的
+      setSnapshot(draftOf(res.attempt, timezone));
       const [sch, refs] = await Promise.all([
         api.listAttemptSchedules(attemptId).catch(() => ({ schedules: [] as ScheduleBlock[], serverNow: Date.now() })),
         api.listReferences(attemptId).catch(() => ({ fromRefs: [], toRefs: [] })),
@@ -136,8 +159,14 @@ export default function AttemptV2Page() {
       };
       if (futureScheduleAction) patch.futureScheduleAction = futureScheduleAction;
       const res = await api.updateAttempt(attempt.id, patch);
+      // 服务端回写的就是新的基准：表单与快照从同一份数据更新，保存完立刻不脏
+      const saved = draftOf(res.attempt, timezone);
       setAttempt(res.attempt);
       setResult(res.attempt.resultText ?? '');
+      setState(saved.state);
+      setOutcome(saved.outcome);
+      setObservedAt(saved.observedAt);
+      setSnapshot(saved);
       setScheduleConflict(null);
       setDoneWithoutResult(false);
       setSavedAt(Date.now());
@@ -241,6 +270,45 @@ export default function AttemptV2Page() {
 
   const st = useMemo(() => (attempt ? statusOf(attempt) : { kind: 'idle' as StatusKind, label: '—' }), [attempt]);
 
+  // 脏检查：当前表单值 vs 载入/上次保存时的快照
+  const isDirty = useMemo(() => {
+    if (!snapshot) return false;
+    return (
+      state !== snapshot.state ||
+      result.trim() !== snapshot.result ||
+      outcome !== snapshot.outcome ||
+      observedAt !== snapshot.observedAt
+    );
+  }, [snapshot, state, result, outcome, observedAt]);
+
+  // 没有改动时不允许保存：空点一次会把 revision 顶上去，产生无意义版本
+  const canSave = isDirty || doneWithoutResult;
+
+  const saveLabel = isDirty
+    ? '修改未保存'
+    : savedAt
+      ? '已保存 ' + timeInTimezone(savedAt, timezone)
+      : '无改动';
+
+  /** 还原：回到快照（没有快照时退回服务端最近一次的值） */
+  function revertDraft() {
+    if (snapshot) {
+      setState(snapshot.state);
+      setOutcome(snapshot.outcome);
+      setResult(snapshot.result);
+      setObservedAt(snapshot.observedAt);
+    } else if (attempt) {
+      const base = draftOf(attempt, timezone);
+      setState(base.state);
+      setOutcome(base.outcome);
+      setResult(base.result);
+      setObservedAt(base.observedAt);
+    }
+    // 回到干净状态时把「仍然标记完成」的二次确认也一并撤掉
+    setDoneWithoutResult(false);
+    setActionError(null);
+  }
+
   return (
     <V2Shell
       rightTitle="关联"
@@ -304,7 +372,16 @@ export default function AttemptV2Page() {
         </>
       }
       statusLeft={attempt ? `${st.label} · 版本 ${attempt.revision}` : '加载中'}
-      statusRight={<span>{savedAt ? '已保存 ' + new Date(savedAt).toTimeString().slice(0, 5) : '修改未保存'}</span>}
+      statusRight={
+        <span
+          style={{
+            fontSize: 'var(--fs-meta)',
+            color: isDirty ? 'var(--ink)' : 'var(--ink-3)',
+          }}
+        >
+          {saveLabel}
+        </span>
+      }
     >
       {loading && <p className="v2-state"><Spinner /></p>}
       {!loading && error && (
@@ -322,12 +399,22 @@ export default function AttemptV2Page() {
             <p className="v2-captureText">{attempt.step}</p>
             <div className="v2-captureActions">
               <Pill kind={st.kind}>{st.label}</Pill>
-              <Button onClick={() => void openDeleteModal()} disabled={busy}>
-                删除…
-              </Button>
               {attempt.resultText && <CopyButton text={attempt.resultText} label="复制结果" />}
               {attempt.actionDescription && <span className="v2-hint">{attempt.actionDescription}</span>}
               {attempt.estimatedMinutes ? <span className="v2-hint">预计 {attempt.estimatedMinutes} 分钟</span> : null}
+              {/* 破坏性操作：单独推到最右，用危险色描边，避免和普通动作混成一排误点 */}
+              <Button
+                onClick={() => void openDeleteModal()}
+                disabled={busy}
+                title="删除这个尝试（不可恢复）"
+                style={{
+                  marginLeft: 'auto',
+                  color: 'var(--st-fail)',
+                  borderColor: 'var(--st-fail)',
+                }}
+              >
+                删除…
+              </Button>
             </div>
             {actionError && <p className="v2-state" style={{ color: 'var(--st-fail)' }}>{actionError}</p>}
             {scheduleConflict && (
@@ -388,35 +475,42 @@ export default function AttemptV2Page() {
                 )}
               </div>
 
-              <div className="v2-captureActions">
-                <Button variant="primary" onClick={() => void save()} disabled={busy}>
-                  {busy ? '保存中…' : doneWithoutResult ? '仍然标记完成' : '保存'}
-                </Button>
-                <Button
-                  onClick={() => {
-                    setResult(attempt.resultText ?? '');
-                    setState(attempt.state);
-                    setOutcome((attempt.outcome as 'success' | 'failure' | 'undetermined') ?? 'undetermined');
-                    setObservedAt(toLocalInputValue(attempt.observedAt, timezone));
-                    setActionError(null);
-                  }}
-                >
-                  还原
-                </Button>
-                <span className="v2-hint">保存后用于阶段回顾统计，不会被自动改写</span>
+              <div className="v2-field">
+                <div className="v2-captureActions">
+                  <Button
+                    variant="primary"
+                    onClick={() => void save()}
+                    disabled={busy || !canSave}
+                    title={canSave ? undefined : '没有改动，无需保存'}
+                  >
+                    {busy ? '保存中…' : doneWithoutResult ? '仍然标记完成' : '保存'}
+                  </Button>
+                  <Button onClick={revertDraft} disabled={busy || !isDirty}>
+                    还原
+                  </Button>
+                </div>
+                <p className="v2-hint" style={{ margin: 0 }}>
+                  保存后用于阶段回顾统计，不会被自动改写
+                </p>
               </div>
             </div>
           </Module>
 
+          {/* 这个模块里只有「它属于哪个念头」这一条链接，不列其它尝试：
+              标题不能写成「其他尝试 N」，也不给 count（硬编码 0 会让人以为一条都没有） */}
           {capture && (
-            <Module title="所属念头的其他尝试" count={0} defaultOpen={false}>
+            <Module title="来源念头" defaultOpen={false}>
               <Row
                 index={0}
                 time="念头"
                 to={'/capture/' + capture.id}
                 title={capture.rawText}
-                sub="打开念头详情，看全部尝试"
-                side={<Pill kind="idle">来源</Pill>}
+                sub="打开念头详情，看这个念头下的全部尝试"
+                side={
+                  <span className="v2-hint" aria-hidden="true">
+                    →
+                  </span>
+                }
               />
             </Module>
           )}

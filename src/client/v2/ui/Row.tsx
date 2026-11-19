@@ -25,7 +25,8 @@ export default function Row({
     <>
       <span className={styles.time}>{time}</span>
       <span className={styles.main}>
-        {title}
+        {/* 标题单独包一层再裁行数：直接裁 .main 会把同一格里的 sub 一起裁掉 */}
+        <span className={styles.titleText}>{title}</span>
         {sub && <span className={styles.sub}>{sub}</span>}
       </span>
       {side !== undefined && <span className={styles.side}>{side}</span>}

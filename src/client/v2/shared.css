@@ -27,6 +27,8 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  /* 固定两行高度：否则一行标题和两行标题让每条行高不同，日期位置乱跳 */
+  min-height: 3em;
   font-size: var(--fs-body);
   line-height: 1.5;
 }
@@ -36,6 +38,17 @@
   font-size: var(--fs-meta);
   color: var(--ink-3);
   font-variant-numeric: tabular-nums;
+}
+.v2-leftMore {
+  display: block;
+  padding: var(--sp-3) var(--sp-4);
+  border-left: 2px solid transparent;
+  color: var(--accent);
+  font-size: var(--fs-meta);
+  text-decoration: none;
+}
+.v2-leftMore:hover {
+  background: var(--hover);
 }
 
 /* 右栏分组 */
@@ -104,8 +117,11 @@
   flex: 1;
   min-width: 0;
   min-height: 44px;
-  border: 0;
-  background: transparent;
+  /* 以前完全无边框无底色，新用户看不出这里能打字 */
+  padding: 0 var(--sp-3);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-1);
+  background: var(--sunk);
   color: var(--ink);
   font-family: inherit;
   font-size: var(--fs-title);
@@ -114,10 +130,12 @@
   color: var(--ink-3);
 }
 .v2-compose input:focus-visible {
-  outline: none;
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: var(--accent);
 }
 .v2-compose:focus-within {
-  background: var(--hover);
+  background: transparent;
 }
 
 /* 顶部工具条（搜索框 / 分段筛选） */
@@ -409,4 +427,79 @@ html[data-theme='dark'] .v2-root .v2-dateInput::-webkit-calendar-picker-indicato
   font-size: var(--fs-body);
   line-height: 1.5;
   overflow-wrap: anywhere;
+}
+
+/* ---------- 问记录（Ask V2） ---------- */
+
+/* 左栏条目如果是按钮（历史问答），抹掉按钮默认样式 */
+.v2-leftBtn {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* 候选记录：一行一个可选块 */
+.v2-askPick {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-top: 1px solid var(--line);
+  cursor: pointer;
+  animation: v2-rise 240ms ease-out backwards;
+  animation-delay: calc(var(--i, 0) * 24ms);
+}
+.v2-askPick:hover {
+  background: var(--hover);
+}
+.v2-askPick input {
+  margin-top: 3px;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  accent-color: var(--accent);
+}
+.v2-askPickMain {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.v2-askPickTitle {
+  font-size: var(--fs-body);
+  color: var(--ink);
+  line-height: 1.45;
+}
+.v2-askPickSnippet {
+  font-size: var(--fs-meta);
+  color: var(--ink-3);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 观点卡 */
+.v2-askPoint {
+  margin: 0 var(--sp-4) var(--sp-2);
+  padding: var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  background: var(--raise);
+}
+.v2-askPointText {
+  font-size: var(--fs-body);
+  line-height: 1.65;
+  color: var(--ink);
+}
+.v2-askPointMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
 }

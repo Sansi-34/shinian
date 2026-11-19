@@ -326,7 +326,8 @@ export default function ActivityPage() {
                           <p className="activity-text">{event.text}</p>
                           {(event.detail || event.outcome || event.kind) && (
                             <div className="activity-meta">
-                              {event.detail && <span className="activity-detail">{event.detail}</span>}
+                              {/* 有 outcome 徽章时不再重复 detail（原来「结果：成功」后面又跟一枚「成功」徽章） */}
+                              {event.detail && !event.outcome && <span className="activity-detail">{event.detail}</span>}
                               {event.outcome && (
                                 <span className={`badge outcome-${event.outcome}`}>
                                   {OUTCOME_LABEL[event.outcome]}

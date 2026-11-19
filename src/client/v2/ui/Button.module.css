@@ -14,14 +14,21 @@
   transition: background 120ms ease-out, border-color 120ms ease-out, color 120ms ease-out;
 }
 
+/* 禁用态不用"整体半透明"：那会让主按钮看起来像一颗"没上色的主按钮"，
+   而且文字对比度跟着掉。显式给一块中性面 + 可读的次级文字。 */
 .btn:disabled {
-  opacity: 0.5;
+  opacity: 1;
   cursor: not-allowed;
 }
 
 .primary {
   background: var(--accent);
   color: var(--accent-ink);
+}
+.primary:disabled {
+  background: var(--raise-2);
+  color: var(--ink-3);
+  border-color: var(--line-2);
 }
 .primary:hover:not(:disabled) {
   filter: brightness(1.06);

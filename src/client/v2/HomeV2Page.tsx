@@ -159,6 +159,12 @@ export default function HomeV2Page() {
               <span className="v2-leftMeta">{dayLabel(c.createdAt, timezone, todayDateKey(timezone))}</span>
             </Link>
           ))}
+          {/* 计数写全量、列表只渲染 12 条，必须给出口，否则用户以为只有 12 条 */}
+          {captures.length > 12 && (
+            <Link to="/search" className="v2-leftMore">
+              查看全部 {captures.length} 条 →
+            </Link>
+          )}
         </>
       }
       rightTitle="关系"
@@ -194,7 +200,9 @@ export default function HomeV2Page() {
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') void submitDraft();
+            // 组合态回车不能提交：中文输入法选词时按回车会把半成品存成念头
+            const composing = e.nativeEvent.isComposing || e.keyCode === 229;
+            if (e.key === 'Enter' && !composing) void submitDraft();
           }}
           placeholder="记一句：刚才试了什么，结果如何"
           aria-label="记录一句"
@@ -253,13 +261,13 @@ export default function HomeV2Page() {
       </Module>
 
       <div className="v2-ghosts">
-        <GhostChip count={experiences.length} onClick={() => undefined}>
+        <GhostChip count={experiences.length} to="/experiences">
           我整理的经验
         </GhostChip>
-        <GhostChip count={topics.length} onClick={() => undefined}>
+        <GhostChip count={topics.length} to="/topics">
           我的主题
         </GhostChip>
-        <GhostChip count={schedules.length} onClick={() => undefined}>
+        <GhostChip count={schedules.length} to="/schedule">
           今日日程
         </GhostChip>
       </div>

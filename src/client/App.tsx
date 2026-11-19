@@ -9,8 +9,6 @@ import ReviewPage from './pages/ReviewPage';
 import ReviewDetailPage from './pages/ReviewDetailPage';
 import NextActionPage from './pages/NextActionPage';
 import ResearchPage from './pages/ResearchPage';
-import AskPage from './pages/AskPage';
-import AskDetailPage from './pages/AskDetailPage';
 import ExperienceDetailPage from './pages/ExperienceDetailPage';
 import GraphPage from './pages/GraphPage';
 import TopicPage from './pages/TopicPage';
@@ -24,6 +22,8 @@ import ResearchV2Page from './v2/ResearchV2Page';
 import CaptureV2Page from './v2/CaptureV2Page';
 import AttemptV2Page from './v2/AttemptV2Page';
 import KitPage from './v2/KitPage';
+import AskV2Page from './v2/AskV2Page';
+import AskV2DetailPage from './v2/AskV2DetailPage';
 import api from './api';
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
@@ -113,6 +113,8 @@ function Shell() {
   const V2_EXACT = ['/', '/search', '/topics', '/experiences', '/schedule', '/research'];
   const v2Mode =
     location.pathname === '/kit' ||
+    location.pathname === '/ask' ||
+    location.pathname.startsWith('/ask/') ||
     V2_EXACT.includes(location.pathname) ||
     location.pathname.startsWith('/capture/') ||
     location.pathname.startsWith('/attempt/');
@@ -238,8 +240,8 @@ function Shell() {
           <Route path="/activity" element={<ActivityPage />} />
           <Route path="/review" element={<ReviewPage />} />
           <Route path="/review/:reviewId" element={<ReviewDetailPage />} />
-          <Route path="/ask" element={<AskPage />} />
-          <Route path="/ask/:queryId" element={<AskDetailPage />} />
+          <Route path="/ask" element={<AskV2Page />} />
+          <Route path="/ask/:queryId" element={<AskV2DetailPage />} />
           <Route path="/graph" element={<GraphPage />} />
           <Route path="/settings/ai" element={<SettingsAiPage />} />
           <Route path="/login" element={<LoginPage onLogin={setUsername} />} />

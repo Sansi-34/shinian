@@ -5,18 +5,20 @@
   min-height: 40px;
   padding: 0 var(--sp-4);
   border-radius: var(--r-pill);
-  border: 1px dashed var(--line-2);
-  background: transparent;
-  color: var(--ink-2);
+  /* 曾经是虚线 + 低对比灰字，看起来像禁用态；改成实线可点 */
+  border: 1px solid var(--line-2);
+  background: var(--raise);
+  color: var(--ink);
   font-family: inherit;
   font-size: var(--fs-meta);
+  text-decoration: none;
   cursor: pointer;
-  transition: border-color 120ms ease-out, color 120ms ease-out;
+  transition: border-color 120ms ease-out, color 120ms ease-out, background 120ms ease-out;
 }
 
 .chip:hover {
-  border-style: solid;
   border-color: var(--accent);
+  background: var(--accent-soft);
   color: var(--ink);
 }
 
@@ -26,11 +28,11 @@
 }
 
 .plus {
-  color: var(--ink-3);
+  color: var(--ink-2);
   font-variant-numeric: tabular-nums;
 }
 
 .count {
-  color: var(--ink-3);
+  color: var(--ink-2);
   font-variant-numeric: tabular-nums;
 }

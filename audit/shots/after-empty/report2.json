@@ -1,0 +1,326 @@
+{
+  "results": {
+    "real-experiences-1280x900": {
+      "url": "/experiences",
+      "viewport": {
+        "w": 1280,
+        "h": 900
+      },
+      "centerRect": {
+        "top": 0,
+        "bottom": 836,
+        "w": 1244,
+        "h": 836
+      },
+      "hasEmpty": false,
+      "emptyRect": null,
+      "emptyCenterOffset": null,
+      "markBorder": null,
+      "title": null,
+      "text": null,
+      "cta": null,
+      "linkCount": 11,
+      "bodyText": "拾 我整理的经验 4 今天 薄荷浇水经验 经验正文不应作为证据出现WWW。 经验 今天 蓝莓施肥频率经验 经验正文不应作为证据出现QQQ。 经验 今天 降到 2 kHz 可减少可见闪烁 记录里 2 kHz 时肉眼未见闪烁；只改频率，不宣称因果。 经验 今天 土壤干了再浇水 等表土干透再浇，避免积水。 经验 概览 经验 共 4 待修订 0 有实践结果 3 模型整理 0 说明 经验必须挂在仍可访问的来源上；模型整理的正文会标注「由模型推断整",
+      "docHeight": 900
+    },
+    "real-schedule-1280x900": {
+      "url": "/schedule",
+      "viewport": {
+        "w": 1280,
+        "h": 900
+      },
+      "centerRect": {
+        "top": 0,
+        "bottom": 836,
+        "w": 1244,
+        "h": 836
+      },
+      "hasEmpty": true,
+      "emptyRect": {
+        "top": 0,
+        "bottom": 828,
+        "w": 920,
+        "h": 828
+      },
+      "emptyCenterOffset": -36,
+      "markBorder": "dashed rgba(233, 236, 241, 0.24)",
+      "title": {
+        "text": "接下来 7 天没有安排",
+        "fontSize": "15px",
+        "color": "rgb(233, 236, 241)"
+      },
+      "text": {
+        "text": "日程只是时间上的占位，不会自动创建尝试，也不会替你改状态。想排一条，先去记录里挑一条，再在尝试详情里点「排日程」。",
+        "fontSize": "14px",
+        "color": "rgba(233, 236, 241, 0.68)"
+      },
+      "cta": {
+        "text": "去挑一条记录排日程 →",
+        "href": "/search",
+        "color": "rgb(157, 184, 255)",
+        "bg": "rgb(27, 31, 38)",
+        "radius": "6px"
+      },
+      "linkCount": 8,
+      "bodyText": "拾 接下来 7 天没有安排 日程只是时间上的占位，不会自动创建尝试，也不会替你改状态。想排一条，先去记录里挑一条，再在尝试详情里点「排日程」。 去挑一条记录排日程 → 概览 接下来 7 天 今天 0 合计 0 有日期的天 0 说明 日程只是时间占位，不会自动创建尝试或改状态；冲突需要你自己判断。新建入口在尝试详情的「排日程」。 2026-11-19 · 今天 0 项 · 7 天内 0 项 纸张主题 Asia/Shanghai",
+      "docHeight": 900
+    },
+    "real-research-1280x900": {
+      "url": "/research",
+      "viewport": {
+        "w": 1280,
+        "h": 900
+      },
+      "centerRect": {
+        "top": 0,
+        "bottom": 836,
+        "w": 1244,
+        "h": 836
+      },
+      "hasEmpty": true,
+      "emptyRect": {
+        "top": 0,
+        "bottom": 828,
+        "w": 920,
+        "h": 828
+      },
+      "emptyCenterOffset": -36,
+      "markBorder": "dashed rgba(233, 236, 241, 0.24)",
+      "title": {
+        "text": "还没有保存的研究",
+        "fontSize": "15px",
+        "color": "rgb(233, 236, 241)"
+      },
+      "text": {
+        "text": "研究只读取 GitHub 公开资料，引用必须指向本次实际取回的来源；一条研究要跑起来，需要先配置可用的 AI 模型。",
+        "fontSize": "14px",
+        "color": "rgba(233, 236, 241, 0.68)"
+      },
+      "cta": {
+        "text": "先去配置模型 →",
+        "href": "/settings/ai",
+        "color": "rgb(157, 184, 255)",
+        "bg": "rgb(27, 31, 38)",
+        "radius": "6px"
+      },
+      "linkCount": 8,
+      "bodyText": "拾 还没有保存的研究 研究只读取 GitHub 公开资料，引用必须指向本次实际取回的来源；一条研究要跑起来，需要先配置可用的 AI 模型。 先去配置模型 → 概览 研究 已完成 0 失败 / 中断 0 共保存 0 说明 研究只读取 GitHub 公开资料，模型引用必须指向本次实际取回的来源；结论不足时会直接说不足。 研究 0 · 已完成 0 纸张主题 只读视图",
+      "docHeight": 900
+    },
+    "empty-experiences-1280x900": {
+      "url": "/experiences",
+      "viewport": {
+        "w": 1280,
+        "h": 900
+      },
+      "centerRect": {
+        "top": 0,
+        "bottom": 836,
+        "w": 1244,
+        "h": 836
+      },
+      "hasEmpty": true,
+      "emptyRect": {
+        "top": 0,
+        "bottom": 828,
+        "w": 920,
+        "h": 828
+      },
+      "emptyCenterOffset": -36,
+      "markBorder": "dashed rgba(233, 236, 241, 0.24)",
+      "title": {
+        "text": "还没有经验",
+        "fontSize": "15px",
+        "color": "rgb(233, 236, 241)"
+      },
+      "text": {
+        "text": "经验 = 一条有真实结果的观察，加上它的条件与限制。目前它从「问记录」里的一条观点整理而来（整理需要先配置 AI 模型）。",
+        "fontSize": "14px",
+        "color": "rgba(233, 236, 241, 0.68)"
+      },
+      "cta": {
+        "text": "去「问记录」看看 →",
+        "href": "/ask",
+        "color": "rgb(157, 184, 255)",
+        "bg": "rgb(27, 31, 38)",
+        "radius": "6px"
+      },
+      "linkCount": 8,
+      "bodyText": "拾 还没有经验 经验 = 一条有真实结果的观察，加上它的条件与限制。目前它从「问记录」里的一条观点整理而来（整理需要先配置 AI 模型）。 去「问记录」看看 → 概览 经验 共 0 待修订 0 有实践结果 0 模型整理 0 说明 经验必须挂在仍可访问的来源上；模型整理的正文会标注「由模型推断整理」，保存只代表你愿意留下它，不代表已证实。 经验 0 · 待修订 0 纸张主题 本地库",
+      "docHeight": 900
+    },
+    "data-schedule-1280x900": {
+      "url": "/schedule",
+      "viewport": {
+        "w": 1280,
+        "h": 900
+      },
+      "centerRect": {
+        "top": 0,
+        "bottom": 836,
+        "w": 1244,
+        "h": 836
+      },
+      "hasEmpty": false,
+      "emptyRect": null,
+      "emptyCenterOffset": null,
+      "markBorder": null,
+      "title": null,
+      "text": null,
+      "cta": null,
+      "linkCount": 8,
+      "bodyText": "拾 周五2026-11-20 1 11月20日 10:00 – 1月1日 08:00 假数据行（自测用） 无关联念头 已排日程 概览 接下来 7 天 今天 0 合计 1 有日期的天 1 说明 日程只是时间占位，不会自动创建尝试或改状态；冲突需要你自己判断。新建入口在尝试详情的「排日程」。 2026-11-19 · 今天 0 项 · 7 天内 1 项 纸张主题 Asia/Shanghai",
+      "docHeight": 900
+    },
+    "data-research-1280x900": {
+      "url": "/research",
+      "viewport": {
+        "w": 1280,
+        "h": 900
+      },
+      "centerRect": {
+        "top": 0,
+        "bottom": 836,
+        "w": 1244,
+        "h": 836
+      },
+      "hasEmpty": false,
+      "emptyRect": null,
+      "emptyCenterOffset": null,
+      "markBorder": null,
+      "title": null,
+      "text": null,
+      "cta": null,
+      "linkCount": 8,
+      "bodyText": "拾 已保存的研究 1 今天 假数据行：某个问题（自测用） 这是自测用的假摘要，只用来确认有数据时空态块不会出现。 已完成 概览 研究 已完成 1 失败 / 中断 0 共保存 1 说明 研究只读取 GitHub 公开资料，模型引用必须指向本次实际取回的来源；结论不足时会直接说不足。 研究 1 · 已完成 1 纸张主题 只读视图",
+      "docHeight": 900
+    },
+    "empty-experiences-390x844": {
+      "url": "/experiences",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "centerRect": {
+        "top": 0,
+        "bottom": 0,
+        "w": 358,
+        "h": 0
+      },
+      "hasEmpty": true,
+      "emptyRect": {
+        "top": 0,
+        "bottom": 756,
+        "w": 390,
+        "h": 756
+      },
+      "emptyCenterOffset": -44,
+      "markBorder": "dashed rgba(233, 236, 241, 0.24)",
+      "title": {
+        "text": "还没有经验",
+        "fontSize": "15px",
+        "color": "rgb(233, 236, 241)"
+      },
+      "text": {
+        "text": "经验 = 一条有真实结果的观察，加上它的条件与限制。目前它从「问记录」里的一条观点整理而来（整理需要先配置 AI 模型）。",
+        "fontSize": "14px",
+        "color": "rgba(233, 236, 241, 0.68)"
+      },
+      "cta": {
+        "text": "去「问记录」看看 →",
+        "href": "/ask",
+        "color": "rgb(157, 184, 255)",
+        "bg": "rgb(27, 31, 38)",
+        "radius": "6px"
+      },
+      "linkCount": 8,
+      "bodyText": "拾 还没有经验 经验 = 一条有真实结果的观察，加上它的条件与限制。目前它从「问记录」里的一条观点整理而来（整理需要先配置 AI 模型）。 去「问记录」看看 →",
+      "docHeight": 844
+    },
+    "empty-schedule-390x844": {
+      "url": "/schedule",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "centerRect": {
+        "top": 0,
+        "bottom": 0,
+        "w": 358,
+        "h": 0
+      },
+      "hasEmpty": true,
+      "emptyRect": {
+        "top": 0,
+        "bottom": 756,
+        "w": 390,
+        "h": 756
+      },
+      "emptyCenterOffset": -44,
+      "markBorder": "dashed rgba(233, 236, 241, 0.24)",
+      "title": {
+        "text": "接下来 7 天没有安排",
+        "fontSize": "15px",
+        "color": "rgb(233, 236, 241)"
+      },
+      "text": {
+        "text": "日程只是时间上的占位，不会自动创建尝试，也不会替你改状态。想排一条，先去记录里挑一条，再在尝试详情里点「排日程」。",
+        "fontSize": "14px",
+        "color": "rgba(233, 236, 241, 0.68)"
+      },
+      "cta": {
+        "text": "去挑一条记录排日程 →",
+        "href": "/search",
+        "color": "rgb(157, 184, 255)",
+        "bg": "rgb(27, 31, 38)",
+        "radius": "6px"
+      },
+      "linkCount": 8,
+      "bodyText": "拾 接下来 7 天没有安排 日程只是时间上的占位，不会自动创建尝试，也不会替你改状态。想排一条，先去记录里挑一条，再在尝试详情里点「排日程」。 去挑一条记录排日程 →",
+      "docHeight": 844
+    },
+    "empty-research-390x844": {
+      "url": "/research",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "centerRect": {
+        "top": 0,
+        "bottom": 0,
+        "w": 358,
+        "h": 0
+      },
+      "hasEmpty": true,
+      "emptyRect": {
+        "top": 0,
+        "bottom": 756,
+        "w": 390,
+        "h": 756
+      },
+      "emptyCenterOffset": -44,
+      "markBorder": "dashed rgba(233, 236, 241, 0.24)",
+      "title": {
+        "text": "还没有保存的研究",
+        "fontSize": "15px",
+        "color": "rgb(233, 236, 241)"
+      },
+      "text": {
+        "text": "研究只读取 GitHub 公开资料，引用必须指向本次实际取回的来源；一条研究要跑起来，需要先配置可用的 AI 模型。",
+        "fontSize": "14px",
+        "color": "rgba(233, 236, 241, 0.68)"
+      },
+      "cta": {
+        "text": "先去配置模型 →",
+        "href": "/settings/ai",
+        "color": "rgb(157, 184, 255)",
+        "bg": "rgb(27, 31, 38)",
+        "radius": "6px"
+      },
+      "linkCount": 8,
+      "bodyText": "拾 还没有保存的研究 研究只读取 GitHub 公开资料，引用必须指向本次实际取回的来源；一条研究要跑起来，需要先配置可用的 AI 模型。 先去配置模型 →",
+      "docHeight": 844
+    }
+  },
+  "errs": []
+}

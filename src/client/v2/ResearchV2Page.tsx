@@ -1,5 +1,6 @@
-// 拾念 V2 · 深度研究列表（只读视图；发起与生成还没搬进新版）
+// 拾念 V2 · 深度研究列表（只读视图；空态在内容区居中给出说明与下一步）
 import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../api';
 import type { ResearchListItem } from '../types';
 import V2Shell from './V2Shell';
@@ -10,6 +11,7 @@ import Spinner from './ui/Spinner';
 import { dayLabel } from './format';
 import { todayDateKey, useDisplayTimezone } from '../scheduleTime';
 import './shared.css';
+import './empty-page.css';
 
 function errText(e: unknown, fallback: string) {
   const anyErr = e as { status?: number; body?: { message?: string }; message?: string };
@@ -54,6 +56,8 @@ export default function ResearchV2Page() {
 
   const done = items.filter((r) => r.status === 'succeeded').length;
   const failed = items.filter((r) => r.status === 'failed' || r.status === 'interrupted').length;
+  // 只有「确定没有数据」才算空态：加载中和失败仍然走原来的状态提示
+  const isEmpty = !loading && !error && items.length === 0;
 
   return (
     <V2Shell
@@ -78,41 +82,52 @@ export default function ResearchV2Page() {
           <div>
             <h3 className="v2-groupTitle">说明</h3>
             <p className="v2-groupNote">研究只读取 GitHub 公开资料，模型引用必须指向本次实际取回的来源；结论不足时会直接说不足。</p>
-            <span className="v2-hint">发起研究还没搬进新版（下一步）</span>
           </div>
         </>
       }
       statusLeft={`研究 ${items.length} · 已完成 ${done}`}
       statusRight={<span>只读视图</span>}
     >
-      <Module title="已保存的研究" count={items.length} action={<span className="v2-hint">发起研究还没搬进新版</span>}>
-        {loading && <p className="v2-state"><Spinner /></p>}
-        {!loading && error && (
-          <p className="v2-state">
-            {error}
-            <button type="button" className="v2-linkBtn" onClick={() => void load()}>
-              重试
-            </button>
+      {isEmpty ? (
+        /* 空态：内容区居中，说清研究读什么 + 给出下一步 */
+        <div className="v2-empty">
+          <div className="v2-empty-mark" aria-hidden="true" />
+          <h2 className="v2-empty-title">还没有保存的研究</h2>
+          <p className="v2-empty-text">
+            研究只读取 GitHub 公开资料，引用必须指向本次实际取回的来源；一条研究要跑起来，需要先配置可用的 AI 模型。
           </p>
-        )}
-        {!loading && !error && items.length === 0 && (
-          <p className="v2-state">还没有保存的研究。研究方向还没搬进新版——下一步接。</p>
-        )}
-        {items.map((r, i) => {
-          const st = STATUS[r.status] ?? { kind: 'idle' as StatusKind, label: r.status };
-          return (
-            <Row
-              key={r.id}
-              index={i}
-              time={dayLabel(r.createdAt, timezone, todayDateKey(timezone))}
-              to={'/research/' + r.id}
-              title={r.question}
-              sub={r.summary || (r.errorCode ? '错误：' + r.errorCode : '未生成结论')}
-              side={<Pill kind={st.kind}>{st.label}</Pill>}
-            />
-          );
-        })}
-      </Module>
+          <Link className="v2-empty-cta" to="/settings/ai">
+            先去配置模型
+            <span className="v2-empty-ctaArrow" aria-hidden="true">→</span>
+          </Link>
+        </div>
+      ) : (
+        <Module title="已保存的研究" count={items.length}>
+          {loading && <p className="v2-state"><Spinner /></p>}
+          {!loading && error && (
+            <p className="v2-state">
+              {error}
+              <button type="button" className="v2-linkBtn" onClick={() => void load()}>
+                重试
+              </button>
+            </p>
+          )}
+          {items.map((r, i) => {
+            const st = STATUS[r.status] ?? { kind: 'idle' as StatusKind, label: r.status };
+            return (
+              <Row
+                key={r.id}
+                index={i}
+                time={dayLabel(r.createdAt, timezone, todayDateKey(timezone))}
+                to={'/research/' + r.id}
+                title={r.question}
+                sub={r.summary || (r.errorCode ? '错误：' + r.errorCode : '未生成结论')}
+                side={<Pill kind={st.kind}>{st.label}</Pill>}
+              />
+            );
+          })}
+        </Module>
+      )}
     </V2Shell>
   );
 }

@@ -1,0 +1,147 @@
+/* ============================================================================
+   拾念 SHINIAN · 知识网络 · 节点详情面板补充样式
+   只服务 GraphPage.tsx（唯一使用方），不覆盖任何其它页面。
+
+   本页是暗色底（面板 = 墨底 + 纸字），而 V2 语义 token（--ink / --line / --raise…）
+   只在 .v2-root 里定义，这里用 .gd-scope 把它们映射到本页已有的暗色 token 上：
+   默认取色全部走 var() 引用，所以本文件里没有任何硬编码颜色值。
+   ========================================================================== */
+
+.gd-scope {
+  --ink: var(--paper); /* 主文字 = 纸白 */
+  --ink-2: rgba(var(--paper-rgb), 0.68);
+  --ink-3: rgba(var(--paper-rgb), 0.5);
+  --line: rgba(var(--paper-rgb), 0.16);
+  --line-2: rgba(var(--paper-rgb), 0.3);
+  --raise: rgba(var(--paper-rgb), 0.05);
+  --hover: rgba(var(--paper-rgb), 0.08);
+  --accent: var(--paper); /* 本页的强调色 = 纸白实心（与「投入网络」同一套语言） */
+  --accent-ink: rgb(var(--ink-rgb)); /* 实心按钮上的字 */
+  --r-2: var(--radius-md);
+}
+
+/* ---------- A. 节点副标题：只说标题没说的信息 ---------- */
+.graph-page .gd-sub {
+  margin: 0 0 var(--sp-4);
+  font-family: var(--font-sans);
+  font-size: var(--fs-meta);
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+  color: var(--ink-2);
+}
+
+/* 正文只放标题没说过的那段文字，因此比原来的 0.86 略降一档，读起来是补充说明 */
+.graph-page .gd-body {
+  color: var(--ink-2);
+}
+
+/* ---------- B. 三个动作：1 主 + 2 次，同尺寸并排 ---------- */
+.graph-page .gd-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-top: var(--sp-5);
+}
+
+.graph-page .gd-actions .gd-btn {
+  /* 统一尺寸与形状：三个按钮共用一套盒子，只靠底色区分主次。
+     圆角刻意不写：本页的设计系统用一条 !important 规则统一把这类按钮压成直角，
+     与「投入网络 / 查找」保持一致。 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: auto;
+  min-height: var(--control-h-sm);
+  padding: 0 var(--sp-3);
+  border: 1px solid var(--line-2);
+  background: transparent;
+  color: var(--ink-2);
+  font-family: var(--font-sans);
+  font-size: var(--fs-meta);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
+}
+
+/* 次级：描边 */
+.graph-page .gd-actions .gd-btn-secondary:hover {
+  border-color: var(--ink-3);
+  background: var(--hover);
+  color: var(--ink);
+}
+
+/* 主：唯一的实心强调 */
+.graph-page .gd-actions .gd-btn-primary {
+  border-color: transparent;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 500;
+}
+
+.graph-page .gd-actions .gd-btn-primary:hover {
+  background: var(--accent);
+  color: var(--accent-ink);
+  text-decoration: none;
+  opacity: 0.92;
+}
+
+.graph-page .gd-actions .gd-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* 「查看局部图」留在同一行里按内容宽度排布，不再占满整宽 */
+.graph-page .gd-actions .graph-center-btn {
+  width: auto;
+  margin: 0;
+}
+
+/* ---------- C. 节点很少时的画布空态提示 ---------- */
+.graph-page .gd-canvas-hint {
+  position: absolute;
+  z-index: 2; /* 压在 svg 之上、顶部控件之下 */
+  left: var(--sp-6);
+  /* 让开底部「局部图」工具条（bottom 12px + 约 40px 高） */
+  bottom: calc(var(--sp-6) + var(--sp-8));
+  max-width: min(420px, calc(100% - 2 * var(--sp-6)));
+  margin: 0;
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  background: var(--raise);
+  color: var(--ink-2);
+  font-family: var(--font-sans);
+  font-size: var(--fs-meta);
+  line-height: 1.6;
+  /* 关键：这行字不吃指针事件，拖拽平移 / 拖节点一律穿透到画布 */
+  pointer-events: none;
+  user-select: none;
+  animation: gd-hint-in 260ms ease-out both;
+}
+
+@keyframes gd-hint-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .graph-page .gd-canvas-hint {
+    animation: none;
+  }
+}

@@ -344,7 +344,12 @@ export default function CaptureV2Page() {
                   <Button onClick={() => void toggleArchive()} disabled={busy}>
                     {capture.archivedAt ? '恢复' : '归档'}
                   </Button>
-                  <Button onClick={() => void openDeleteModal()} disabled={busy}>
+                  {/* 破坏性操作拉开距离并给危险色，别和「编辑」长成一模一样 */}
+                  <Button
+                    onClick={() => void openDeleteModal()}
+                    disabled={busy}
+                    style={{ marginLeft: 'auto', color: 'var(--st-fail)', borderColor: 'var(--st-fail)' }}
+                  >
                     删除…
                   </Button>
                 </div>
@@ -386,9 +391,6 @@ export default function CaptureV2Page() {
             {!writing && (
               <div className="v2-ghosts" style={{ borderBottom: 0 }}>
                 <GhostChip onClick={() => setWriting(true)}>自己写一步</GhostChip>
-                <span className="v2-ghostLink" aria-disabled="true">
-                  AI 帮我试一步 / 参考旧经验 / 研究一下 —— 还没搬进新版
-                </span>
               </div>
             )}
             {writing && (

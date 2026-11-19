@@ -1,0 +1,21 @@
+checks = {
+ "home": {
+  "seeAll": "查看全部 86 条 →",
+  "ghostLinks": [
+   "/experiences",
+   "/topics",
+   "/schedule"
+  ],
+  "rowClamp": "2"
+ },
+ "experiences": {
+  "hasEmpty": false,
+  "emptyText": null
+ },
+ "graph": {
+  "sub": null,
+  "actions": [],
+  "hint": null
+ }
+}
+errors = []

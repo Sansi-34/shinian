@@ -85,6 +85,15 @@
   color: var(--ink);
 }
 
+.moreScrim {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
 .morePanel {
   position: fixed;
   left: calc(var(--rail) + var(--sp-2));
@@ -92,11 +101,12 @@
   z-index: 60;
   display: flex;
   flex-direction: column;
-  min-width: 132px;
+  min-width: 148px;
   padding: var(--sp-2);
   border: 1px solid var(--line-2);
   border-radius: var(--r-2);
   background: var(--raise-2);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
 }
 .moreItem {
   display: flex;

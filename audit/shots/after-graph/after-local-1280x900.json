@@ -1,0 +1,119 @@
+{
+  "url": "http://127.0.0.1:5181/graph?node=capture%3Acap-1795080134483-6tci5v&depth=1",
+  "nodeCount": 1,
+  "panelText": "节点详情\n念头\n输入法候选态里的半成品文字\n创建于 2026-11-19 17:22\n连接\n0 条\n打开原记录\n复制节点链接\n关联到 0 条\n没有主动关联出去的记录。\n被关联 0 条\n还没有其他记录关联到这里。\n孤立节点不会被隐藏，仍可打开原记录或用于新的尝试。\n把一个念头投进网络\n只保存在本机\n投入网络",
+  "title": {
+    "text": "输入法候选态里的半成品文字",
+    "box": {
+      "x": 915,
+      "y": 98,
+      "w": 341,
+      "h": 32
+    },
+    "css": {
+      "font-size": "25.6px",
+      "color": "rgb(251, 249, 245)",
+      "font-weight": "300"
+    }
+  },
+  "sub": {
+    "text": "创建于 2026-11-19 17:22",
+    "box": {
+      "x": 915,
+      "y": 142,
+      "w": 341,
+      "h": 20
+    },
+    "css": {
+      "font-size": "12.4px",
+      "color": "rgba(251, 249, 245, 0.68)",
+      "line-height": "19.84px"
+    }
+  },
+  "body": {
+    "box": null,
+    "css": null
+  },
+  "duplicateTitle": false,
+  "actions": [
+    {
+      "tag": "A",
+      "cls": "graph-open gd-btn gd-btn-primary",
+      "text": "打开原记录",
+      "box": {
+        "x": 915,
+        "y": 307,
+        "w": 81,
+        "h": 32
+      },
+      "css": {
+        "background-color": "rgb(251, 249, 245)",
+        "color": "rgb(24, 24, 27)",
+        "border": "1px solid rgba(0, 0, 0, 0)",
+        "border-radius": "0px",
+        "font-size": "12.4px",
+        "min-height": "32px",
+        "padding": "0px 8px"
+      }
+    },
+    {
+      "tag": "BUTTON",
+      "cls": "graph-secondary gd-btn gd-btn-secondary",
+      "text": "复制节点链接",
+      "box": {
+        "x": 1000,
+        "y": 307,
+        "w": 93,
+        "h": 32
+      },
+      "css": {
+        "background-color": "rgba(0, 0, 0, 0)",
+        "color": "rgba(251, 249, 245, 0.68)",
+        "border": "1px solid rgba(251, 249, 245, 0.3)",
+        "border-radius": "0px",
+        "font-size": "12.4px",
+        "min-height": "32px",
+        "padding": "0px 8px"
+      }
+    }
+  ],
+  "strayButtons": [],
+  "hint": {
+    "text": "当前只有 1 个节点 · 在首页记念头、或在右侧「投入网络」写一条，网络就会长出来",
+    "box": {
+      "x": 24,
+      "y": 663,
+      "w": 420,
+      "h": 50
+    },
+    "css": {
+      "pointer-events": "none",
+      "color": "rgba(251, 249, 245, 0.68)",
+      "font-size": "12.4px",
+      "opacity": "1",
+      "position": "absolute",
+      "z-index": "2"
+    }
+  },
+  "stageBox": {
+    "x": 0,
+    "y": 0,
+    "w": 890,
+    "h": 777
+  },
+  "scopeVars": {
+    "--ink": "#fbf9f5",
+    "--ink-2": "rgba(251, 249, 245, 0.68)",
+    "--ink-3": "rgba(251, 249, 245, 0.5)",
+    "--line": "rgba(251, 249, 245, 0.16)",
+    "--line-2": "rgba(251, 249, 245, 0.3)",
+    "--raise": "rgba(251, 249, 245, 0.05)",
+    "--raise-2": "",
+    "--accent": "#fbf9f5",
+    "--accent-soft": "#eef2ff",
+    "--hover": "rgba(251, 249, 245, 0.08)",
+    "--fs-title": "",
+    "--r-1": "",
+    "--r-2": "10px"
+  }
+}

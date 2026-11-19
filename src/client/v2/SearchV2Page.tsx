@@ -166,7 +166,9 @@ export default function SearchV2Page() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter') submit();
+              // 组合态回车不能触发检索
+              const composing = e.nativeEvent.isComposing || e.keyCode === 229;
+              if (e.key === 'Enter' && !composing) submit();
             }}
             placeholder="搜念头原文、尝试标题或结果"
             aria-label="搜索"

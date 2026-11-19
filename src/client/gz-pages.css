@@ -232,10 +232,9 @@
 .gz-stat.is-accent .gz-stat__value { color: var(--accent-ink); }
 .gz-stat__note { margin: 0; color: var(--text-secondary); font-size: var(--fs-small); line-height: 1.6; max-width: 24em; }
 
-/* 旧统计 class 复用同一套版式 */
+/* 统计卡容器：列数跟着卡片数走，避免 4 张卡排成 3+1 留一大片空 */
 .activity-stats,
-.review-stat,
-.graph-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--sp-6) var(--sp-7); }
+.graph-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--sp-6) var(--sp-7); }
 .stat-card {
   border-top: var(--rule-strong);
   padding-top: var(--sp-4);
@@ -261,7 +260,21 @@
   line-height: var(--lh-num-xl);
   color: var(--text-primary);
 }
-.review-stat { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+/* 统计卡内部排布：标签吃剩余宽度、数字与单位靠右。
+   旧规则把每张卡切成 4 列（repeat(4,1fr)），标签只分到 1/4 宽度，
+   「记录的念头」被挤成「记录 / 的念 / 头」三行。 */
+.review-stat {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: baseline;
+  column-gap: var(--sp-2);
+}
+.review-stat .stat-label {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.35;
+}
+.review-stat .stat-hint { line-height: 1.35; }
 .review-stat-defs { margin: 0; }
 
 /* ---- 筛选 chip：黑底白字 / 未选中描边 ---- */
@@ -1903,14 +1916,21 @@ select:focus {
   outline-offset: -2px;
   border-color: var(--accent-ink);
 }
-/* 墨底徽章中的类型文字：纸色 */
-.badge.review-type-capture,
-.badge.review-type-attempt,
-.badge.review-type-reference,
-.badge.state-todo,
-.badge.state-in_progress,
-.badge.state-done {
-  color: var(--paper) !important;
+/* 徽章配色：一律跟着语义底色走（深字浅底）。
+   这里曾用 color: var(--paper) !important 强推白字，压掉了下面 :2138 起的
+   语义底色规则，结果浅底白字对比度 1.03:1，/review 的「念头 / 已结束」等徽章肉眼不可读。
+   不要再加 !important —— 徽章配色必须可被语义类覆盖。 */
+.badge.review-type-capture {
+  background: #eef2ff;
+  color: #1d4ed8;
+}
+.badge.review-type-attempt {
+  background: #f5f3ff;
+  color: #6d28d9;
+}
+.badge.review-type-reference {
+  background: #ecfeff;
+  color: #0e7490;
 }
 .review-type-capture { color: var(--accent-ink); }
 .review-type-attempt { color: var(--text-primary); }

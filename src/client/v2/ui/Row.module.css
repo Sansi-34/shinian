@@ -47,11 +47,24 @@
   overflow-wrap: anywhere;
 }
 
+/* 只裁标题本体（最多两行），副标题永远完整显示 */
+.titleText {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
 .sub {
-  display: block;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
   font-size: var(--fs-meta);
   color: var(--ink-2);
   margin-top: 2px;
+  overflow-wrap: anywhere;
 }
 
 .side {

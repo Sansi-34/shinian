@@ -1,5 +1,6 @@
-// 拾念 V2 · 日程（未来 7 天视图；新建走尝试详情的「排日程」）
+// 拾念 V2 · 日程（未来 7 天视图；新建走尝试详情的「排日程」；空态在内容区居中）
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../api';
 import type { ScheduleBlock } from '../types';
 import {
@@ -16,6 +17,7 @@ import Row from './ui/Row';
 import Pill from './ui/Pill';
 import Spinner from './ui/Spinner';
 import './shared.css';
+import './empty-page.css';
 
 function errText(e: unknown, fallback: string) {
   const anyErr = e as { status?: number; body?: { message?: string }; message?: string };
@@ -63,6 +65,8 @@ export default function ScheduleV2Page() {
   }, [items, timezone]);
 
   const todayCount = items.filter((s) => dateKeyInTimezone(s.startsAt, timezone) === today).length;
+  // 只有「确定没有数据」才算空态：加载中和失败仍然走原来的状态提示
+  const isEmpty = !loading && !error && items.length === 0;
 
   return (
     <V2Shell
@@ -86,8 +90,7 @@ export default function ScheduleV2Page() {
           </div>
           <div>
             <h3 className="v2-groupTitle">说明</h3>
-            <p className="v2-groupNote">日程只是时间占位，不会自动创建尝试或改状态；冲突需要你自己判断。</p>
-            <span className="v2-hint">新建日程还没搬进新版（先在尝试详情的「排日程」里建）</span>
+            <p className="v2-groupNote">日程只是时间占位，不会自动创建尝试或改状态；冲突需要你自己判断。新建入口在尝试详情的「排日程」。</p>
           </div>
         </>
       }
@@ -103,8 +106,19 @@ export default function ScheduleV2Page() {
           </button>
         </p>
       )}
-      {!loading && !error && items.length === 0 && (
-        <p className="v2-state">接下来 7 天没有安排。日程在尝试详情里点「排日程」创建——不是自动排的。</p>
+      {isEmpty && (
+        /* 空态：内容区居中，说清日程是时间占位 + 给出下一步 */
+        <div className="v2-empty">
+          <div className="v2-empty-mark" aria-hidden="true" />
+          <h2 className="v2-empty-title">接下来 7 天没有安排</h2>
+          <p className="v2-empty-text">
+            日程只是时间上的占位，不会自动创建尝试，也不会替你改状态。想排一条，先去记录里挑一条，再在尝试详情里点「排日程」。
+          </p>
+          <Link className="v2-empty-cta" to="/search">
+            去挑一条记录排日程
+            <span className="v2-empty-ctaArrow" aria-hidden="true">→</span>
+          </Link>
+        </div>
       )}
 
       {groups.map(([key, list]) => {

@@ -1,0 +1,194 @@
+=== /review chip 实测 ===
+{"text":"最近 7 天","cls":"filter-chip review-range-preset active","color":"rgb(251, 249, 245)","bg":"rgb(24, 24, 27)","w":72,"h":32,"chain":["filter-chip review-range-preset active: bg=rgb(24, 24, 27) img=none color=rgb(251, 249, 245)","review-range-presets: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","review-range: bg=rgb(251, 249, 245) img=none color=rgb(39, 39, 42)","page review-page: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)"]}
+{"text":"最近 30 天","cls":"filter-chip review-range-preset","color":"rgb(71, 85, 105)","bg":"rgb(251, 249, 245)","w":80,"h":32,"chain":["filter-chip review-range-preset: bg=rgb(251, 249, 245) img=none color=rgb(71, 85, 105)","review-range-presets: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","review-range: bg=rgb(251, 249, 245) img=none color=rgb(39, 39, 42)","page review-page: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)"]}
+{"text":"自定义日期范围","cls":"filter-chip review-range-preset","color":"rgb(71, 85, 105)","bg":"rgb(251, 249, 245)","w":110,"h":32,"chain":["filter-chip review-range-preset: bg=rgb(251, 249, 245) img=none color=rgb(71, 85, 105)","review-range-presets: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","review-range: bg=rgb(251, 249, 245) img=none color=rgb(39, 39, 42)","page review-page: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)"]}
+{"text":"全部 4","cls":"filter-chip review-filter-chip active","color":"rgb(251, 249, 245)","bg":"rgb(24, 24, 27)","w":70,"h":32,"chain":["filter-chip review-filter-chip active: bg=rgb(24, 24, 27) img=none color=rgb(251, 249, 245)","review-filter: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","page review-page: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","app-main: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)"]}
+{"text":"念头 3","cls":"filter-chip review-filter-chip","color":"rgb(71, 85, 105)","bg":"rgb(251, 249, 245)","w":70,"h":32,"chain":["filter-chip review-filter-chip: bg=rgb(251, 249, 245) img=none color=rgb(71, 85, 105)","review-filter: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","page review-page: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","app-main: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)"]}
+{"text":"尝试 1","cls":"filter-chip review-filter-chip","color":"rgb(71, 85, 105)","bg":"rgb(251, 249, 245)","w":70,"h":32,"chain":["filter-chip review-filter-chip: bg=rgb(251, 249, 245) img=none color=rgb(71, 85, 105)","review-filter: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","page review-page: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","app-main: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)"]}
+{"text":"结果 1","cls":"filter-chip review-filter-chip","color":"rgb(71, 85, 105)","bg":"rgb(251, 249, 245)","w":70,"h":32,"chain":["filter-chip review-filter-chip: bg=rgb(251, 249, 245) img=none color=rgb(71, 85, 105)","review-filter: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","page review-page: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","app-main: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)"]}
+{"text":"引用 0","cls":"filter-chip review-filter-chip","color":"rgb(71, 85, 105)","bg":"rgb(251, 249, 245)","w":70,"h":32,"chain":["filter-chip review-filter-chip: bg=rgb(251, 249, 245) img=none color=rgb(71, 85, 105)","review-filter: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","page review-page: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","app-main: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)"]}
+{"text":"全部 4","cls":"filter-chip review-filter-chip active","color":"rgb(251, 249, 245)","bg":"rgb(24, 24, 27)","w":70,"h":32,"chain":["filter-chip review-filter-chip active: bg=rgb(24, 24, 27) img=none color=rgb(251, 249, 245)","review-filter: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","page review-page: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","app-main: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)"]}
+{"text":"念头 3","cls":"filter-chip review-filter-chip","color":"rgb(71, 85, 105)","bg":"rgb(251, 249, 245)","w":70,"h":32,"chain":["filter-chip review-filter-chip: bg=rgb(251, 249, 245) img=none color=rgb(71, 85, 105)","review-filter: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","page review-page: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","app-main: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)"]}
+{"text":"尝试 1","cls":"filter-chip review-filter-chip","color":"rgb(71, 85, 105)","bg":"rgb(251, 249, 245)","w":70,"h":32,"chain":["filter-chip review-filter-chip: bg=rgb(251, 249, 245) img=none color=rgb(71, 85, 105)","review-filter: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","page review-page: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","app-main: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)"]}
+{"text":"结果 1","cls":"filter-chip review-filter-chip","color":"rgb(71, 85, 105)","bg":"rgb(251, 249, 245)","w":70,"h":32,"chain":["filter-chip review-filter-chip: bg=rgb(251, 249, 245) img=none color=rgb(71, 85, 105)","review-filter: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","page review-page: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","app-main: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)"]}
+{"text":"引用 0","cls":"filter-chip review-filter-chip","color":"rgb(71, 85, 105)","bg":"rgb(251, 249, 245)","w":70,"h":32,"chain":["filter-chip review-filter-chip: bg=rgb(251, 249, 245) img=none color=rgb(71, 85, 105)","review-filter: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","page review-page: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","app-main: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)"]}
+{"text":"修改 0","cls":"filter-chip review-filter-chip","color":"rgb(71, 85, 105)","bg":"rgb(251, 249, 245)","w":70,"h":32,"chain":["filter-chip review-filter-chip: bg=rgb(251, 249, 245) img=none color=rgb(71, 85, 105)","review-filter: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","page review-page: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","app-main: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)"]}
+{"text":"最近 7 天","cls":"filter-chip review-range-preset active","color":"rgb(251, 249, 245)","bg":"rgb(24, 24, 27)","w":72,"h":32,"chain":["filter-chip review-range-preset active: bg=rgb(24, 24, 27) img=none color=rgb(251, 249, 245)","review-range-presets: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","review-range: bg=rgb(251, 249, 245) img=none color=rgb(39, 39, 42)","page review-page: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)"]}
+{"text":"最近 30 天","cls":"filter-chip review-range-preset","color":"rgb(71, 85, 105)","bg":"rgb(251, 249, 245)","w":80,"h":32,"chain":["filter-chip review-range-preset: bg=rgb(251, 249, 245) img=none color=rgb(71, 85, 105)","review-range-presets: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","review-range: bg=rgb(251, 249, 245) img=none color=rgb(39, 39, 42)","page review-page: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)"]}
+{"text":"自定义日期范围","cls":"filter-chip review-range-preset","color":"rgb(71, 85, 105)","bg":"rgb(251, 249, 245)","w":110,"h":32,"chain":["filter-chip review-range-preset: bg=rgb(251, 249, 245) img=none color=rgb(71, 85, 105)","review-range-presets: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)","review-range: bg=rgb(251, 249, 245) img=none color=rgb(39, 39, 42)","page review-page: bg=rgba(0, 0, 0, 0) img=none color=rgb(39, 39, 42)"]}
+
+=== /review 剪切实测 ===
+{"t":"阶段回顾","cls":"page-title","ox":0,"oy":6,"h":46,"sh":52,"overflow":"visible","lh":"46px","fs":"40px"}
+
+=== 每页 document.title ===
+/ → 拾念 SHINIAN
+/search → 拾念 SHINIAN
+/topics → 拾念 SHINIAN
+/experiences → 拾念 SHINIAN
+/schedule → 拾念 SHINIAN
+/ask → 拾念 SHINIAN
+/graph → 拾念 SHINIAN
+/review → 拾念 SHINIAN
+/activity → 拾念 SHINIAN
+/settings/ai → 拾念 SHINIAN
+/kit → 拾念 SHINIAN
+
+=== 额外造了 15 条念头 ===
+[首页左栏] {"headCount":"18","rendered":12,"hasSeeAll":[],"lastText":"压测念头 4：用来验证左栏会不会被截断，以及计数是否和列表条数一致。 今天"}
+[检索页左栏] {"headCount":"18","rendered":14}
+
+===== 40-m-home-390 :: / =====
+overflowX=0 scrollW=390 innerW=390 scrollH=844
+TEXT: 拾
+记下
+现在要做
+0
+日程
+没有进行中的尝试，也没有今天的安排。
+最近记录
+6
+全部
+今天
+压测念头 15：用来验证左栏会不会被截断，以及计数是否和列表条数一致。
+念头
+想法
+今天
+压测念头 14：用来验证左栏会不会被截断，以及计数是否和列表条数一致。
+念头
+想法
+今天
+压测念头 13：用来验证左栏会不会被截断，以及计数是否和列表条数一致。
+念头
+想法
+今天
+压测念头 12：用来验证左栏会不会被截断，以及计数是否和列表条数一致。
+念头
+想法
+今天
+压测念头 11：用来验证左栏会不会被截断，以及计数是否和列表条数一致。
+念头
+想法
+今天
+压测念头 10：用来验证左栏会不会被截断，以及计数是否和列表条数一致。
+念头
+想法
++
+我整理的经验
+0
++
+我的主题
+0
++
+今日日程
+0
+SMALL-TARGET: 首页40x40 | 念头40x40 | 主题40x40 | 问记录40x40 | 知识网络40x40 | 周期回顾40x40 | 设置40x40 | 更多40x40 | 记下62x40 | 日程32x40 | 全部32x40 | + 我整理的经验 0137x40
+BUTTONS: 首页 · 念头 · 主题 · 问记录 · 知识网络 · 周期回顾 · 设置 · 更多 · 记下 · 现在要做 0 日程 · 日程 · 最近记录 6 全部 · 全部 · 今天 压测念头 15：用来验证左栏会不会被截断，以及计数是否和列表条数一致。 念头 想法 · 今天 压测念头 14：用来验证左栏会不会被截断，以及计数是否和列表条数一致。 念头 想法 · 今天 压测念头 13：用来验证左栏会不会被截断，以及计数是否和列表条数一致。 念头 想法 · 今天 压测念头 12：用来验证左栏会不会被截断，以及计数是否和列表条数一致。 念头 想法 · 今天 压测念头 11：用来验证左栏会不会被截断，以及计数是否和列表条数一致。 念头 想法 · 今天 压测念头 10：用来验证左栏会不会被截断，以及计数是否和列表条数一致。 念头 想法 · + 我整理的经验 0
+
+===== 41-m-search-390 :: /search =====
+overflowX=0 scrollW=390 innerW=390 scrollH=844
+TEXT: 拾
+全部 0
+念头 0
+尝试 0
+经验 0
+搜索
+输入关键词开始检索：覆盖念头原文、尝试标题与结果、已保存经验。左栏是全部念头，也可以从那里直接打开。
+SMALL-TARGET: 首页40x40 | 念头40x40 | 主题40x40 | 问记录40x40 | 知识网络40x40 | 周期回顾40x40 | 设置40x40 | 更多40x40 | 搜索332x23 | 全部 058x36 | 念头 058x36 | 尝试 058x36
+BUTTONS: 首页 · 念头 · 主题 · 问记录 · 知识网络 · 周期回顾 · 设置 · 更多 · 全部 0 · 念头 0 · 尝试 0 · 经验 0 · 搜索
+
+===== 42-m-capture-390 :: /capture/cap-1795079007673-q27riy =====
+overflowX=0 scrollW=390 innerW=390 scrollH=844
+TEXT: 拾
+压测念头 15：用来验证左栏会不会被截断，以及计数是否和列表条数一致。
+编辑
+复制正文
+归档
+删除…
+开始一步
+0
++
+自己写一步
+AI 帮我试一步 / 参考旧经验 / 研究一下 —— 还没搬进新版
+尝试记录
+0
+还没有尝试。先用上面的「自己写一步」记下第一个小尝试。
+有结果的尝试
+0
+还没有记录结果的尝试。结果只能手动填，不会因为时间过去自动变成失败。
+SMALL-TARGET: 首页40x40 | 念头40x40 | 主题40x40 | 问记录40x40 | 知识网络40x40 | 周期回顾40x40 | 设置40x40 | 更多40x40 | 编辑62x40 | 复制正文86x28 | 归档62x40 | 删除…73x40
+BUTTONS: 首页 · 念头 · 主题 · 问记录 · 知识网络 · 周期回顾 · 设置 · 更多 · 编辑 · 复制正文 · 归档 · 删除… · 开始一步 0 · + 自己写一步 · 尝试记录 0 · 有结果的尝试 0
+
+===== 43-m-topics-390 :: /topics =====
+overflowX=0 scrollW=390 innerW=390 scrollH=844
+TEXT: 拾
+我的主题
+0
+新建主题还没搬进新版
+还没有主题。主题用来把围绕同一个问题的一组记录收在一起——新建主题还没搬进新版。
+SMALL-TARGET: 首页40x40 | 念头40x40 | 主题40x40 | 问记录40x40 | 知识网络40x40 | 周期回顾40x40 | 设置40x40 | 更多40x40
+BUTTONS: 首页 · 念头 · 主题 · 问记录 · 知识网络 · 周期回顾 · 设置 · 更多 · 我的主题 0 新建主题还没搬进新版
+
+===== 44-m-ask-390 :: /ask =====
+overflowX=0 scrollW=390 innerW=390 scrollH=1522
+TEXT: 念
+拾念
+SHINIAN
+✕
+日常流转
+✦
+首页
+✎
+念头
+◈
+主题
+★
+经验
+◷
+日程
+探索与回顾
+💬
+问记录
+🕸
+知识大脑
+↻
+周期回顾
+⚡
+操作动态
+🔍
+深度研究
+⚙
+偏好设置
+阿
+阿念
+退出
+☰
+导航
+拾念
+SHINIAN
+⌕
+知识回响 · 问我的记录
+向过去的自己提问
+灵感来了丢进拾念，遇到难题直接召唤存档。选依据 → 核对发送内容 → 确认生成，把规矩立住，绝不偷偷调用。
+新问题
+AI 设置
+AI 未配置
+仍可检索候选、展开原文并核对预览，但不能生成回答；来源与记录浏览不受影响。
+去设置 AI →
+问题
+0 / 500
+我以前试过哪些办法？
+哪次结果失败了，当时条件是什么？
+两次尝试得出的结论有什么不同？
+这条经验后来在哪次尝试中用过？
+检索词（可编辑，留空表示浏览全部）
+换些关键词找找
+起始日期（含）
+结束日期（含当天）
+日期范围可选。结束日期含当天，实际边界取结束日次日 00:00（不含次日）；日期按本机日历， 服务端日期标签按 Asia/Shanghai。
+查找记录
+最近提问
+点问题可重新读取并回看当时的来源与回答；不会重新调用模型。
+0 条
+还没有提问记录。写下问题，检索后生成第一次问答。
+SMALL-TARGET: 念 拾念 SHINIAN139x26 | ✕40x40 | 切换配色主题20x32 | 退出31x23 | ☰ 导航67x38 | 拾念 SHINIAN78x26 | ⌕38x38 | 新问题174x38 | AI 设置176x38 | 去设置 AI →93x32 | 我以前试过哪些办法？159x32 | 哪次结果失败了，当时条件是什么？243x32
+BUTTONS: 念 拾念 SHINIAN · ✕ · ✦ 首页 · ✎ 念头 · ◈ 主题 · ★ 经验 · ◷ 日程 · 💬 问记录 · 🕸 知识大脑 · ↻ 周期回顾 · ⚡ 操作动态 · 🔍 深度研究 · ⚙ 偏好设置 · 切换配色主题 · 退出 · ☰ 导航 · 拾念 SHINIAN · ⌕ · 新问题 · AI 设置

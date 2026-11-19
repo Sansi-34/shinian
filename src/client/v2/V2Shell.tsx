@@ -32,12 +32,13 @@ export function useV2Theme(): [V2Theme, (t: V2Theme) => void] {
   return [theme, change];
 }
 
+// 「更多」只放图标栏里没有的入口。设置已在图标栏底部，这里重复一次会让用户
+// 以为有两个不同的设置页。
 const MORE = [
   ['/experiences', '经验'],
   ['/schedule', '日程'],
   ['/activity', '操作动态'],
   ['/research', '深度研究'],
-  ['/settings/ai', '设置'],
 ];
 
 export default function V2Shell({
@@ -67,13 +68,28 @@ export default function V2Shell({
       <Rail onMore={() => setMoreOpen((v) => !v)} />
 
       {moreOpen && (
-        <div className={styles.morePanel} role="menu" aria-label="更多入口">
-          {MORE.map(([to, label]) => (
-            <Link key={to} to={to} className={styles.moreItem} role="menuitem">
-              {label}
-            </Link>
-          ))}
-        </div>
+        <>
+          {/* 点空白处关掉，避免用户被困在浮层里 */}
+          <button
+            type="button"
+            className={styles.moreScrim}
+            aria-label="关闭更多入口"
+            onClick={() => setMoreOpen(false)}
+          />
+          <div className={styles.morePanel} role="menu" aria-label="更多入口">
+            {MORE.map(([to, label]) => (
+              <Link
+                key={to}
+                to={to}
+                className={styles.moreItem}
+                role="menuitem"
+                onClick={() => setMoreOpen(false)}
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
+        </>
       )}
 
       <div className={styles.shell}>
