@@ -7,6 +7,7 @@ import V2Shell from './V2Shell';
 import Module from './ui/Module';
 import Row from './ui/Row';
 import Pill from './ui/Pill';
+import Spinner from './ui/Spinner';
 import { dayLabel } from './format';
 import { todayDateKey, useDisplayTimezone } from '../scheduleTime';
 import './shared.css';
@@ -78,7 +79,7 @@ export default function TopicsV2Page() {
       statusRight={<span>只读视图</span>}
     >
       <Module title="我的主题" count={topics.length} action={<Link to="/legacy/topics">新建 / 管理</Link>}>
-        {loading && <p className="v2-state">加载中…</p>}
+        {loading && <p className="v2-state"><Spinner /></p>}
         {!loading && error && (
           <p className="v2-state">
             {error}

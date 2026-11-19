@@ -7,6 +7,7 @@ import V2Shell from './V2Shell';
 import Module from './ui/Module';
 import Row from './ui/Row';
 import Pill, { type StatusKind } from './ui/Pill';
+import Spinner from './ui/Spinner';
 import { dayLabel } from './format';
 import { todayDateKey, useDisplayTimezone } from '../scheduleTime';
 import './shared.css';
@@ -89,7 +90,7 @@ export default function ResearchV2Page() {
       statusRight={<span>只读视图</span>}
     >
       <Module title="已保存的研究" count={items.length} action={<Link to="/legacy/research">旧版管理</Link>}>
-        {loading && <p className="v2-state">加载中…</p>}
+        {loading && <p className="v2-state"><Spinner /></p>}
         {!loading && error && (
           <p className="v2-state">
             {error}

@@ -1,0 +1,32 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 0 var(--sp-2);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-1);
+  background: transparent;
+  color: var(--ink-2);
+  font-family: inherit;
+  font-size: var(--fs-meta);
+  cursor: pointer;
+  transition: color 160ms ease-out, border-color 160ms ease-out;
+}
+.btn:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.done {
+  color: var(--st-done);
+  border-color: color-mix(in srgb, var(--st-done) 45%, transparent);
+}
+
+.label {
+  font-variant-numeric: tabular-nums;
+}

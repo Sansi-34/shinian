@@ -14,6 +14,10 @@ import Pill, { type StatusKind } from './ui/Pill';
 import Button from './ui/Button';
 import DateField from './ui/DateField';
 import Modal from './ui/Modal';
+import Spinner from './ui/Spinner';
+import HoldConfirm from './ui/HoldConfirm';
+import Segment from './ui/Segment';
+import CopyButton from './ui/CopyButton';
 import './shared.css';
 
 function errText(e: unknown, fallback: string) {
@@ -306,7 +310,7 @@ export default function AttemptV2Page() {
       statusLeft={attempt ? `${st.label} · 版本 ${attempt.revision}` : '加载中'}
       statusRight={<span>{savedAt ? '已保存 ' + new Date(savedAt).toTimeString().slice(0, 5) : '修改未保存'}</span>}
     >
-      {loading && <p className="v2-state">加载中…</p>}
+      {loading && <p className="v2-state"><Spinner /></p>}
       {!loading && error && (
         <p className="v2-state">
           {error}
@@ -325,6 +329,7 @@ export default function AttemptV2Page() {
               <Button onClick={() => void openDeleteModal()} disabled={busy}>
                 删除…
               </Button>
+              {attempt.resultText && <CopyButton text={attempt.resultText} label="复制结果" />}
               {attempt.actionDescription && <span className="v2-hint">{attempt.actionDescription}</span>}
               {attempt.estimatedMinutes ? <span className="v2-hint">预计 {attempt.estimatedMinutes} 分钟</span> : null}
             </div>
@@ -358,13 +363,7 @@ export default function AttemptV2Page() {
             <div className="v2-form">
               <label className="v2-field">
                 <span className="v2-fieldLabel">状态</span>
-                <div className="v2-segment" role="group" aria-label="尝试状态">
-                  {STATES.map((s) => (
-                    <button key={s.value} type="button" aria-pressed={state === s.value} onClick={() => setState(s.value)}>
-                      {s.label}
-                    </button>
-                  ))}
-                </div>
+                <Segment ariaLabel="尝试状态" items={STATES} value={state} onChange={setState} />
               </label>
 
               <label className="v2-field">
@@ -381,13 +380,7 @@ export default function AttemptV2Page() {
               {state === 'done' && (
                 <label className="v2-field">
                   <span className="v2-fieldLabel">评价</span>
-                  <div className="v2-segment" role="group" aria-label="结果评价">
-                    {OUTCOMES.map((o) => (
-                      <button key={o.value} type="button" aria-pressed={outcome === o.value} onClick={() => setOutcome(o.value)}>
-                        {o.label}
-                      </button>
-                    ))}
-                  </div>
+                  <Segment ariaLabel="结果评价" items={OUTCOMES} value={outcome} onChange={setOutcome} />
                 </label>
               )}
 
@@ -497,9 +490,7 @@ export default function AttemptV2Page() {
         footer={
           <>
             <Button onClick={() => setDeleteModal(false)}>取消</Button>
-            <Button variant="primary" onClick={() => void confirmDelete()} disabled={busy}>
-              {busy ? '删除中…' : '确认删除'}
-            </Button>
+            <HoldConfirm label={busy ? '删除中…' : '按住确认删除'} onConfirm={() => void confirmDelete()} disabled={busy} />
           </>
         }
       >

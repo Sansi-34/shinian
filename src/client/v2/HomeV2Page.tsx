@@ -18,6 +18,7 @@ import Module from './ui/Module';
 import Pill, { type StatusKind } from './ui/Pill';
 import Button from './ui/Button';
 import GhostChip from './ui/GhostChip';
+import Spinner from './ui/Spinner';
 import { dayLabel } from './format';
 import './shared.css';
 
@@ -142,7 +143,7 @@ export default function HomeV2Page() {
       leftCount={captures.length}
       left={
         <>
-          {loading && <p className="v2-state">加载中…</p>}
+          {loading && <p className="v2-state"><Spinner /></p>}
           {!loading && error && (
             <p className="v2-state">
               {error}
@@ -206,7 +207,7 @@ export default function HomeV2Page() {
       {saveError && <p className="v2-state" style={{ color: 'var(--st-fail)' }}>{saveError}</p>}
 
       <Module title="现在要做" count={todoAttempts.length + schedules.length} action={<Link to="/schedule">日程</Link>}>
-        {loading && <p className="v2-state">加载中…</p>}
+        {loading && <p className="v2-state"><Spinner /></p>}
         {!loading && todoAttempts.length === 0 && schedules.length === 0 && <p className="v2-state">没有进行中的尝试，也没有今天的安排。</p>}
         {todoAttempts.map((a, i) => {
           const st = attemptStatus(a);
@@ -236,7 +237,7 @@ export default function HomeV2Page() {
       </Module>
 
       <Module title="最近记录" count={recent.length} action={<Link to="/search">全部</Link>}>
-        {loading && <p className="v2-state">加载中…</p>}
+        {loading && <p className="v2-state"><Spinner /></p>}
         {!loading && error && (
           <p className="v2-state">
             {error}

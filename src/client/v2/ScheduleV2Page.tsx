@@ -15,6 +15,7 @@ import V2Shell from './V2Shell';
 import Module from './ui/Module';
 import Row from './ui/Row';
 import Pill from './ui/Pill';
+import Spinner from './ui/Spinner';
 import './shared.css';
 
 function errText(e: unknown, fallback: string) {
@@ -97,7 +98,7 @@ export default function ScheduleV2Page() {
       statusLeft={`${today} · 今天 ${todayCount} 项 · 7 天内 ${items.length} 项`}
       statusRight={<span>{timezone}</span>}
     >
-      {loading && <p className="v2-state">加载中…</p>}
+      {loading && <p className="v2-state"><Spinner /></p>}
       {!loading && error && (
         <p className="v2-state">
           {error}

@@ -9,6 +9,8 @@ import V2Shell from './V2Shell';
 import Module from './ui/Module';
 import Row from './ui/Row';
 import Pill, { type StatusKind } from './ui/Pill';
+import Spinner from './ui/Spinner';
+import Segment from './ui/Segment';
 import './shared.css';
 
 type Filter = 'all' | 'capture' | 'attempt' | 'experience';
@@ -168,26 +170,23 @@ export default function SearchV2Page() {
             aria-label="搜索"
           />
         </div>
-        <div className="v2-segment" role="group" aria-label="结果类型">
-          {(
-            [
-              ['all', `全部 ${total}`],
-              ['capture', `念头 ${counts.capture}`],
-              ['attempt', `尝试 ${counts.attempt}`],
-              ['experience', `经验 ${counts.experience}`],
-            ] as Array<[Filter, string]>
-          ).map(([key, label]) => (
-            <button key={key} type="button" aria-pressed={filter === key} onClick={() => setFilter(key)}>
-              {label}
-            </button>
-          ))}
-        </div>
+        <Segment
+          ariaLabel="结果类型"
+          items={[
+            { value: 'all' as Filter, label: `全部 ${total}` },
+            { value: 'capture' as Filter, label: `念头 ${counts.capture}` },
+            { value: 'attempt' as Filter, label: `尝试 ${counts.attempt}` },
+            { value: 'experience' as Filter, label: `经验 ${counts.experience}` },
+          ]}
+          value={filter}
+          onChange={setFilter}
+        />
         <button type="button" className="v2-linkBtn" onClick={submit}>
           搜索
         </button>
       </div>
 
-      {loading && <p className="v2-state">检索中…</p>}
+      {loading && <p className="v2-state"><Spinner label="检索中" /></p>}
       {!loading && error && (
         <p className="v2-state">
           {error}

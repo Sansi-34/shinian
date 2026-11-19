@@ -14,6 +14,9 @@ import Pill, { type StatusKind } from './ui/Pill';
 import Button from './ui/Button';
 import GhostChip from './ui/GhostChip';
 import Modal from './ui/Modal';
+import Spinner from './ui/Spinner';
+import HoldConfirm from './ui/HoldConfirm';
+import CopyButton from './ui/CopyButton';
 import './shared.css';
 
 function errText(e: unknown, fallback: string) {
@@ -328,7 +331,7 @@ export default function CaptureV2Page() {
       statusLeft={capture ? `${dayLabel(capture.createdAt, tz, todayDateKey(tz))} · 版本 ${capture.revision} · ${attempts.length} 次尝试` : '加载中'}
       statusRight={<span>{capture?.archivedAt ? '已归档' : '进行中'}</span>}
     >
-      {loading && <p className="v2-state">加载中…</p>}
+      {loading && <p className="v2-state"><Spinner /></p>}
       {!loading && error && (
         <p className="v2-state">
           {error}
@@ -346,6 +349,7 @@ export default function CaptureV2Page() {
                 <p className="v2-captureText">{capture.rawText}</p>
                 <div className="v2-captureActions">
                   <Button onClick={() => setEditing(true)}>编辑</Button>
+                  <CopyButton text={capture.rawText} label="复制正文" />
                   <Button onClick={() => void toggleArchive()} disabled={busy}>
                     {capture.archivedAt ? '恢复' : '归档'}
                   </Button>
@@ -521,9 +525,7 @@ export default function CaptureV2Page() {
         footer={
           <>
             <Button onClick={() => setModal(null)}>取消</Button>
-            <Button variant="primary" onClick={() => void confirmDelete()} disabled={busy}>
-              {busy ? '删除中…' : '确认删除'}
-            </Button>
+            <HoldConfirm label={busy ? '删除中…' : '按住确认删除'} onConfirm={() => void confirmDelete()} disabled={busy} />
           </>
         }
       >

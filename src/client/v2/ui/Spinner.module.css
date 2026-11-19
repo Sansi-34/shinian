@@ -1,0 +1,33 @@
+.wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--ink-2);
+  font-size: var(--fs-meta);
+}
+
+.svg {
+  flex: none;
+  color: var(--ink-3);
+}
+
+.arc {
+  animation: spin 900ms linear infinite;
+  transform-origin: 50% 50%;
+}
+
+.text {
+  color: var(--ink-2);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arc {
+    animation: none;
+  }
+}
