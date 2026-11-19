@@ -363,3 +363,50 @@ html[data-theme='dark'] .v2-root .v2-dateInput::-webkit-calendar-picker-indicato
   font-weight: 400;
   letter-spacing: 0;
 }
+
+/* 小按钮 / 复选行 / 候选行 */
+.v2-miniBtn {
+  min-height: 28px;
+  padding: 0 var(--sp-2);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-1);
+  background: transparent;
+  color: var(--ink-2);
+  font-family: inherit;
+  font-size: var(--fs-meta);
+  cursor: pointer;
+}
+.v2-miniBtn:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+.v2-miniBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.v2-check {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: 40px;
+  cursor: pointer;
+}
+.v2-check input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+.v2-candRow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) 0;
+  border-top: 1px solid var(--line);
+}
+.v2-candText {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}

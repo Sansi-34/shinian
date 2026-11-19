@@ -87,7 +87,7 @@
 /* 日历弹层：portal 到 body，position: fixed（模块折叠容器有 overflow:hidden） */
 .pop {
   position: fixed;
-  z-index: 90;
+  z-index: 130; /* 必须高于 Modal 遮罩(100)，否则弹窗里的日历会被压住 */
   width: 264px;
   padding: var(--sp-3);
   border: 1px solid var(--line-2);

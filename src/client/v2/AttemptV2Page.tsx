@@ -2,9 +2,9 @@
 // 内联：改状态、记录结果（结果文本 / 评价 / 发生时间）；引用与日程只读展示；
 // 删除、经验采用、AI 相关仍在旧页。
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
-import type { Attempt, Capture, ScheduleBlock } from '../types';
+import type { Attempt, AttemptDeletePreview, Capture, ScheduleBlock } from '../types';
 import { formatScheduleTimeRange, sortSchedules, useDisplayTimezone } from '../scheduleTime';
 import { dayTimeLabel, fromLocalInputValue, toLocalInputValue } from './format';
 import V2Shell from './V2Shell';
@@ -13,6 +13,7 @@ import Row from './ui/Row';
 import Pill, { type StatusKind } from './ui/Pill';
 import Button from './ui/Button';
 import DateField from './ui/DateField';
+import Modal from './ui/Modal';
 import './shared.css';
 
 function errText(e: unknown, fallback: string) {
@@ -51,6 +52,7 @@ function statusOf(a: Attempt): { kind: StatusKind; label: string } {
 
 export default function AttemptV2Page() {
   const { attemptId = '' } = useParams();
+  const navigate = useNavigate();
   const [timezone] = useDisplayTimezone();
 
   const [attempt, setAttempt] = useState<Attempt | null>(null);
@@ -69,6 +71,16 @@ export default function AttemptV2Page() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [scheduleConflict, setScheduleConflict] = useState<ScheduleBlock[] | null>(null);
+  const [scheduleModal, setScheduleModal] = useState(false);
+  const [schedStart, setSchedStart] = useState('');
+  const [schedEnd, setSchedEnd] = useState('09:30');
+  const [schedNote, setSchedNote] = useState('');
+  const [schedOverlap, setSchedOverlap] = useState<{ token: string; ids: string[] } | null>(null);
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [modalError, setModalError] = useState<string | null>(null);
+  // 同一弹窗会话复用同一个 operationId：服务端冲突 token 把它算进签名，换 id 会永远对不上
+  const [schedOpId, setSchedOpId] = useState('');
+  const [delPreview, setDelPreview] = useState<AttemptDeletePreview | null>(null);
 
   const load = useCallback(async () => {
     if (!attemptId) return;
@@ -138,6 +150,87 @@ export default function AttemptV2Page() {
     }
   }
 
+  async function addSchedule(confirmOverlap = false) {
+    if (!attempt) return;
+    if (!schedStart) {
+      setModalError('先选日期和开始时间。');
+      return;
+    }
+    if (!/^\d{2}:\d{2}$/.test(schedEnd)) {
+      setModalError('结束时间要写成 HH:mm，例如 09:30。');
+      return;
+    }
+    setBusy(true);
+    setActionError(null);
+    try {
+      await api.createSchedule(attempt.id, {
+        date: schedStart.slice(0, 10),
+        startTime: schedStart.slice(11, 16),
+        endTime: schedEnd,
+        timezone,
+        note: schedNote.trim() || null,
+        operationId: schedOpId,
+        ...(confirmOverlap && schedOverlap
+          ? { confirmOverlap: true, conflictToken: schedOverlap.token, expectedConflictIds: schedOverlap.ids }
+          : {}),
+      });
+      setScheduleModal(false);
+      setSchedNote('');
+      setSchedOverlap(null);
+      setSchedOpId('');
+      await load();
+    } catch (e) {
+      const anyErr = e as { status?: number; body?: { error?: string; conflictToken?: string; conflicts?: Array<{ id: string }> } };
+      if (anyErr?.status === 409 && (anyErr.body?.error ?? '').startsWith('schedule_conflict')) {
+        setSchedOverlap({ token: anyErr.body?.conflictToken ?? '', ids: (anyErr.body?.conflicts ?? []).map((c) => c.id) });
+      } else {
+        setModalError(errText(e, '排日程失败，请重试。'));
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function cancelScheduleById(id: string, revision: number) {
+    if (busy) return;
+    setBusy(true);
+    setActionError(null);
+    try {
+      await api.cancelSchedule(id, revision);
+      await load();
+    } catch (e) {
+      setActionError(errText(e, '取消日程失败，请重试。'));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function openDeleteModal() {
+    setScheduleModal(false);
+    setDeleteModal(true);
+    setModalError(null);
+    setDelPreview(null);
+    try {
+      setDelPreview(await api.getAttemptDeletePreview(attemptId));
+    } catch (e) {
+      setActionError(errText(e, '删除预览加载失败。'));
+    }
+  }
+
+  async function confirmDelete() {
+    setBusy(true);
+    setActionError(null);
+    try {
+      await api.deleteAttempt(attemptId);
+      setDeleteModal(false);
+      navigate(capture ? '/capture/' + capture.id : '/');
+    } catch (e) {
+      setActionError(errText(e, '删除失败，请重试。'));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const st = useMemo(() => (attempt ? statusOf(attempt) : { kind: 'idle' as StatusKind, label: '—' }), [attempt]);
 
   return (
@@ -173,13 +266,36 @@ export default function AttemptV2Page() {
             {schedules.map((s) => (
               <div key={s.id} className="v2-groupItem">
                 <span className="v2-date">{formatScheduleTimeRange(s, timezone)}</span>
-                <span>{s.status === 'cancelled' ? '已取消' : '已排'}</span>
+                {s.status === 'cancelled' ? (
+                  <span>已取消</span>
+                ) : (
+                  <button
+                    type="button"
+                    className="v2-miniBtn"
+                    onClick={() => void cancelScheduleById(s.id, s.revision)}
+                    disabled={busy}
+                  >
+                    取消
+                  </button>
+                )}
               </div>
             ))}
+            <button
+              type="button"
+              className="v2-linkBtn"
+              onClick={() => {
+                setScheduleModal(true);
+                setSchedOverlap(null);
+                setModalError(null);
+                setSchedOpId('v2sch-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6));
+              }}
+            >
+              排日程
+            </button>
           </div>
           <div>
             <h3 className="v2-groupTitle">旧版入口</h3>
-            <p className="v2-groupNote">删除、经验采用、AI 复盘与排日程仍走旧版页面。</p>
+            <p className="v2-groupNote">经验采用、AI 复盘仍走旧版页面。</p>
             <Link className="v2-groupItem" to={'/legacy/attempt/' + attemptId}>
               打开旧版尝试页
               <span>→</span>
@@ -206,6 +322,9 @@ export default function AttemptV2Page() {
             <p className="v2-captureText">{attempt.step}</p>
             <div className="v2-captureActions">
               <Pill kind={st.kind}>{st.label}</Pill>
+              <Button onClick={() => void openDeleteModal()} disabled={busy}>
+                删除…
+              </Button>
               {attempt.actionDescription && <span className="v2-hint">{attempt.actionDescription}</span>}
               {attempt.estimatedMinutes ? <span className="v2-hint">预计 {attempt.estimatedMinutes} 分钟</span> : null}
             </div>
@@ -314,6 +433,92 @@ export default function AttemptV2Page() {
           )}
         </>
       )}
+
+      <Modal
+        open={scheduleModal}
+        title="给这个尝试排一段时间"
+        onClose={() => setScheduleModal(false)}
+        footer={
+          <>
+            <Button onClick={() => setScheduleModal(false)}>取消</Button>
+            {schedOverlap ? (
+              <Button variant="primary" onClick={() => void addSchedule(true)} disabled={busy}>
+                仍然保存
+              </Button>
+            ) : (
+              <Button variant="primary" onClick={() => void addSchedule(false)} disabled={busy}>
+                {busy ? '保存中…' : '保存'}
+              </Button>
+            )}
+          </>
+        }
+      >
+        <div className="v2-field">
+          <span className="v2-fieldLabel">开始（按 {timezone}）</span>
+          <DateField value={schedStart} onChange={setSchedStart} timezone={timezone} label="开始时间" />
+        </div>
+        <div className="v2-field">
+          <span className="v2-fieldLabel">结束时间 HH:mm</span>
+          <input
+            className="v2-input"
+            value={schedEnd}
+            onChange={(e) => setSchedEnd(e.target.value)}
+            placeholder="09:30"
+            aria-label="结束时间"
+          />
+        </div>
+        <div className="v2-field">
+          <span className="v2-fieldLabel">备注（可留空）</span>
+          <input
+            className="v2-input"
+            style={{ maxWidth: 'none', width: '100%' }}
+            value={schedNote}
+            onChange={(e) => setSchedNote(e.target.value)}
+            placeholder="晚上做一次对比"
+            aria-label="备注"
+          />
+        </div>
+        {modalError && (
+          <p className="v2-groupNote" style={{ color: 'var(--st-fail)' }}>
+            {modalError}
+          </p>
+        )}
+        {schedOverlap && (
+          <p className="v2-groupNote" style={{ color: 'var(--st-partial)' }}>
+            这段时间和已有 {schedOverlap.ids.length} 条安排重叠。可以改时间，也可以点「仍然保存」。
+          </p>
+        )}
+      </Modal>
+
+      <Modal
+        open={deleteModal}
+        title="删除这个尝试？"
+        onClose={() => setDeleteModal(false)}
+        footer={
+          <>
+            <Button onClick={() => setDeleteModal(false)}>取消</Button>
+            <Button variant="primary" onClick={() => void confirmDelete()} disabled={busy}>
+              {busy ? '删除中…' : '确认删除'}
+            </Button>
+          </>
+        }
+      >
+        {modalError && (
+          <p className="v2-groupNote" style={{ color: 'var(--st-fail)' }}>
+            {modalError}
+          </p>
+        )}
+        <p>删除后不可恢复。以下内容会一起处理：</p>
+        <ul className="v2-conflictList">
+          <li>日程 {delPreview?.scheduleCount ?? '…'} 条（其中有效 {delPreview?.activeScheduleCount ?? '…'} 条）</li>
+          <li>引用关系 {delPreview ? delPreview.referencesFromAttempts + delPreview.referencesToAttempts : '…'} 条</li>
+        </ul>
+        {(delPreview?.affectedExperiences?.length ?? 0) > 0 && (
+          <p className="v2-groupNote">
+            有 {delPreview?.affectedExperiences?.length} 份经验把它当依据：会清除依据正文快照并标记待修订，经验本身保留。
+          </p>
+        )}
+      </Modal>
     </V2Shell>
   );
 }

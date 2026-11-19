@@ -1,19 +1,19 @@
 // 拾念 V2 · 念头详情
-// 只做「读 + 三个内联动作」：编辑正文、归档/恢复、自己写一步。
-// 复杂流程（AI 帮我试一步 / 参考旧经验 / 研究一下 / 关联编辑 / 删除预览）暂时回旧页，
-// 旧页一行未改，V2 只是并行外壳。
+// 在 V2 内闭环：编辑正文、归档/恢复、自己写一步、加入/移出主题、关联记录、删除念头。
+// AI 帮我试一步 / 参考旧经验 / 研究一下 / 整理成经验 这类多步流程仍在旧页，右栏保留入口。
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
-import type { Attempt, Capture, CaptureLinkItem, CaptureTopic } from '../types';
+import type { Attempt, Capture, CaptureLinkCandidate, CaptureLinkItem, CaptureTopic, DeletePreview, Topic } from '../types';
+import { todayDateKey, useDisplayTimezone } from '../scheduleTime';
+import { dayLabel } from './format';
 import V2Shell from './V2Shell';
 import Module from './ui/Module';
 import Row from './ui/Row';
 import Pill, { type StatusKind } from './ui/Pill';
 import Button from './ui/Button';
 import GhostChip from './ui/GhostChip';
-import { dayLabel } from './format';
-import { todayDateKey, useDisplayTimezone } from '../scheduleTime';
+import Modal from './ui/Modal';
 import './shared.css';
 
 function errText(e: unknown, fallback: string) {
@@ -38,8 +38,11 @@ function status(a: Attempt): { kind: StatusKind; label: string } {
 
 const newOpId = () => 'v2-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
 
+type ModalKind = 'topic' | 'link' | 'delete' | null;
+
 export default function CaptureV2Page() {
   const { captureId = '' } = useParams();
+  const navigate = useNavigate();
   const [tz] = useDisplayTimezone();
 
   const [capture, setCapture] = useState<Capture | null>(null);
@@ -56,6 +59,14 @@ export default function CaptureV2Page() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [writing, setWriting] = useState(false);
   const [stepDraft, setStepDraft] = useState('');
+
+  const [modal, setModal] = useState<ModalKind>(null);
+  const [allTopics, setAllTopics] = useState<Topic[]>([]);
+  const [pickedTopics, setPickedTopics] = useState<string[]>([]);
+  const [candidates, setCandidates] = useState<CaptureLinkCandidate[]>([]);
+  const [candQuery, setCandQuery] = useState('');
+  const [deletePreview, setDeletePreview] = useState<DeletePreview | null>(null);
+  const [modalError, setModalError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!captureId) return;
@@ -84,7 +95,7 @@ export default function CaptureV2Page() {
     void load();
   }, [load]);
 
-  const open = useMemo(() => attempts.filter((a) => a.state === 'todo' || a.state === 'in_progress'), [attempts]);
+  const openItems = useMemo(() => attempts.filter((a) => a.state === 'todo' || a.state === 'in_progress'), [attempts]);
   const done = useMemo(() => attempts.filter((a) => a.state === 'done'), [attempts]);
 
   async function saveText() {
@@ -139,10 +150,131 @@ export default function CaptureV2Page() {
     }
   }
 
+  async function openTopicModal() {
+    setActionError(null);
+    setModalError(null);
+    setModal('topic');
+    setPickedTopics([]);
+    try {
+      const res = await api.listTopics({ limit: 50, archived: 'exclude' });
+      setAllTopics(res.topics ?? []);
+    } catch (e) {
+      setActionError(errText(e, '主题列表加载失败。'));
+    }
+  }
+
+  async function confirmAddTopics() {
+    if (!capture || pickedTopics.length === 0) return;
+    setBusy(true);
+    setActionError(null);
+    try {
+      await api.addCaptureTopics(capture.id, { topicIds: pickedTopics, operationId: newOpId() });
+      setModal(null);
+      await load();
+    } catch (e) {
+      setModalError(errText(e, '加入主题失败，请重试。'));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function removeFromTopic(topicId: string) {
+    if (busy) return;
+    setBusy(true);
+    setActionError(null);
+    try {
+      await api.removeTopicMember(topicId, captureId);
+      await load();
+    } catch (e) {
+      setActionError(errText(e, '移出主题失败，请重试。'));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function openLinkModal() {
+    setModalError(null);
+    setModal('link');
+    setCandQuery('');
+    setCandidates([]);
+    try {
+      const res = await api.searchCaptureLinkCandidates(captureId, '', 12);
+      setCandidates(res.captures ?? []);
+    } catch (e) {
+      setActionError(errText(e, '候选加载失败。'));
+    }
+  }
+
+  async function searchCandidates(q: string) {
+    setCandQuery(q);
+    try {
+      const res = await api.searchCaptureLinkCandidates(captureId, q, 12);
+      setCandidates(res.captures ?? []);
+    } catch (e) {
+      setActionError(errText(e, '候选加载失败。'));
+    }
+  }
+
+  async function confirmLink(toCaptureId: string) {
+    setBusy(true);
+    setActionError(null);
+    try {
+      await api.createCaptureLink(captureId, { toCaptureId, operationId: newOpId() });
+      setModal(null);
+      await load();
+    } catch (e) {
+      setModalError(errText(e, '关联失败，请重试。'));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function unlink(linkId: string) {
+    if (busy) return;
+    setBusy(true);
+    setActionError(null);
+    try {
+      await api.deleteCaptureLink(linkId);
+      await load();
+    } catch (e) {
+      setActionError(errText(e, '解除关联失败，请重试。'));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function openDeleteModal() {
+    setModalError(null);
+    setModal('delete');
+    setDeletePreview(null);
+    try {
+      const preview = await api.deletePreview(captureId);
+      setDeletePreview(preview);
+    } catch (e) {
+      setActionError(errText(e, '删除预览加载失败。'));
+    }
+  }
+
+  async function confirmDelete() {
+    setBusy(true);
+    setActionError(null);
+    try {
+      await api.deleteCapture(captureId);
+      setModal(null);
+      navigate('/');
+    } catch (e) {
+      setModalError(errText(e, '删除失败，请重试。'));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const linkRows: Array<{ key: string; label: string; item: CaptureLinkItem }> = [
     ...links.out.map((l) => ({ key: 'out-' + l.id, label: '关联到', item: l })),
     ...links.in.map((l) => ({ key: 'in-' + l.id, label: '被引用', item: l })),
   ];
+
+  const linkableTopics = allTopics.filter((t) => !topics.some((x) => x.id === t.id));
 
   return (
     <V2Shell
@@ -153,25 +285,39 @@ export default function CaptureV2Page() {
             <h3 className="v2-groupTitle">所属主题</h3>
             {topics.length === 0 && <p className="v2-groupNote">还没有加入主题。</p>}
             {topics.map((t) => (
-              <Link key={t.id} to={'/topics/' + t.id} className="v2-groupItem">
-                {t.name}
-                <span>{t.archived ? '已归档' : '主题'}</span>
-              </Link>
+              <div key={t.id} className="v2-groupItem">
+                <Link to={'/topics/' + t.id}>{t.name}</Link>
+                <button type="button" className="v2-miniBtn" onClick={() => void removeFromTopic(t.id)} disabled={busy}>
+                  移出
+                </button>
+              </div>
             ))}
+            <button type="button" className="v2-linkBtn" onClick={() => void openTopicModal()}>
+              加入主题
+            </button>
           </div>
+
           <div>
             <h3 className="v2-groupTitle">关联记录</h3>
             {linkRows.length === 0 && <p className="v2-groupNote">没有手动关联。关联只记录你写下的关系，不做相似度推断。</p>}
             {linkRows.map((r) => (
-              <Link key={r.key} to={'/capture/' + r.item.capture.id} className="v2-groupItem">
-                {r.label}：{r.item.capture.rawText.slice(0, 18)}
-                <span>→</span>
-              </Link>
+              <div key={r.key} className="v2-groupItem">
+                <Link to={'/capture/' + r.item.capture.id}>
+                  {r.label}：{r.item.capture.rawText.slice(0, 14)}
+                </Link>
+                <button type="button" className="v2-miniBtn" onClick={() => void unlink(r.item.id)} disabled={busy}>
+                  解除
+                </button>
+              </div>
             ))}
+            <button type="button" className="v2-linkBtn" onClick={() => void openLinkModal()}>
+              关联一条念头
+            </button>
           </div>
+
           <div>
             <h3 className="v2-groupTitle">旧版入口</h3>
-            <p className="v2-groupNote">AI 帮我试一步、参考旧经验、研究一下、编辑关联与删除预览仍在旧版页面。</p>
+            <p className="v2-groupNote">AI 帮我试一步、参考旧经验、研究一下、整理成经验仍是多步流程，暂时留在旧页。</p>
             <Link className="v2-groupItem" to={'/legacy/capture/' + captureId}>
               打开旧版详情
               <span>→</span>
@@ -203,9 +349,9 @@ export default function CaptureV2Page() {
                   <Button onClick={() => void toggleArchive()} disabled={busy}>
                     {capture.archivedAt ? '恢复' : '归档'}
                   </Button>
-                  <Link className="v2-oldLink" to={'/legacy/capture/' + captureId}>
-                    删除 / 更多操作 →
-                  </Link>
+                  <Button onClick={() => void openDeleteModal()} disabled={busy}>
+                    删除…
+                  </Button>
                 </div>
               </>
             ) : (
@@ -234,10 +380,14 @@ export default function CaptureV2Page() {
                 </div>
               </>
             )}
-            {actionError && <p className="v2-state" style={{ color: 'var(--st-fail)' }}>{actionError}</p>}
+            {actionError && (
+              <p className="v2-state" style={{ color: 'var(--st-fail)' }}>
+                {actionError}
+              </p>
+            )}
           </div>
 
-          <Module title="开始一步" count={open.length}>
+          <Module title="开始一步" count={openItems.length}>
             {!writing && (
               <div className="v2-ghosts" style={{ borderBottom: 0 }}>
                 <GhostChip onClick={() => setWriting(true)}>自己写一步</GhostChip>
@@ -306,6 +456,96 @@ export default function CaptureV2Page() {
           </Module>
         </>
       )}
+
+      <Modal
+        open={modal === 'topic'}
+        title="加入主题"
+        onClose={() => setModal(null)}
+        footer={
+          <>
+            <Button onClick={() => setModal(null)}>取消</Button>
+            <Button variant="primary" onClick={() => void confirmAddTopics()} disabled={busy || pickedTopics.length === 0}>
+              加入{pickedTopics.length > 0 ? ' ' + pickedTopics.length + ' 个' : ''}
+            </Button>
+          </>
+        }
+      >
+        {modalError && (
+          <p className="v2-groupNote" style={{ color: 'var(--st-fail)' }}>
+            {modalError}
+          </p>
+        )}
+        {linkableTopics.length === 0 && <p className="v2-groupNote">没有可加入的主题。主题要先去主题页新建。</p>}
+        {linkableTopics.map((t) => (
+          <label key={t.id} className="v2-check">
+            <input
+              type="checkbox"
+              checked={pickedTopics.includes(t.id)}
+              onChange={(e) => setPickedTopics((prev) => (e.target.checked ? [...prev, t.id] : prev.filter((x) => x !== t.id)))}
+            />
+            <span>{t.name}</span>
+            <span className="v2-hint">{t.memberCount} 条</span>
+          </label>
+        ))}
+      </Modal>
+
+      <Modal open={modal === 'link'} title="关联一条念头" onClose={() => setModal(null)}>
+        <input
+          className="v2-input"
+          style={{ maxWidth: 'none', width: '100%' }}
+          value={candQuery}
+          onChange={(e) => void searchCandidates(e.target.value)}
+          placeholder="搜标题或正文"
+          aria-label="搜索候选"
+        />
+        {modalError && (
+          <p className="v2-groupNote" style={{ color: 'var(--st-fail)' }}>
+            {modalError}
+          </p>
+        )}
+        {candidates.length === 0 && <p className="v2-groupNote">没有候选。换个词试试。</p>}
+        {candidates.map((c) => (
+          <div key={c.id} className="v2-candRow">
+            <span className="v2-candText">{c.rawText.slice(0, 60)}</span>
+            <Button onClick={() => void confirmLink(c.id)} disabled={busy || c.alreadyLinked}>
+              {c.alreadyLinked ? '已关联' : '关联'}
+            </Button>
+          </div>
+        ))}
+      </Modal>
+
+      <Modal
+        open={modal === 'delete'}
+        title="删除这条念头？"
+        onClose={() => setModal(null)}
+        footer={
+          <>
+            <Button onClick={() => setModal(null)}>取消</Button>
+            <Button variant="primary" onClick={() => void confirmDelete()} disabled={busy}>
+              {busy ? '删除中…' : '确认删除'}
+            </Button>
+          </>
+        }
+      >
+        {modalError && (
+          <p className="v2-groupNote" style={{ color: 'var(--st-fail)' }}>
+            {modalError}
+          </p>
+        )}
+        <p>删除后不可恢复。以下内容会一起处理：</p>
+        <ul className="v2-conflictList">
+          <li>尝试 {deletePreview?.attemptCount ?? '…'} 次</li>
+          <li>尝试引用 {deletePreview ? deletePreview.referencesFromAttempts + deletePreview.referencesToAttempts : '…'} 条</li>
+          <li>手动关联 {deletePreview?.captureLinkCount ?? 0} 条</li>
+          <li>关联日程 {deletePreview?.scheduleCount ?? 0} 条</li>
+          <li>研究任务 {deletePreview?.researchCount ?? 0} 个</li>
+        </ul>
+        {(deletePreview?.affectedExperiences?.length ?? 0) > 0 && (
+          <p className="v2-groupNote">
+            有 {deletePreview?.affectedExperiences?.length} 份经验把它当作依据：会解除依据关系，经验正文保留但标记待核对。
+          </p>
+        )}
+      </Modal>
     </V2Shell>
   );
 }
