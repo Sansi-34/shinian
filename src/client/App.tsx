@@ -24,6 +24,7 @@ import TopicsPage from './pages/TopicsPage';
 import TopicPage from './pages/TopicPage';
 import ThemeSwitcher from './ThemeSwitcher';
 import HomeV2Page from './v2/HomeV2Page';
+import SearchV2Page from './v2/SearchV2Page';
 import api from './api';
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
@@ -218,6 +219,7 @@ function Shell() {
           <Route path="/research/:researchId" element={<ResearchPage />} />
           <Route path="/settings/ai" element={<SettingsAiPage />} />
           <Route path="/v2" element={<HomeV2Page />} />
+          <Route path="/v2/search" element={<SearchV2Page />} />
         </Routes>
       </main>
     </div>
