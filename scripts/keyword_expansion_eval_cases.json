@@ -1,0 +1,910 @@
+{
+  "version": 1,
+  "description": "「换个说法找记录」固定评测集。expectedRelevantIds 是人工固定的相关记录 localId，不根据模型输出修改。",
+  "categories": {
+    "direct": "原关键词直接表达，原检索应能找到相关记录",
+    "paraphrase": "原关键词与记录用词不同，需要用 oracle 替代表达才能找回",
+    "no_relevant": "没有任何相关记录，正确行为是不硬凑结果",
+    "distractor": "同词但条件或含义不同的干扰记录，扩展不得把干扰当相关"
+  },
+  "cases": [
+    {
+      "id": "direct-01",
+      "category": "direct",
+      "question": "我之前调 PWM 频率时看到了什么？",
+      "originalKeywords": [
+        "PWM"
+      ],
+      "oracleExpandedTerms": [
+        "频率",
+        "LED"
+      ],
+      "records": [
+        {
+          "localId": "c1",
+          "type": "capture",
+          "text": "LED 调光实验记录",
+          "date": "2026-05-01T20:00:00+08:00"
+        },
+        {
+          "localId": "a1",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "把 PWM 频率设为 500 Hz",
+          "result": "500 Hz 时 LED 可见闪烁",
+          "condition": "500 Hz，20% 占空比",
+          "outcome": "failure",
+          "date": "2026-05-02T20:10:00+08:00"
+        }
+      ],
+      "expectedRelevantIds": [
+        "a1",
+        "c1"
+      ],
+      "notes": "原关键词 PWM 直接命中结果/步骤，distractor 无。"
+    },
+    {
+      "id": "direct-02",
+      "category": "direct",
+      "question": "串口波特率那次设置是多少？",
+      "originalKeywords": [
+        "baud rate"
+      ],
+      "oracleExpandedTerms": [
+        "串口",
+        "115200"
+      ],
+      "records": [
+        {
+          "localId": "c1",
+          "type": "capture",
+          "text": "调试串口通信",
+          "date": "2026-04-10T09:00:00+08:00"
+        },
+        {
+          "localId": "a1",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "设置 baud rate 115200 连接开发板",
+          "result": "串口输出正常，没有乱码",
+          "condition": "115200 8N1",
+          "outcome": "success",
+          "date": "2026-04-10T09:30:00+08:00"
+        }
+      ],
+      "expectedRelevantIds": [
+        "a1",
+        "c1"
+      ],
+      "notes": "英文技术词直接命中。"
+    },
+    {
+      "id": "direct-03",
+      "category": "direct",
+      "question": "地线松动那次是什么现象？",
+      "originalKeywords": [
+        "地线"
+      ],
+      "oracleExpandedTerms": [
+        "接地",
+        "松动"
+      ],
+      "records": [
+        {
+          "localId": "c1",
+          "type": "capture",
+          "text": "检查设备接地",
+          "date": "2026-03-12T14:00:00+08:00"
+        },
+        {
+          "localId": "a1",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "检查地线接线端子",
+          "result": "地线松动，拧紧后干扰消失",
+          "condition": "机柜接地端子",
+          "outcome": "success",
+          "date": "2026-03-12T15:00:00+08:00"
+        }
+      ],
+      "expectedRelevantIds": [
+        "a1",
+        "c1"
+      ],
+      "notes": "中文技术词直接命中。"
+    },
+    {
+      "id": "direct-04",
+      "category": "direct",
+      "question": "MQTT 重连问题后来怎么处理的？",
+      "originalKeywords": [
+        "MQTT",
+        "重连"
+      ],
+      "oracleExpandedTerms": [
+        "断线",
+        "keepalive"
+      ],
+      "records": [
+        {
+          "localId": "c1",
+          "type": "capture",
+          "text": "物联网连接稳定性",
+          "date": "2026-02-20T10:00:00+08:00"
+        },
+        {
+          "localId": "a1",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "调整 MQTT keepalive 与重连退避",
+          "result": "MQTT 断线后 5 秒内恢复",
+          "condition": "WiFi，keepalive 30 秒",
+          "outcome": "success",
+          "date": "2026-02-20T11:00:00+08:00"
+        }
+      ],
+      "expectedRelevantIds": [
+        "a1",
+        "c1"
+      ],
+      "notes": "两个原关键词均直接命中。"
+    },
+    {
+      "id": "direct-05",
+      "category": "direct",
+      "question": "睡前把手机放远有帮助吗？",
+      "originalKeywords": [
+        "手机",
+        "睡前"
+      ],
+      "oracleExpandedTerms": [
+        "书桌",
+        "停止刷手机"
+      ],
+      "records": [
+        {
+          "localId": "c1",
+          "type": "capture",
+          "text": "睡前减少刷手机",
+          "date": "2026-01-08T22:00:00+08:00"
+        },
+        {
+          "localId": "a1",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "睡前把手机放到书桌上",
+          "result": "十分钟内停止刷手机并睡着",
+          "condition": "普通工作日晚上",
+          "outcome": "success",
+          "date": "2026-01-08T22:30:00+08:00"
+        }
+      ],
+      "expectedRelevantIds": [
+        "a1",
+        "c1"
+      ],
+      "notes": "生活场景直接命中。"
+    },
+    {
+      "id": "direct-06",
+      "category": "direct",
+      "question": "占空比调到多少时闪烁明显？",
+      "originalKeywords": [
+        "占空比"
+      ],
+      "oracleExpandedTerms": [
+        "20%",
+        "闪烁"
+      ],
+      "records": [
+        {
+          "localId": "c1",
+          "type": "capture",
+          "text": "LED 调光参数记录",
+          "date": "2026-06-01T19:00:00+08:00"
+        },
+        {
+          "localId": "a1",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "把占空比从 5% 调到 20%",
+          "result": "20% 占空比时肉眼可见闪烁",
+          "condition": "PWM 1 kHz",
+          "outcome": "failure",
+          "date": "2026-06-01T19:20:00+08:00"
+        }
+      ],
+      "expectedRelevantIds": [
+        "a1",
+        "c1"
+      ],
+      "notes": "参数词直接命中。"
+    },
+    {
+      "id": "paraphrase-01",
+      "category": "paraphrase",
+      "question": "灯一闪一闪的问题怎么解决？",
+      "originalKeywords": [
+        "一闪一闪"
+      ],
+      "oracleExpandedTerms": [
+        "闪烁",
+        "LED",
+        "频闪"
+      ],
+      "records": [
+        {
+          "localId": "c1",
+          "type": "capture",
+          "text": "调光实验观察",
+          "date": "2026-05-03T20:00:00+08:00"
+        },
+        {
+          "localId": "a1",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "提高 PWM 频率到 2 kHz",
+          "result": "LED 肉眼闪烁明显减轻",
+          "condition": "2 kHz，20% 占空比",
+          "outcome": "success",
+          "date": "2026-05-03T20:20:00+08:00"
+        }
+      ],
+      "expectedRelevantIds": [
+        "a1",
+        "c1"
+      ],
+      "notes": "原词「一闪一闪」与记录「闪烁」不同，oracle 提供同义表达。"
+    },
+    {
+      "id": "paraphrase-02",
+      "category": "paraphrase",
+      "question": "家里网速慢是什么原因？",
+      "originalKeywords": [
+        "网速慢"
+      ],
+      "oracleExpandedTerms": [
+        "WiFi",
+        "延迟",
+        "丢包"
+      ],
+      "records": [
+        {
+          "localId": "c1",
+          "type": "capture",
+          "text": "家庭网络排查",
+          "date": "2026-05-04T21:00:00+08:00"
+        },
+        {
+          "localId": "a1",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "用 ping 测试 WiFi 延迟与丢包",
+          "result": "延迟高且偶发丢包，重启路由器后恢复",
+          "condition": "2.4 GHz WiFi",
+          "outcome": "success",
+          "date": "2026-05-04T21:30:00+08:00"
+        }
+      ],
+      "expectedRelevantIds": [
+        "a1",
+        "c1"
+      ],
+      "notes": "原词不出现，需扩展到 WiFi/延迟/丢包。"
+    },
+    {
+      "id": "paraphrase-03",
+      "category": "paraphrase",
+      "question": "电脑连不上网那次怎么排查的？",
+      "originalKeywords": [
+        "连不上网"
+      ],
+      "oracleExpandedTerms": [
+        "DNS",
+        "网络连接",
+        "断网"
+      ],
+      "records": [
+        {
+          "localId": "c1",
+          "type": "capture",
+          "text": "电脑网络故障",
+          "date": "2026-05-05T09:00:00+08:00"
+        },
+        {
+          "localId": "a1",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "检查网络连接并更换 DNS",
+          "result": "DNS 解析失败，改用 8.8.8.8 后恢复",
+          "condition": "有线网络",
+          "outcome": "success",
+          "date": "2026-05-05T09:40:00+08:00"
+        }
+      ],
+      "expectedRelevantIds": [
+        "a1",
+        "c1"
+      ],
+      "notes": "口语表达 vs 技术记录。"
+    },
+    {
+      "id": "paraphrase-04",
+      "category": "paraphrase",
+      "question": "电机噪音大是怎么回事？",
+      "originalKeywords": [
+        "噪音大"
+      ],
+      "oracleExpandedTerms": [
+        "步进电机",
+        "异响",
+        "共振"
+      ],
+      "records": [
+        {
+          "localId": "c1",
+          "type": "capture",
+          "text": "3D 打印机调试",
+          "date": "2026-05-06T18:00:00+08:00"
+        },
+        {
+          "localId": "a1",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "降低步进电机加速度",
+          "result": "异响减轻，共振点转移",
+          "condition": "X 轴，加速度 500 mm/s²",
+          "outcome": "success",
+          "date": "2026-05-06T18:30:00+08:00"
+        }
+      ],
+      "expectedRelevantIds": [
+        "a1",
+        "c1"
+      ],
+      "notes": "原词「噪音」与记录「异响」不同。"
+    },
+    {
+      "id": "paraphrase-05",
+      "category": "paraphrase",
+      "question": "照片颜色偏黄怎么调？",
+      "originalKeywords": [
+        "颜色偏黄"
+      ],
+      "oracleExpandedTerms": [
+        "白平衡",
+        "色温",
+        "偏暖"
+      ],
+      "records": [
+        {
+          "localId": "c1",
+          "type": "capture",
+          "text": "室内人像拍摄",
+          "date": "2026-05-07T16:00:00+08:00"
+        },
+        {
+          "localId": "a1",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "把白平衡色温从 4000K 调到 5000K",
+          "result": "照片不再偏暖，肤色更自然",
+          "condition": "室内暖光灯",
+          "outcome": "success",
+          "date": "2026-05-07T16:20:00+08:00"
+        }
+      ],
+      "expectedRelevantIds": [
+        "a1",
+        "c1"
+      ],
+      "notes": "颜色口语 vs 白平衡术语。"
+    },
+    {
+      "id": "paraphrase-06",
+      "category": "paraphrase",
+      "question": "读完书记不住怎么办？",
+      "originalKeywords": [
+        "记不住"
+      ],
+      "oracleExpandedTerms": [
+        "复述",
+        "笔记",
+        "回忆"
+      ],
+      "records": [
+        {
+          "localId": "c1",
+          "type": "capture",
+          "text": "阅读方法尝试",
+          "date": "2026-05-08T21:00:00+08:00"
+        },
+        {
+          "localId": "a1",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "读完后合上书做复述并记笔记",
+          "result": "一周后仍能回忆主要观点",
+          "condition": "非虚构类书籍",
+          "outcome": "success",
+          "date": "2026-05-08T22:00:00+08:00"
+        }
+      ],
+      "expectedRelevantIds": [
+        "a1",
+        "c1"
+      ],
+      "notes": "原词不出现，需扩展复述/笔记/回忆。"
+    },
+    {
+      "id": "no_relevant-01",
+      "category": "no_relevant",
+      "question": "考潜水证需要准备什么？",
+      "originalKeywords": [
+        "潜水证"
+      ],
+      "oracleExpandedTerms": [
+        "潜水",
+        "OW",
+        "泳池"
+      ],
+      "records": [
+        {
+          "localId": "c1",
+          "type": "capture",
+          "text": "LED 调光实验",
+          "date": "2026-05-01T10:00:00+08:00"
+        },
+        {
+          "localId": "a1",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "测试 PWM 频率",
+          "result": "2 kHz 时闪烁减轻",
+          "condition": "2 kHz",
+          "outcome": "success",
+          "date": "2026-05-01T11:00:00+08:00"
+        }
+      ],
+      "expectedRelevantIds": [],
+      "notes": "没有任何潜水记录，正确行为是不返回相关结果。"
+    },
+    {
+      "id": "no_relevant-02",
+      "category": "no_relevant",
+      "question": "怎么烤面包不塌陷？",
+      "originalKeywords": [
+        "烤面包"
+      ],
+      "oracleExpandedTerms": [
+        "烘焙",
+        "发酵",
+        "面团"
+      ],
+      "records": [
+        {
+          "localId": "c1",
+          "type": "capture",
+          "text": "串口调试记录",
+          "date": "2026-05-02T10:00:00+08:00"
+        },
+        {
+          "localId": "a1",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "修改串口波特率",
+          "result": "输出正常",
+          "condition": "115200",
+          "outcome": "success",
+          "date": "2026-05-02T10:30:00+08:00"
+        }
+      ],
+      "expectedRelevantIds": [],
+      "notes": "无烘焙记录。"
+    },
+    {
+      "id": "no_relevant-03",
+      "category": "no_relevant",
+      "question": "马拉松配速怎么安排？",
+      "originalKeywords": [
+        "马拉松",
+        "配速"
+      ],
+      "oracleExpandedTerms": [
+        "跑步",
+        "公里",
+        "训练"
+      ],
+      "records": [
+        {
+          "localId": "c1",
+          "type": "capture",
+          "text": "阅读笔记",
+          "date": "2026-05-03T10:00:00+08:00"
+        },
+        {
+          "localId": "a1",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "读完一章后复述",
+          "result": "记住主要观点",
+          "condition": "非虚构",
+          "outcome": "success",
+          "date": "2026-05-03T11:00:00+08:00"
+        }
+      ],
+      "expectedRelevantIds": [],
+      "notes": "无跑步记录。"
+    },
+    {
+      "id": "no_relevant-04",
+      "category": "no_relevant",
+      "question": "税务申报需要哪些材料？",
+      "originalKeywords": [
+        "税务申报"
+      ],
+      "oracleExpandedTerms": [
+        "发票",
+        "报税",
+        "个税"
+      ],
+      "records": [
+        {
+          "localId": "c1",
+          "type": "capture",
+          "text": "LED 灯带整理",
+          "date": "2026-05-04T10:00:00+08:00"
+        },
+        {
+          "localId": "a1",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "把灯带装进收纳盒",
+          "result": "放在抽屉第二层",
+          "condition": "无",
+          "outcome": "success",
+          "date": "2026-05-04T11:00:00+08:00"
+        }
+      ],
+      "expectedRelevantIds": [],
+      "notes": "无税务记录。"
+    },
+    {
+      "id": "no_relevant-05",
+      "category": "no_relevant",
+      "question": "法语听力怎么练？",
+      "originalKeywords": [
+        "法语",
+        "听力"
+      ],
+      "oracleExpandedTerms": [
+        "听力",
+        "口语",
+        "播客"
+      ],
+      "records": [
+        {
+          "localId": "c1",
+          "type": "capture",
+          "text": "相机照片整理",
+          "date": "2026-05-05T10:00:00+08:00"
+        },
+        {
+          "localId": "a1",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "筛选十张海边照片",
+          "result": "挑了十张",
+          "condition": "无",
+          "outcome": "success",
+          "date": "2026-05-05T11:00:00+08:00"
+        }
+      ],
+      "expectedRelevantIds": [],
+      "notes": "无法语记录。"
+    },
+    {
+      "id": "no_relevant-06",
+      "category": "no_relevant",
+      "question": "养猫要注意什么？",
+      "originalKeywords": [
+        "养猫"
+      ],
+      "oracleExpandedTerms": [
+        "猫粮",
+        "铲屎",
+        "疫苗"
+      ],
+      "records": [
+        {
+          "localId": "c1",
+          "type": "capture",
+          "text": "电源噪声排查",
+          "date": "2026-05-06T10:00:00+08:00"
+        },
+        {
+          "localId": "a1",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "检查接地",
+          "result": "干扰消失",
+          "condition": "机柜",
+          "outcome": "success",
+          "date": "2026-05-06T11:00:00+08:00"
+        }
+      ],
+      "expectedRelevantIds": [],
+      "notes": "无养猫记录。"
+    },
+    {
+      "id": "distractor-01",
+      "category": "distractor",
+      "question": "PWM 闪烁，2 kHz 那次是成功还是失败？",
+      "originalKeywords": [
+        "闪烁"
+      ],
+      "oracleExpandedTerms": [
+        "2 kHz",
+        "肉眼不可见"
+      ],
+      "records": [
+        {
+          "localId": "c1",
+          "type": "capture",
+          "text": "LED 调光对比实验",
+          "date": "2026-05-10T20:00:00+08:00"
+        },
+        {
+          "localId": "a1",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "把 PWM 调到 2 kHz 调光",
+          "result": "肉眼不可见，调光成功",
+          "condition": "2 kHz，20% 占空比",
+          "outcome": "success",
+          "date": "2026-05-10T20:20:00+08:00"
+        },
+        {
+          "localId": "a2",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "把 PWM 调到 500 Hz 调光",
+          "result": "仍然闪烁，调光失败",
+          "condition": "500 Hz，20% 占空比",
+          "outcome": "failure",
+          "date": "2026-05-10T20:40:00+08:00"
+        }
+      ],
+      "expectedRelevantIds": [
+        "a1",
+        "c1"
+      ],
+      "notes": "原词只命中 500 Hz 干扰；扩展词 2 kHz/肉眼不可见 找回相关记录。"
+    },
+    {
+      "id": "distractor-02",
+      "category": "distractor",
+      "question": "苹果怎么保存不容易坏？",
+      "originalKeywords": [
+        "苹果"
+      ],
+      "oracleExpandedTerms": [
+        "冷藏",
+        "水果"
+      ],
+      "records": [
+        {
+          "localId": "c1",
+          "type": "capture",
+          "text": "水果保存尝试",
+          "date": "2026-05-11T10:00:00+08:00"
+        },
+        {
+          "localId": "a1",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "把苹果放进冰箱冷藏",
+          "result": "两周后仍然脆甜",
+          "condition": "冰箱 4 度",
+          "outcome": "success",
+          "date": "2026-05-11T10:20:00+08:00"
+        },
+        {
+          "localId": "a2",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "看苹果公司发布会",
+          "result": "记录了新手机价格",
+          "condition": "线上直播",
+          "outcome": "success",
+          "date": "2026-05-11T11:00:00+08:00"
+        }
+      ],
+      "expectedRelevantIds": [
+        "a1",
+        "c1"
+      ],
+      "notes": "苹果水果 vs 苹果公司；扩展「冷藏/水果」不应把发布会当相关。"
+    },
+    {
+      "id": "distractor-03",
+      "category": "distractor",
+      "question": "Java 岛喝咖啡的体验？",
+      "originalKeywords": [
+        "Java"
+      ],
+      "oracleExpandedTerms": [
+        "咖啡",
+        "岛屿"
+      ],
+      "records": [
+        {
+          "localId": "c1",
+          "type": "capture",
+          "text": "旅行记录",
+          "date": "2026-05-12T10:00:00+08:00"
+        },
+        {
+          "localId": "a1",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "在 Java 岛喝当地咖啡",
+          "result": "咖啡偏酸，风景很好",
+          "condition": "印尼",
+          "outcome": "success",
+          "date": "2026-05-12T10:30:00+08:00"
+        },
+        {
+          "localId": "a2",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "学习 Java 编程",
+          "result": "写了一个排序程序",
+          "condition": "电脑",
+          "outcome": "success",
+          "date": "2026-05-12T11:00:00+08:00"
+        }
+      ],
+      "expectedRelevantIds": [
+        "a1",
+        "c1"
+      ],
+      "notes": "Java 岛 vs Java 编程。"
+    },
+    {
+      "id": "distractor-04",
+      "category": "distractor",
+      "question": "安装驱动时遇到问题怎么解决？",
+      "originalKeywords": [
+        "驱动"
+      ],
+      "oracleExpandedTerms": [
+        "显卡",
+        "安装"
+      ],
+      "records": [
+        {
+          "localId": "c1",
+          "type": "capture",
+          "text": "电脑维护记录",
+          "date": "2026-05-13T10:00:00+08:00"
+        },
+        {
+          "localId": "a1",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "安装显卡驱动并重启",
+          "result": "驱动安装成功，分辨率正常",
+          "condition": "Windows 11",
+          "outcome": "success",
+          "date": "2026-05-13T10:30:00+08:00"
+        },
+        {
+          "localId": "a2",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "靠早起驱动自己去跑步",
+          "result": "坚持了三天",
+          "condition": "早上六点",
+          "outcome": "undetermined",
+          "date": "2026-05-13T11:00:00+08:00"
+        }
+      ],
+      "expectedRelevantIds": [
+        "a1",
+        "c1"
+      ],
+      "notes": "驱动硬件 vs 驱动自己。"
+    },
+    {
+      "id": "distractor-05",
+      "category": "distractor",
+      "question": "笔记本电池续航变短怎么办？",
+      "originalKeywords": [
+        "电池"
+      ],
+      "oracleExpandedTerms": [
+        "笔记本",
+        "续航"
+      ],
+      "records": [
+        {
+          "localId": "c1",
+          "type": "capture",
+          "text": "电子产品维护",
+          "date": "2026-05-14T10:00:00+08:00"
+        },
+        {
+          "localId": "a1",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "检查笔记本电池健康度",
+          "result": "电池循环 800 次，续航下降",
+          "condition": "笔记本",
+          "outcome": "success",
+          "date": "2026-05-14T10:30:00+08:00"
+        },
+        {
+          "localId": "a2",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "更换手机电池",
+          "result": "手机续航恢复正常",
+          "condition": "手机",
+          "outcome": "success",
+          "date": "2026-05-14T11:00:00+08:00"
+        }
+      ],
+      "expectedRelevantIds": [
+        "a1",
+        "c1"
+      ],
+      "notes": "笔记本电池 vs 手机电池。"
+    },
+    {
+      "id": "distractor-06",
+      "category": "distractor",
+      "question": "电源接头松了怎么处理？",
+      "originalKeywords": [
+        "接头"
+      ],
+      "oracleExpandedTerms": [
+        "电源",
+        "松动"
+      ],
+      "records": [
+        {
+          "localId": "c1",
+          "type": "capture",
+          "text": "设备维修记录",
+          "date": "2026-05-15T10:00:00+08:00"
+        },
+        {
+          "localId": "a1",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "检查电源接头是否松动",
+          "result": "拧紧接头后供电稳定",
+          "condition": "220V 电源",
+          "outcome": "success",
+          "date": "2026-05-15T10:30:00+08:00"
+        },
+        {
+          "localId": "a2",
+          "type": "attempt",
+          "captureLocalId": "c1",
+          "step": "和朋友对暗号接头",
+          "result": "在公园碰面",
+          "condition": "周末",
+          "outcome": "success",
+          "date": "2026-05-15T11:00:00+08:00"
+        }
+      ],
+      "expectedRelevantIds": [
+        "a1",
+        "c1"
+      ],
+      "notes": "电源接头 vs 接头暗号。"
+    }
+  ]
+}

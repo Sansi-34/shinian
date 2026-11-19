@@ -1,0 +1,170 @@
+[
+  {
+    "id": "tech-01",
+    "category": "技术项目",
+    "text": "想给树莓派接一个温湿度传感器，但不知道选 DHT22 还是 BME280",
+    "constraint": "信息不够",
+    "expectedKind": "clarify"
+  },
+  {
+    "id": "tech-02",
+    "category": "技术项目",
+    "text": "ESP32 的 OTA 升级偶尔失败，想先复现一次",
+    "constraint": "",
+    "expectedKind": "executable"
+  },
+  {
+    "id": "tech-03",
+    "category": "技术项目",
+    "text": "项目里的串口日志太多，想加一个日志级别开关",
+    "constraint": "",
+    "expectedKind": "executable"
+  },
+  {
+    "id": "tech-04",
+    "category": "技术项目",
+    "text": "最近每天加班，嵌入式课程先放一放",
+    "constraint": "时间不足",
+    "expectedKind": "defer"
+  },
+  {
+    "id": "tech-05",
+    "category": "技术项目",
+    "text": "一直想整理家里的旧硬盘备份，但提不起劲",
+    "constraint": "暂时不想行动",
+    "expectedKind": "defer"
+  },
+  {
+    "id": "tech-06",
+    "category": "技术项目",
+    "text": "Python 脚本抓网页时偶尔乱码，不知道是编码还是响应头的问题",
+    "constraint": "信息不够",
+    "expectedKind": "clarify"
+  },
+  {
+    "id": "photo-01",
+    "category": "摄影",
+    "text": "想拍一组雨夜街灯，但不知道从哪里开始",
+    "constraint": "信息不够",
+    "expectedKind": "clarify"
+  },
+  {
+    "id": "photo-02",
+    "category": "摄影",
+    "text": "想试试用 35mm 定焦拍一组通勤路上的光影",
+    "constraint": "",
+    "expectedKind": "executable"
+  },
+  {
+    "id": "photo-03",
+    "category": "摄影",
+    "text": "周末想整理上个月拍的照片，先挑出十张",
+    "constraint": "",
+    "expectedKind": "executable"
+  },
+  {
+    "id": "photo-04",
+    "category": "摄影",
+    "text": "这周赶项目，没时间出去拍片",
+    "constraint": "时间不足",
+    "expectedKind": "defer"
+  },
+  {
+    "id": "photo-05",
+    "category": "摄影",
+    "text": "想学胶片冲洗，但一直拖着不想动",
+    "constraint": "暂时不想行动",
+    "expectedKind": "defer"
+  },
+  {
+    "id": "photo-06",
+    "category": "摄影",
+    "text": "相机的白平衡总偏黄，不确定是灯光还是设置问题",
+    "constraint": "信息不够",
+    "expectedKind": "clarify"
+  },
+  {
+    "id": "read-01",
+    "category": "阅读",
+    "text": "想读完《摄影构图学》，但章节太多不知道先看哪章",
+    "constraint": "信息不够",
+    "expectedKind": "clarify"
+  },
+  {
+    "id": "read-02",
+    "category": "阅读",
+    "text": "想把床头那本短篇集每晚读一篇",
+    "constraint": "",
+    "expectedKind": "executable"
+  },
+  {
+    "id": "read-03",
+    "category": "阅读",
+    "text": "想给读过的书建一个简单的摘录索引",
+    "constraint": "",
+    "expectedKind": "executable"
+  },
+  {
+    "id": "read-04",
+    "category": "阅读",
+    "text": "最近工作太满，读书计划先暂停",
+    "constraint": "时间不足",
+    "expectedKind": "defer"
+  },
+  {
+    "id": "read-05",
+    "category": "阅读",
+    "text": "买了几本书一直没拆，暂时不想开始",
+    "constraint": "暂时不想行动",
+    "expectedKind": "defer"
+  },
+  {
+    "id": "read-06",
+    "category": "阅读",
+    "text": "读英文原版时总卡在长句，不确定该先查词还是先读完",
+    "constraint": "信息不够",
+    "expectedKind": "clarify"
+  },
+  {
+    "id": "life-01",
+    "category": "生活兴趣",
+    "text": "想学着做手冲咖啡，但不知道先买什么器具",
+    "constraint": "信息不够",
+    "expectedKind": "clarify"
+  },
+  {
+    "id": "life-02",
+    "category": "生活兴趣",
+    "text": "想周末去附近公园走一圈，顺便拍两张",
+    "constraint": "",
+    "expectedKind": "executable"
+  },
+  {
+    "id": "life-03",
+    "category": "生活兴趣",
+    "text": "想把阳台的多肉重新换盆",
+    "constraint": "",
+    "expectedKind": "executable"
+  },
+  {
+    "id": "life-04",
+    "category": "生活兴趣",
+    "text": "这个月事情太多，吉他练习先搁着",
+    "constraint": "时间不足",
+    "expectedKind": "defer"
+  },
+  {
+    "id": "life-05",
+    "category": "生活兴趣",
+    "text": "想开始晨跑，但一直没动力出门",
+    "constraint": "暂时不想行动",
+    "expectedKind": "defer"
+  },
+  {
+    "id": "life-06",
+    "category": "生活兴趣",
+    "text": "想养一只猫，但不确定租房和预算是否合适",
+    "constraint": "信息不够",
+    "expectedKind": "clarify"
+  }
+]

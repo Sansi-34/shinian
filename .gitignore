@@ -1,0 +1,42 @@
+# 依赖与构建产物
+node_modules/
+dist/
+build/
+
+# 本地环境配置与密钥：绝不提交
+.env
+.env.local
+.env.*.local
+
+# 数据库（本地个人数据，不提交）
+db/*.sqlite
+db/*.sqlite-wal
+db/*.sqlite-shm
+# AI 主密钥与测试主密钥：绝不提交
+db/master.key
+db/*-master.key
+
+# 日志与临时文件
+*.log
+dom.html
+issues*.txt
+shots/error.png
+
+# 备份输出（本地生成，不提交）
+backups/
+
+# 一次性逆向分析 / 走查截图 / 浏览器调试配置
+recon/
+.playwright-cli/
+shots/audit-*/
+
+# 本地工具脚本（ClawChat / Harness 辅助，非应用代码）
+clawchat-connect.mjs
+dsh-precheck.mjs
+
+# Obsidian 隔离测试仓库
+output/obsidian-test-vault/
+
+# Python 缓存
+__pycache__/
+*.pyc

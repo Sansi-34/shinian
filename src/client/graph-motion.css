@@ -1,0 +1,44 @@
+/* 拾念 SHINIAN · 知识网络（/graph）动效层
+   ----------------------------------------------------------------------------
+   只放图谱专有动效，不碰页面骨架：
+     1. 逐节点/逐连线错峰淡入（延迟由 GraphPage.tsx 写入 CSS 变量 --in-delay）
+     2. 就位收敛：布局本身仍是同步算好的确定性结果，这里只把节点从「收拢态」按进度张开
+   约束：动画一律一次性；prefers-reduced-motion 下关闭；不改布局算法。
+   ========================================================================= */
+
+/* 1. 逐节点 / 逐连线错峰淡入
+   ----------------------------------------------------------------------------
+   延迟由 JS 写在内联变量 --in-delay 上（局部图按跳数分档，全图按 id 哈希铺波）。
+   关键帧**只写 from**：终值必须回到元素自身的 opacity ——
+   连线基础透明度 0.86、连线 .dim 是 0.12、节点 .dim 是 0.38，
+   一旦写 to { opacity: 1 }，动画结束的那一帧就会跳变。
+   只用 opacity：节点 <g> 的 transform 归拖拽和相机所有，
+   任何 transform / scale 关键帧都会和拖拽位移打架。 */
+@keyframes graphNodeIn {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes graphEdgeIn {
+  from {
+    opacity: 0;
+  }
+}
+
+/* .graph-svg 前缀只为提高特异性，稳压 styles.css 里同名的 .graph-node / .graph-edge。 */
+.graph-svg .graph-node {
+  animation: graphNodeIn 0.6s ease-out backwards;
+  animation-delay: var(--in-delay, 0ms);
+}
+.graph-svg .graph-edge {
+  animation: graphEdgeIn 0.6s ease-out backwards;
+  animation-delay: var(--in-delay, 0ms);
+}
+
+/* 减少动效：错峰淡入整体关掉（JS 侧同时也不会跑收敛的 rAF）。 */
+@media (prefers-reduced-motion: reduce) {
+  .graph-svg .graph-node,
+  .graph-svg .graph-edge {
+    animation: none;
+  }
+}

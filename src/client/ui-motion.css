@@ -1,0 +1,91 @@
+/* 拾念 SHINIAN · 统一的「入场编排」层
+   ----------------------------------------------------------------------------
+   目的：全站只保留一套入场动效实现，页面里只加类、不各写 keyframes。
+   规则：
+     1. 位移 14px、时长 0.42s，缓动 --ease-editorial；不要弹簧、不要大幅位移。
+     2. 一次性入场（数据到达后渲染）才用；会被增量追加/重排的列表不要用。
+     3. prefers-reduced-motion 下全部关闭（见文件末尾）。
+   类名：
+     .gz-enter    单个模板块入场（标题 → 主卡 → 列表 各段加一格延迟用 --gz-enter-step）
+     .gz-stagger  列表子元素错峰入场（30ms 阶梯，最多 8 档）
+   节奏 token 见 gz-tokens.css。
+
+   三行用法（新页面照抄这三行就行）：
+     ① 大块：<section className="gz-enter" style={{ ['--gz-enter-step' as string]: 0 } as React.CSSProperties}>
+     ② 列表：<ul className="gz-stagger">…</ul>（父块写了 --gz-enter-step 时，子元素会自动接在父块之后）
+     ③ 不要再写 @keyframes / animation-name 淡入上移，用上面两个类。
+   ========================================================================= */
+
+/* ----------------------------------------------------------------------------
+   唯一的入场关键帧：全站「淡入 + 上移」只此一份。
+   旧名字 gz-fade-up / gz-rise / activity-rise 已删除，使用点全部指向这里。
+   只写 from，不写 to：终值必须是元素自身的 opacity / transform，
+   否则 .is-archived（opacity .65）、.is-dim、hover 位移这类状态会在动画结束的
+   那一帧被 to 硬拽回 1 / none，出现可见跳变。这与 graph-motion.css 的写法一致。
+   位移距离由 --enter-shift 统一控制（默认 14px）。
+   ------------------------------------------------------------------------- */
+@keyframes gz-enter-rise {
+  from { opacity: 0; transform: translateY(var(--enter-shift)); }
+}
+
+/* ----------------------------------------------------------------------------
+   .gz-enter —— 单块入场
+   用于页面的「大块」：标题带、主卡、列表容器。同页多个块按内联
+   --gz-enter-step（0 / 1 / 2 / 3…）递进 60ms，形成 标题 → 主卡 → 列表 的节奏。
+   只 fill backwards：延迟期间先取 from 状态，动画结束后回到元素自身的 opacity /
+   transform，不会顶掉 hover、.is-dim、.is-archived 等状态样式。
+   ------------------------------------------------------------------------- */
+.gz-enter {
+  /* 用长写法而不是 animation 简写：简写里带 var() 时整条声明会变成
+     pending-substitution（某个变量没定义就整条作废），长写法一个值坏掉不影响其它值，
+     也让 animation-name 在计算样式里稳定可断言。 */
+  animation-name: gz-enter-rise;
+  animation-duration: var(--enter-duration);
+  animation-timing-function: var(--ease-editorial);
+  animation-fill-mode: backwards;
+  animation-iteration-count: 1;
+  animation-delay: calc(var(--gz-enter-step, 0) * var(--enter-step));
+}
+
+/* ----------------------------------------------------------------------------
+   .gz-stagger —— 列表子元素错峰入场
+   容器加这个类，直接子元素依次入场：30ms 一档，最多 8 档，
+   第 9 个起统一 240ms，避免长列表尾部要等很久才出现。
+   同样只用 backwards，行内的 hover 位移（如 .home-continue-card:hover）不受影响。
+
+   和 .gz-enter 嵌套时的配合：--gz-enter-step 是继承值，所以当外层 section 上写着
+   --gz-enter-step: 2 时，里面的列表子元素会从 120ms 才开始错峰，
+   而不是在父块还在淡入时就自己演完了 —— 否则父块的 opacity 会把子元素的前几档盖掉，
+   错峰等于白做。不写 --gz-enter-step 的页面（搜索页、经验页）偏移就是 0ms。
+   ------------------------------------------------------------------------- */
+.gz-stagger > * {
+  /* 子元素的第一档延迟 = 所在块的递进延迟（默认 0） */
+  --gz-stagger-base: calc(var(--gz-enter-step, 0) * var(--enter-step));
+  animation-name: gz-enter-rise;
+  animation-duration: var(--enter-duration);
+  animation-timing-function: var(--ease-editorial);
+  animation-fill-mode: backwards;
+  animation-iteration-count: 1;
+  animation-delay: var(--gz-stagger-base);
+}
+.gz-stagger > *:nth-child(2) { animation-delay: calc(var(--gz-stagger-base) + 1 * var(--enter-stagger-step)); }
+.gz-stagger > *:nth-child(3) { animation-delay: calc(var(--gz-stagger-base) + 2 * var(--enter-stagger-step)); }
+.gz-stagger > *:nth-child(4) { animation-delay: calc(var(--gz-stagger-base) + 3 * var(--enter-stagger-step)); }
+.gz-stagger > *:nth-child(5) { animation-delay: calc(var(--gz-stagger-base) + 4 * var(--enter-stagger-step)); }
+.gz-stagger > *:nth-child(6) { animation-delay: calc(var(--gz-stagger-base) + 5 * var(--enter-stagger-step)); }
+.gz-stagger > *:nth-child(7) { animation-delay: calc(var(--gz-stagger-base) + 6 * var(--enter-stagger-step)); }
+.gz-stagger > *:nth-child(8) { animation-delay: calc(var(--gz-stagger-base) + 7 * var(--enter-stagger-step)); }
+.gz-stagger > *:nth-child(n + 9) { animation-delay: calc(var(--gz-stagger-base) + var(--enter-stagger-max)); }
+
+/* ----------------------------------------------------------------------------
+   减少动效偏好：入场属于「纯装饰」——信息本身不需要靠动效才能读，
+   前庭功能障碍 / 晕动症用户会被位移和错峰的不连续感影响，
+   所以这里直接关掉整个入场层，而不是把时长压到 0.01ms（那会闪一下）。
+   元素留在自身样式上（opacity: 1 / 无位移），内容完整可见。
+   ------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .gz-enter,
+  .gz-stagger > * {
+    animation: none;
+  }
+}
