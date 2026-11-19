@@ -131,7 +131,7 @@ export default function HomeV2Page() {
       items.push({
         key: 'att-' + a.id,
         at: a.observedAt ?? a.updatedAt,
-        to: '/attempt/' + a.id,
+        to: '/v2/attempt/' + a.id,
         title: a.resultText,
         sub: '尝试结果 · ' + a.captureText,
         side: <Pill kind={st.kind}>{st.label}</Pill>,
@@ -219,7 +219,7 @@ export default function HomeV2Page() {
               key={a.id}
               index={i}
               time={st.label}
-              to={'/attempt/' + a.id}
+              to={'/v2/attempt/' + a.id}
               title={a.step}
               sub={'来自「' + a.captureText + '」'}
               side={<Pill kind={st.kind}>{st.label}</Pill>}
@@ -231,7 +231,7 @@ export default function HomeV2Page() {
             key={s.id}
             index={todoAttempts.length + i}
             time={formatScheduleTimeRange(s, timezone)}
-            to={s.attemptId ? '/attempt/' + s.attemptId : '/schedule'}
+            to={s.attemptId ? '/v2/attempt/' + s.attemptId : '/schedule'}
             title={s.attempt?.step ?? s.note ?? '日程安排'}
             sub={s.capture ? '来自「' + s.capture.rawText + '」' : '今天'}
             side={<Pill kind="idle">已排日程</Pill>}

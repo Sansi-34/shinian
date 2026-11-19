@@ -235,7 +235,7 @@ export default function SearchV2Page() {
                 key={a.id}
                 index={i}
                 time={st.label}
-                to={'/attempt/' + a.id}
+                to={'/v2/attempt/' + a.id}
                 title={mark(a.step, query)}
                 sub={a.resultText ? mark(a.resultText, query) : undefined}
                 side={<Pill kind={st.kind}>{st.label}</Pill>}

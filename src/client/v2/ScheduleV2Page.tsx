@@ -120,7 +120,7 @@ export default function ScheduleV2Page() {
                 key={s.id}
                 index={i}
                 time={formatScheduleTimeRange(s, timezone)}
-                to={s.attemptId ? '/attempt/' + s.attemptId : '/schedule'}
+                to={s.attemptId ? '/v2/attempt/' + s.attemptId : '/schedule'}
                 title={s.attempt?.step ?? s.note ?? '日程安排'}
                 sub={s.capture ? '来自「' + s.capture.rawText + '」' : '无关联念头'}
                 side={s.status === 'cancelled' ? <Pill kind="idle">已取消</Pill> : <Pill kind="active">已排日程</Pill>}

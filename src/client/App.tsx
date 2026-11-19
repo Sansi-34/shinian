@@ -30,6 +30,7 @@ import ExperiencesV2Page from './v2/ExperiencesV2Page';
 import ScheduleV2Page from './v2/ScheduleV2Page';
 import ResearchV2Page from './v2/ResearchV2Page';
 import CaptureV2Page from './v2/CaptureV2Page';
+import AttemptV2Page from './v2/AttemptV2Page';
 import api from './api';
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
@@ -230,6 +231,7 @@ function Shell() {
           <Route path="/v2/schedule" element={<ScheduleV2Page />} />
           <Route path="/v2/research" element={<ResearchV2Page />} />
           <Route path="/v2/capture/:captureId" element={<CaptureV2Page />} />
+          <Route path="/v2/attempt/:attemptId" element={<AttemptV2Page />} />
         </Routes>
       </main>
     </div>

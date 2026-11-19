@@ -283,7 +283,7 @@ export default function CaptureV2Page() {
                   key={a.id}
                   index={i}
                   time={st.label}
-                  to={'/attempt/' + a.id}
+                  to={'/v2/attempt/' + a.id}
                   title={a.step}
                   sub={a.resultText ? a.resultText.slice(0, 60) : a.actionDescription || '还没有记录结果'}
                   side={<Pill kind={st.kind}>{st.label}</Pill>}
@@ -299,7 +299,7 @@ export default function CaptureV2Page() {
                 key={a.id}
                 index={i}
                 time={a.observedAt ? day(a.observedAt).slice(5) : '—'}
-                to={'/attempt/' + a.id}
+                to={'/v2/attempt/' + a.id}
                 title={a.resultText || a.step}
                 sub={'尝试：' + a.step.slice(0, 40)}
                 side={<Pill kind={status(a).kind}>{status(a).label}</Pill>}
