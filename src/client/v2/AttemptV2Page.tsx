@@ -171,7 +171,7 @@ export default function AttemptV2Page() {
             {schedules.length === 0 && <p className="v2-groupNote">没有排过时间。</p>}
             {schedules.map((s) => (
               <div key={s.id} className="v2-groupItem">
-                {formatScheduleTimeRange(s, timezone)}
+                <span className="v2-date">{formatScheduleTimeRange(s, timezone)}</span>
                 <span>{s.status === 'cancelled' ? '已取消' : '已排'}</span>
               </div>
             ))}

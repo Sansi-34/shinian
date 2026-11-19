@@ -12,7 +12,7 @@ export default function Module({
   defaultOpen = true,
   children,
 }: {
-  title: string;
+  title: ReactNode;
   count?: number | string;
   action?: ReactNode;
   defaultOpen?: boolean;

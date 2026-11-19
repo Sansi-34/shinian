@@ -354,3 +354,12 @@ html[data-theme='dark'] .v2-root .v2-dateInput::-webkit-calendar-picker-indicato
 .v2-root[data-v2-theme='dark'] .v2-dateInput::-webkit-calendar-picker-indicator {
   filter: invert(1) brightness(1.6);
 }
+
+/* 日期/时间是元信息：任何位置都用同一套（灰 + 12px + 等宽数字） */
+.v2-date {
+  font-size: var(--fs-meta);
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  font-weight: 400;
+  letter-spacing: 0;
+}

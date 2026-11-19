@@ -214,7 +214,7 @@ export default function HomeV2Page() {
             <Row
               key={a.id}
               index={i}
-              time={st.label}
+              time={dayLabel(a.updatedAt, timezone, todayDateKey(timezone))}
               to={'/v2/attempt/' + a.id}
               title={a.step}
               sub={'来自「' + a.captureText + '」'}

@@ -114,7 +114,16 @@ export default function ScheduleV2Page() {
         const d = new Date(key + 'T00:00:00');
         const isToday = key === today;
         return (
-          <Module key={key} title={`${isToday ? '今天' : DAY_LABEL[d.getDay()]} · ${key.slice(5)}`} count={list.length}>
+          <Module
+            key={key}
+            title={
+              <>
+                {isToday ? '今天' : DAY_LABEL[d.getDay()]}
+                <span className="v2-date" style={{ marginLeft: 'var(--sp-2)' }}>{key}</span>
+              </>
+            }
+            count={list.length}
+          >
             {list.map((s, i) => (
               <Row
                 key={s.id}

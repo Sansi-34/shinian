@@ -280,7 +280,7 @@ export default function CaptureV2Page() {
                 <Row
                   key={a.id}
                   index={i}
-                  time={st.label}
+                  time={dayLabel(a.updatedAt, tz, todayDateKey(tz))}
                   to={'/v2/attempt/' + a.id}
                   title={a.step}
                   sub={a.resultText ? a.resultText.slice(0, 60) : a.actionDescription || '还没有记录结果'}
