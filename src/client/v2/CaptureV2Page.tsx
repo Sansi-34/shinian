@@ -397,6 +397,7 @@ export default function CaptureV2Page() {
               <div className="v2-writer">
                 <textarea
                   className="v2-editor"
+                  maxLength={500}
                   value={stepDraft}
                   onChange={(e) => setStepDraft(e.target.value)}
                   placeholder="写下一个具体、能立刻开始的小尝试"

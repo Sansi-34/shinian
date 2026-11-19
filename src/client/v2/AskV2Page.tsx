@@ -319,6 +319,7 @@ export default function AskV2Page() {
                   onChange={(e) => setKeywords(e.target.value)}
                   placeholder="闪烁 调光 频率"
                   aria-label="关键词"
+                  maxLength={200}
                 />
               </div>
               <div className="v2-field">

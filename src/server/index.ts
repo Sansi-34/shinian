@@ -7,6 +7,10 @@ import { fileURLToPath } from 'node:url';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { db, sqlite } from '../db/db';
 import { MAX_CAPTURE_CHARS } from './aiSettings';
+
+// 尝试文本上限：此前服务端完全没有校验，直连 API 可以写任意长度（实测 2 万字返回 200）
+const ATTEMPT_STEP_MAX = 500;
+const ATTEMPT_RESULT_MAX = 4000;
 import {
   accounts,
   captures,
@@ -447,6 +451,13 @@ fastify.post('/api/captures/:captureId/attempts', { preHandler: requireAuth }, a
   };
   const step = (body.step ?? '').trim();
   if (!step) return reply.code(400).send({ error: 'step required' });
+  if (step.length > ATTEMPT_STEP_MAX) {
+    return reply.code(400).send({
+      error: 'step_too_long',
+      message: `尝试步骤不能超过 ${ATTEMPT_STEP_MAX} 个字符。`,
+      field: 'step',
+    });
+  }
   if (!body.operationId) return reply.code(400).send({ error: 'operationId required' });
 
   const [cap] = await db.select().from(captures).where(eq(captures.id, captureId)).limit(1);
@@ -633,6 +644,7 @@ fastify.patch('/api/attempts/:id', { preHandler: requireAuth }, async (req, repl
   const { id } = req.params as { id: string };
   const body = (req.body ?? {}) as {
     state?: string;
+    step?: string;
     resultText?: string | null;
     outcome?: string | null;
     sourceUrl?: string | null;
@@ -653,6 +665,21 @@ fastify.patch('/api/attempts/:id', { preHandler: requireAuth }, async (req, repl
       error: 'invalid_request',
       message: 'futureScheduleAction 只能是 keep 或 cancel。',
       field: 'futureScheduleAction',
+    });
+  }
+
+  if (typeof body.step === 'string' && body.step.trim().length > ATTEMPT_STEP_MAX) {
+    return reply.code(400).send({
+      error: 'step_too_long',
+      message: `尝试步骤不能超过 ${ATTEMPT_STEP_MAX} 个字符。`,
+      field: 'step',
+    });
+  }
+  if (typeof body.resultText === 'string' && body.resultText.trim().length > ATTEMPT_RESULT_MAX) {
+    return reply.code(400).send({
+      error: 'result_too_long',
+      message: `结果不能超过 ${ATTEMPT_RESULT_MAX} 个字符。`,
+      field: 'resultText',
     });
   }
 

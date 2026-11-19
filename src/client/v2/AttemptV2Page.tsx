@@ -453,6 +453,7 @@ export default function AttemptV2Page() {
                 <span className="v2-fieldLabel">结果（只由你填写）</span>
                 <textarea
                   className="v2-editor"
+                  maxLength={4000}
                   value={result}
                   onChange={(e) => setResult(e.target.value)}
                   placeholder="实际发生了什么？条件是什么？有没有对照？"
@@ -559,6 +560,7 @@ export default function AttemptV2Page() {
             onChange={(e) => setSchedNote(e.target.value)}
             placeholder="晚上做一次对比"
             aria-label="备注"
+            maxLength={300}
           />
         </div>
         {modalError && (
