@@ -172,7 +172,7 @@ export default function CaptureV2Page() {
           <div>
             <h3 className="v2-groupTitle">旧版入口</h3>
             <p className="v2-groupNote">AI 帮我试一步、参考旧经验、研究一下、编辑关联与删除预览仍在旧版页面。</p>
-            <Link className="v2-groupItem" to={'/capture/' + captureId}>
+            <Link className="v2-groupItem" to={'/legacy/capture/' + captureId}>
               打开旧版详情
               <span>→</span>
             </Link>
@@ -203,7 +203,7 @@ export default function CaptureV2Page() {
                   <Button onClick={() => void toggleArchive()} disabled={busy}>
                     {capture.archivedAt ? '恢复' : '归档'}
                   </Button>
-                  <Link className="v2-oldLink" to={'/capture/' + captureId}>
+                  <Link className="v2-oldLink" to={'/legacy/capture/' + captureId}>
                     删除 / 更多操作 →
                   </Link>
                 </div>
@@ -241,7 +241,7 @@ export default function CaptureV2Page() {
             {!writing && (
               <div className="v2-ghosts" style={{ borderBottom: 0 }}>
                 <GhostChip onClick={() => setWriting(true)}>自己写一步</GhostChip>
-                <Link to={'/capture/' + captureId} className="v2-ghostLink">
+                <Link to={'/legacy/capture/' + captureId} className="v2-ghostLink">
                   AI 帮我试一步 / 参考旧经验 / 研究一下（旧版）
                 </Link>
               </div>
@@ -281,7 +281,7 @@ export default function CaptureV2Page() {
                   key={a.id}
                   index={i}
                   time={dayLabel(a.updatedAt, tz, todayDateKey(tz))}
-                  to={'/v2/attempt/' + a.id}
+                  to={'/attempt/' + a.id}
                   title={a.step}
                   sub={a.resultText ? a.resultText.slice(0, 60) : a.actionDescription || '还没有记录结果'}
                   side={<Pill kind={st.kind}>{st.label}</Pill>}
@@ -297,7 +297,7 @@ export default function CaptureV2Page() {
                 key={a.id}
                 index={i}
                 time={a.observedAt ? dayLabel(a.observedAt, tz, todayDateKey(tz)) : '—'}
-                to={'/v2/attempt/' + a.id}
+                to={'/attempt/' + a.id}
                 title={a.resultText || a.step}
                 sub={'尝试：' + a.step.slice(0, 40)}
                 side={<Pill kind={status(a).kind}>{status(a).label}</Pill>}

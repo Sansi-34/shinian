@@ -115,7 +115,7 @@ export default function HomeV2Page() {
       items.push({
         key: 'cap-' + c.id,
         at: c.updatedAt || c.createdAt,
-        to: '/v2/capture/' + c.id,
+        to: '/capture/' + c.id,
         title: c.rawText,
         sub: '念头' + (c.archivedAt ? ' · 已归档' : ''),
         side: <Pill kind="idle">{c.archivedAt ? '已归档' : '想法'}</Pill>,
@@ -127,7 +127,7 @@ export default function HomeV2Page() {
       items.push({
         key: 'att-' + a.id,
         at: a.observedAt ?? a.updatedAt,
-        to: '/v2/attempt/' + a.id,
+        to: '/attempt/' + a.id,
         title: a.resultText,
         sub: '尝试结果 · ' + a.captureText,
         side: <Pill kind={st.kind}>{st.label}</Pill>,
@@ -153,7 +153,7 @@ export default function HomeV2Page() {
           )}
           {!loading && !error && captures.length === 0 && <p className="v2-state">还没有念头。在中间输入框写一句开始。</p>}
           {captures.slice(0, 12).map((c, i) => (
-            <Link key={c.id} to={'/v2/capture/' + c.id} className="v2-leftItem" style={{ '--i': i } as React.CSSProperties}>
+            <Link key={c.id} to={'/capture/' + c.id} className="v2-leftItem" style={{ '--i': i } as React.CSSProperties}>
               <span className="v2-leftTitle">{c.rawText}</span>
               <span className="v2-leftMeta">{dayLabel(c.createdAt, timezone, todayDateKey(timezone))}</span>
             </Link>
@@ -215,7 +215,7 @@ export default function HomeV2Page() {
               key={a.id}
               index={i}
               time={dayLabel(a.updatedAt, timezone, todayDateKey(timezone))}
-              to={'/v2/attempt/' + a.id}
+              to={'/attempt/' + a.id}
               title={a.step}
               sub={'来自「' + a.captureText + '」'}
               side={<Pill kind={st.kind}>{st.label}</Pill>}
@@ -227,7 +227,7 @@ export default function HomeV2Page() {
             key={s.id}
             index={todoAttempts.length + i}
             time={formatScheduleTimeRange(s, timezone)}
-            to={s.attemptId ? '/v2/attempt/' + s.attemptId : '/schedule'}
+            to={s.attemptId ? '/attempt/' + s.attemptId : '/schedule'}
             title={s.attempt?.step ?? s.note ?? '日程安排'}
             sub={s.capture ? '来自「' + s.capture.rawText + '」' : '今天'}
             side={<Pill kind="idle">已排日程</Pill>}

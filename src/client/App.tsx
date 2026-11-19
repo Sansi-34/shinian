@@ -1,7 +1,7 @@
 // 拾念 SHINIAN v0.1 - 应用主组件（路由 + 会话）
 // V2.2：桌面轻量侧栏 + 移动折叠菜单；仅改外壳，路由与功能入口全部保留。
 import { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, useNavigate, Link, NavLink, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams, Link, NavLink, useLocation } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import CaptureDetailPage from './pages/CaptureDetailPage';
 import AttemptDetailPage from './pages/AttemptDetailPage';
@@ -58,6 +58,16 @@ const SECONDARY_NAV: Array<{ to: string; label: string; icon: string }> = [
   { to: '/settings/ai', label: '偏好设置', icon: '⚙' },
 ];
 
+function CaptureRedirect() {
+  const { captureId } = useParams();
+  return <Navigate to={'/capture/' + (captureId ?? '')} replace />;
+}
+
+function AttemptRedirect() {
+  const { attemptId } = useParams();
+  return <Navigate to={'/attempt/' + (attemptId ?? '')} replace />;
+}
+
 function Shell() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -100,7 +110,12 @@ function Shell() {
 
   const graphMode = location.pathname.startsWith('/graph');
   // 登录页不显示侧栏；图谱页保留原有深色全屏视觉。
-  const v2Mode = location.pathname.startsWith('/v2');
+  // V2 已接管这些正式路径；其余（问记录/动态/回顾/图谱/设置/详情类）暂时还是旧实现
+  const V2_EXACT = ['/', '/search', '/topics', '/experiences', '/schedule', '/research'];
+  const v2Mode =
+    V2_EXACT.includes(location.pathname) ||
+    location.pathname.startsWith('/capture/') ||
+    location.pathname.startsWith('/attempt/');
   const showShell = !graphMode && !v2Mode && location.pathname !== '/login';
 
   return (
@@ -204,34 +219,49 @@ function Shell() {
 
       <main className="app-main">
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/topics" element={<TopicsPage />} />
+          {/* ---------- V2：正式路径 ---------- */}
+          <Route path="/" element={<HomeV2Page />} />
+          <Route path="/search" element={<SearchV2Page />} />
+          <Route path="/topics" element={<TopicsV2Page />} />
+          <Route path="/experiences" element={<ExperiencesV2Page />} />
+          <Route path="/schedule" element={<ScheduleV2Page />} />
+          <Route path="/research" element={<ResearchV2Page />} />
+          <Route path="/capture/:captureId" element={<CaptureV2Page />} />
+          <Route path="/attempt/:attemptId" element={<AttemptV2Page />} />
+
+          {/* ---------- 尚未迁移：先沿用旧实现（旧外壳） ---------- */}
           <Route path="/topics/:topicId" element={<TopicPage />} />
-          <Route path="/graph" element={<GraphPage />} />
-          <Route path="/login" element={<LoginPage onLogin={setUsername} />} />
-          <Route path="/capture/:captureId" element={<CaptureDetailPage />} />
-          <Route path="/attempt/:attemptId" element={<AttemptDetailPage />} />
+          <Route path="/experience/:id" element={<ExperienceDetailPage />} />
+          <Route path="/research/:researchId" element={<ResearchPage />} />
           <Route path="/next-action/:nextActionId" element={<NextActionPage />} />
-          <Route path="/search" element={<SearchPage />} />
-          <Route path="/schedule" element={<SchedulePage />} />
           <Route path="/activity" element={<ActivityPage />} />
           <Route path="/review" element={<ReviewPage />} />
           <Route path="/review/:reviewId" element={<ReviewDetailPage />} />
           <Route path="/ask" element={<AskPage />} />
           <Route path="/ask/:queryId" element={<AskDetailPage />} />
-          <Route path="/experiences" element={<ExperiencesPage />} />
-          <Route path="/experience/:id" element={<ExperienceDetailPage />} />
-          <Route path="/research" element={<ResearchIndexPage />} />
-          <Route path="/research/:researchId" element={<ResearchPage />} />
+          <Route path="/graph" element={<GraphPage />} />
           <Route path="/settings/ai" element={<SettingsAiPage />} />
-          <Route path="/v2" element={<HomeV2Page />} />
-          <Route path="/v2/search" element={<SearchV2Page />} />
-          <Route path="/v2/topics" element={<TopicsV2Page />} />
-          <Route path="/v2/experiences" element={<ExperiencesV2Page />} />
-          <Route path="/v2/schedule" element={<ScheduleV2Page />} />
-          <Route path="/v2/research" element={<ResearchV2Page />} />
-          <Route path="/v2/capture/:captureId" element={<CaptureV2Page />} />
-          <Route path="/v2/attempt/:attemptId" element={<AttemptV2Page />} />
+          <Route path="/login" element={<LoginPage onLogin={setUsername} />} />
+
+          {/* ---------- 旧版：V2 接管正式路径后留在这里对照 / 兜底 ---------- */}
+          <Route path="/legacy" element={<HomePage />} />
+          <Route path="/legacy/search" element={<SearchPage />} />
+          <Route path="/legacy/topics" element={<TopicsPage />} />
+          <Route path="/legacy/experiences" element={<ExperiencesPage />} />
+          <Route path="/legacy/schedule" element={<SchedulePage />} />
+          <Route path="/legacy/research" element={<ResearchIndexPage />} />
+          <Route path="/legacy/capture/:captureId" element={<CaptureDetailPage />} />
+          <Route path="/legacy/attempt/:attemptId" element={<AttemptDetailPage />} />
+
+          {/* ---------- 老书签兼容 ---------- */}
+          <Route path="/v2" element={<Navigate to="/" replace />} />
+          <Route path="/v2/search" element={<Navigate to="/search" replace />} />
+          <Route path="/v2/topics" element={<Navigate to="/topics" replace />} />
+          <Route path="/v2/experiences" element={<Navigate to="/experiences" replace />} />
+          <Route path="/v2/schedule" element={<Navigate to="/schedule" replace />} />
+          <Route path="/v2/research" element={<Navigate to="/research" replace />} />
+          <Route path="/v2/capture/:captureId" element={<CaptureRedirect />} />
+          <Route path="/v2/attempt/:attemptId" element={<AttemptRedirect />} />
         </Routes>
       </main>
     </div>

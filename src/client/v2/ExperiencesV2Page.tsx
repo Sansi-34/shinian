@@ -72,7 +72,7 @@ export default function ExperiencesV2Page() {
           <div>
             <h3 className="v2-groupTitle">说明</h3>
             <p className="v2-groupNote">经验必须挂在仍可访问的来源上；模型整理的正文会标注「由模型推断整理」，保存只代表你愿意留下它，不代表已证实。</p>
-            <Link className="v2-groupItem" to="/experiences">
+            <Link className="v2-groupItem" to="/legacy/experiences">
               旧版经验页
               <span>→</span>
             </Link>
@@ -82,7 +82,7 @@ export default function ExperiencesV2Page() {
       statusLeft={`经验 ${items.length} · 待修订 ${needRevision}`}
       statusRight={<span>只读视图</span>}
     >
-      <Module title="我整理的经验" count={items.length} action={<Link to="/experiences">旧版管理</Link>}>
+      <Module title="我整理的经验" count={items.length} action={<Link to="/legacy/experiences">旧版管理</Link>}>
         {loading && <p className="v2-state">加载中…</p>}
         {!loading && error && (
           <p className="v2-state">

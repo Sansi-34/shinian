@@ -78,7 +78,7 @@ export default function ResearchV2Page() {
           <div>
             <h3 className="v2-groupTitle">说明</h3>
             <p className="v2-groupNote">研究只读取 GitHub 公开资料，模型引用必须指向本次实际取回的来源；结论不足时会直接说不足。</p>
-            <Link className="v2-groupItem" to="/research">
+            <Link className="v2-groupItem" to="/legacy/research">
               旧版研究页（发起 / 继续）
               <span>→</span>
             </Link>
@@ -88,7 +88,7 @@ export default function ResearchV2Page() {
       statusLeft={`研究 ${items.length} · 已完成 ${done}`}
       statusRight={<span>只读视图</span>}
     >
-      <Module title="已保存的研究" count={items.length} action={<Link to="/research">旧版管理</Link>}>
+      <Module title="已保存的研究" count={items.length} action={<Link to="/legacy/research">旧版管理</Link>}>
         {loading && <p className="v2-state">加载中…</p>}
         {!loading && error && (
           <p className="v2-state">

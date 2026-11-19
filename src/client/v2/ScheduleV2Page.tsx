@@ -87,7 +87,7 @@ export default function ScheduleV2Page() {
           <div>
             <h3 className="v2-groupTitle">说明</h3>
             <p className="v2-groupNote">日程只是时间占位，不会自动创建尝试或改状态；冲突需要你自己判断。</p>
-            <Link className="v2-groupItem" to="/schedule">
+            <Link className="v2-groupItem" to="/legacy/schedule">
               旧版日程页（新建 / 改时间）
               <span>→</span>
             </Link>
@@ -129,7 +129,7 @@ export default function ScheduleV2Page() {
                 key={s.id}
                 index={i}
                 time={formatScheduleTimeRange(s, timezone)}
-                to={s.attemptId ? '/v2/attempt/' + s.attemptId : '/schedule'}
+                to={s.attemptId ? '/attempt/' + s.attemptId : '/schedule'}
                 title={s.attempt?.step ?? s.note ?? '日程安排'}
                 sub={s.capture ? '来自「' + s.capture.rawText + '」' : '无关联念头'}
                 side={s.status === 'cancelled' ? <Pill kind="idle">已取消</Pill> : <Pill kind="active">已排日程</Pill>}

@@ -148,7 +148,7 @@ export default function AttemptV2Page() {
           <div>
             <h3 className="v2-groupTitle">所属念头</h3>
             {capture ? (
-              <Link to={'/v2/capture/' + capture.id} className="v2-groupItem">
+              <Link to={'/capture/' + capture.id} className="v2-groupItem">
                 {capture.rawText.slice(0, 20)}
                 <span>→</span>
               </Link>
@@ -180,7 +180,7 @@ export default function AttemptV2Page() {
           <div>
             <h3 className="v2-groupTitle">旧版入口</h3>
             <p className="v2-groupNote">删除、经验采用、AI 复盘与排日程仍走旧版页面。</p>
-            <Link className="v2-groupItem" to={'/attempt/' + attemptId}>
+            <Link className="v2-groupItem" to={'/legacy/attempt/' + attemptId}>
               打开旧版尝试页
               <span>→</span>
             </Link>
@@ -305,7 +305,7 @@ export default function AttemptV2Page() {
               <Row
                 index={0}
                 time="念头"
-                to={'/v2/capture/' + capture.id}
+                to={'/capture/' + capture.id}
                 title={capture.rawText}
                 sub="打开念头详情，看全部尝试"
                 side={<Pill kind="idle">来源</Pill>}

@@ -4,9 +4,9 @@ import styles from './Rail.module.css';
 type RailItem = { to: string; label: string; icon: keyof typeof ICONS; end?: boolean };
 
 const PRIMARY: RailItem[] = [
-  { to: '/v2', label: '首页', icon: 'home', end: true },
-  { to: '/v2/search', label: '念头', icon: 'list' },
-  { to: '/v2/topics', label: '主题', icon: 'grid' },
+  { to: '/', label: '首页', icon: 'home', end: true },
+  { to: '/search', label: '念头', icon: 'list' },
+  { to: '/topics', label: '主题', icon: 'grid' },
   { to: '/ask', label: '问记录', icon: 'chat' },
 ];
 

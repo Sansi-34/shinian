@@ -67,7 +67,7 @@ export default function TopicsV2Page() {
           <div>
             <h3 className="v2-groupTitle">说明</h3>
             <p className="v2-groupNote">主题是一组稳定 ID 的集合，不复制正文；成员不代表相互支持或相似，也不会增加图谱边。</p>
-            <Link className="v2-groupItem" to="/topics">
+            <Link className="v2-groupItem" to="/legacy/topics">
               旧版主题页（可新建）
               <span>→</span>
             </Link>
@@ -77,7 +77,7 @@ export default function TopicsV2Page() {
       statusLeft={`主题 ${topics.length} · 记录 ${members}`}
       statusRight={<span>只读视图</span>}
     >
-      <Module title="我的主题" count={topics.length} action={<Link to="/topics">新建 / 管理</Link>}>
+      <Module title="我的主题" count={topics.length} action={<Link to="/legacy/topics">新建 / 管理</Link>}>
         {loading && <p className="v2-state">加载中…</p>}
         {!loading && error && (
           <p className="v2-state">
