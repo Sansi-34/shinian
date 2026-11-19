@@ -328,3 +328,29 @@
   font-size: var(--fs-meta);
   color: var(--ink-2);
 }
+
+/* 时间输入：把原生控件拉回这套 UI */
+.v2-timeRow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+.v2-dateInput {
+  min-height: 40px;
+  max-width: 230px;
+  padding: 0 var(--sp-3);
+  color-scheme: inherit;
+  font-variant-numeric: tabular-nums;
+}
+.v2-dateInput::-webkit-calendar-picker-indicator {
+  opacity: 0.55;
+  cursor: pointer;
+}
+.v2-dateInput::-webkit-calendar-picker-indicator:hover {
+  opacity: 0.9;
+}
+html[data-theme='dark'] .v2-root .v2-dateInput::-webkit-calendar-picker-indicator,
+.v2-root[data-v2-theme='dark'] .v2-dateInput::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(1.6);
+}

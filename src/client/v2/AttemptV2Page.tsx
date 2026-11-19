@@ -6,6 +6,7 @@ import { Link, useParams } from 'react-router-dom';
 import api from '../api';
 import type { Attempt, Capture, ScheduleBlock } from '../types';
 import { formatScheduleTimeRange, sortSchedules, useDisplayTimezone } from '../scheduleTime';
+import { dayTimeLabel, fromLocalInputValue, toLocalInputValue } from './format';
 import V2Shell from './V2Shell';
 import Module from './ui/Module';
 import Row from './ui/Row';
@@ -47,13 +48,6 @@ function statusOf(a: Attempt): { kind: StatusKind; label: string } {
   return { kind: 'idle', label: '未开始' };
 }
 
-function toLocalInput(ts: number | null): string {
-  if (!ts) return '';
-  const d = new Date(ts);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
 export default function AttemptV2Page() {
   const { attemptId = '' } = useParams();
   const [timezone] = useDisplayTimezone();
@@ -86,7 +80,7 @@ export default function AttemptV2Page() {
       setResult(res.attempt.resultText ?? '');
       setOutcome((res.attempt.outcome as 'success' | 'failure' | 'undetermined') ?? 'undetermined');
       setState(res.attempt.state);
-      setObservedAt(toLocalInput(res.attempt.observedAt));
+      setObservedAt(toLocalInputValue(res.attempt.observedAt, timezone));
       const [sch, refs] = await Promise.all([
         api.listAttemptSchedules(attemptId).catch(() => ({ schedules: [] as ScheduleBlock[], serverNow: Date.now() })),
         api.listReferences(attemptId).catch(() => ({ fromRefs: [], toRefs: [] })),
@@ -117,7 +111,7 @@ export default function AttemptV2Page() {
         state,
         resultText: result.trim() || null,
         outcome: state === 'done' ? outcome : null,
-        observedAt: observedAt ? new Date(observedAt).getTime() : null,
+        observedAt: fromLocalInputValue(observedAt, timezone),
         revision: attempt.revision,
       };
       if (futureScheduleAction) patch.futureScheduleAction = futureScheduleAction;
@@ -277,10 +271,21 @@ export default function AttemptV2Page() {
                 </label>
               )}
 
-              <label className="v2-field">
-                <span className="v2-fieldLabel">发生时间（可留空）</span>
-                <input className="v2-input" type="datetime-local" value={observedAt} onChange={(e) => setObservedAt(e.target.value)} />
-              </label>
+              <div className="v2-field">
+                <span className="v2-fieldLabel">发生时间（可留空 · {timezone}）</span>
+                <div className="v2-timeRow">
+                  <input
+                    className="v2-input v2-dateInput"
+                    type="datetime-local"
+                    value={observedAt}
+                    onChange={(e) => setObservedAt(e.target.value)}
+                    aria-label="发生时间"
+                  />
+                  <Button onClick={() => setObservedAt(toLocalInputValue(Date.now(), timezone))}>现在</Button>
+                  {observedAt && <Button onClick={() => setObservedAt('')}>清空</Button>}
+                </div>
+                {observedAt && <span className="v2-hint">将记录为 {dayTimeLabel(fromLocalInputValue(observedAt, timezone) ?? 0, timezone)}</span>}
+              </div>
 
               <div className="v2-captureActions">
                 <Button variant="primary" onClick={() => void save()} disabled={busy}>
@@ -291,7 +296,7 @@ export default function AttemptV2Page() {
                     setResult(attempt.resultText ?? '');
                     setState(attempt.state);
                     setOutcome((attempt.outcome as 'success' | 'failure' | 'undetermined') ?? 'undetermined');
-                    setObservedAt(toLocalInput(attempt.observedAt));
+                    setObservedAt(toLocalInputValue(attempt.observedAt, timezone));
                     setActionError(null);
                   }}
                 >

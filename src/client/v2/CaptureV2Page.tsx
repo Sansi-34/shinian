@@ -12,6 +12,8 @@ import Row from './ui/Row';
 import Pill, { type StatusKind } from './ui/Pill';
 import Button from './ui/Button';
 import GhostChip from './ui/GhostChip';
+import { dayLabel } from './format';
+import { todayDateKey, useDisplayTimezone } from '../scheduleTime';
 import './shared.css';
 
 function errText(e: unknown, fallback: string) {
@@ -34,15 +36,11 @@ function status(a: Attempt): { kind: StatusKind; label: string } {
   return { kind: 'idle', label: '未开始' };
 }
 
-function day(ts: number) {
-  const d = new Date(ts);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-}
-
 const newOpId = () => 'v2-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
 
 export default function CaptureV2Page() {
   const { captureId = '' } = useParams();
+  const [tz] = useDisplayTimezone();
 
   const [capture, setCapture] = useState<Capture | null>(null);
   const [attempts, setAttempts] = useState<Attempt[]>([]);
@@ -181,7 +179,7 @@ export default function CaptureV2Page() {
           </div>
         </>
       }
-      statusLeft={capture ? `${day(capture.createdAt)} · 版本 ${capture.revision} · ${attempts.length} 次尝试` : '加载中'}
+      statusLeft={capture ? `${dayLabel(capture.createdAt, tz, todayDateKey(tz))} · 版本 ${capture.revision} · ${attempts.length} 次尝试` : '加载中'}
       statusRight={<span>{capture?.archivedAt ? '已归档' : '进行中'}</span>}
     >
       {loading && <p className="v2-state">加载中…</p>}
@@ -298,7 +296,7 @@ export default function CaptureV2Page() {
               <Row
                 key={a.id}
                 index={i}
-                time={a.observedAt ? day(a.observedAt).slice(5) : '—'}
+                time={a.observedAt ? dayLabel(a.observedAt, tz, todayDateKey(tz)) : '—'}
                 to={'/v2/attempt/' + a.id}
                 title={a.resultText || a.step}
                 sub={'尝试：' + a.step.slice(0, 40)}

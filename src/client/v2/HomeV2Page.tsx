@@ -18,6 +18,7 @@ import Module from './ui/Module';
 import Pill, { type StatusKind } from './ui/Pill';
 import Button from './ui/Button';
 import GhostChip from './ui/GhostChip';
+import { dayLabel } from './format';
 import './shared.css';
 
 function errText(e: unknown, fallback: string) {
@@ -39,11 +40,6 @@ function attemptStatus(a: RecentAttempt): { kind: StatusKind; label: string } {
   if (a.state === 'in_progress') return { kind: 'active', label: '进行中' };
   if (a.state === 'cancelled') return { kind: 'idle', label: '已取消' };
   return { kind: 'idle', label: '未开始' };
-}
-
-function dayKey(ts: number) {
-  const d = new Date(ts);
-  return `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 export default function HomeV2Page() {
@@ -159,7 +155,7 @@ export default function HomeV2Page() {
           {captures.slice(0, 12).map((c, i) => (
             <Link key={c.id} to={'/v2/capture/' + c.id} className="v2-leftItem" style={{ '--i': i } as React.CSSProperties}>
               <span className="v2-leftTitle">{c.rawText}</span>
-              <span className="v2-leftMeta">{dayKey(c.createdAt)}</span>
+              <span className="v2-leftMeta">{dayLabel(c.createdAt, timezone, todayDateKey(timezone))}</span>
             </Link>
           ))}
         </>
@@ -251,7 +247,7 @@ export default function HomeV2Page() {
         )}
         {!loading && !error && recent.length === 0 && <p className="v2-state">还没有内容。写下第一条念头，或记录一次尝试的结果。</p>}
         {recent.map((item, i) => (
-          <Row key={item.key} index={i} time={dayKey(item.at)} to={item.to} title={item.title} sub={item.sub} side={item.side} />
+          <Row key={item.key} index={i} time={dayLabel(item.at, timezone, todayDateKey(timezone))} to={item.to} title={item.title} sub={item.sub} side={item.side} />
         ))}
       </Module>
 

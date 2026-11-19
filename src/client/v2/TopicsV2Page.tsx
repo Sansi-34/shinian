@@ -7,6 +7,8 @@ import V2Shell from './V2Shell';
 import Module from './ui/Module';
 import Row from './ui/Row';
 import Pill from './ui/Pill';
+import { dayLabel } from './format';
+import { todayDateKey, useDisplayTimezone } from '../scheduleTime';
 import './shared.css';
 
 function errText(e: unknown, fallback: string) {
@@ -17,6 +19,7 @@ function errText(e: unknown, fallback: string) {
 }
 
 export default function TopicsV2Page() {
+  const [timezone] = useDisplayTimezone();
   const [topics, setTopics] = useState<Topic[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -93,7 +96,7 @@ export default function TopicsV2Page() {
           <Row
             key={t.id}
             index={i}
-            time={t.updatedAt ? new Date(t.updatedAt).toISOString().slice(5, 10) : '—'}
+            time={t.updatedAt ? dayLabel(t.updatedAt, timezone, todayDateKey(timezone)) : '—'}
             to={'/topics/' + t.id}
             title={t.name}
             sub={t.exploringQuestion || t.continueNote || '未写探索问题'}

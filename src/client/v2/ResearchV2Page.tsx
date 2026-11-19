@@ -7,6 +7,8 @@ import V2Shell from './V2Shell';
 import Module from './ui/Module';
 import Row from './ui/Row';
 import Pill, { type StatusKind } from './ui/Pill';
+import { dayLabel } from './format';
+import { todayDateKey, useDisplayTimezone } from '../scheduleTime';
 import './shared.css';
 
 function errText(e: unknown, fallback: string) {
@@ -28,6 +30,7 @@ const STATUS: Record<string, { kind: StatusKind; label: string }> = {
 };
 
 export default function ResearchV2Page() {
+  const [timezone] = useDisplayTimezone();
   const [items, setItems] = useState<ResearchListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -104,7 +107,7 @@ export default function ResearchV2Page() {
             <Row
               key={r.id}
               index={i}
-              time={new Date(r.createdAt).toISOString().slice(5, 10)}
+              time={dayLabel(r.createdAt, timezone, todayDateKey(timezone))}
               to={'/research/' + r.id}
               title={r.question}
               sub={r.summary || (r.errorCode ? '错误：' + r.errorCode : '未生成结论')}

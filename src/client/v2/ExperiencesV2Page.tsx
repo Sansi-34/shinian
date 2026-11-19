@@ -7,6 +7,8 @@ import V2Shell from './V2Shell';
 import Module from './ui/Module';
 import Row from './ui/Row';
 import Pill from './ui/Pill';
+import { dayLabel } from './format';
+import { todayDateKey, useDisplayTimezone } from '../scheduleTime';
 import './shared.css';
 
 function errText(e: unknown, fallback: string) {
@@ -17,6 +19,7 @@ function errText(e: unknown, fallback: string) {
 }
 
 export default function ExperiencesV2Page() {
+  const [timezone] = useDisplayTimezone();
   const [items, setItems] = useState<ExperienceListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -96,7 +99,7 @@ export default function ExperiencesV2Page() {
           <Row
             key={e.id}
             index={i}
-            time={e.updatedAt ? new Date(e.updatedAt).toISOString().slice(5, 10) : '—'}
+            time={e.updatedAt ? dayLabel(e.updatedAt, timezone, todayDateKey(timezone)) : '—'}
             to={'/experience/' + e.id}
             title={e.title}
             sub={e.summary || e.conditions || '未写摘要'}
