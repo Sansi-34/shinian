@@ -84,12 +84,10 @@
   outline-offset: 1px;
 }
 
-/* 日历弹层 */
+/* 日历弹层：portal 到 body，position: fixed（模块折叠容器有 overflow:hidden） */
 .pop {
-  position: absolute;
-  z-index: 70;
-  top: calc(100% + 6px);
-  left: 0;
+  position: fixed;
+  z-index: 90;
   width: 264px;
   padding: var(--sp-3);
   border: 1px solid var(--line-2);
