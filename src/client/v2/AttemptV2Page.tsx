@@ -12,6 +12,7 @@ import Module from './ui/Module';
 import Row from './ui/Row';
 import Pill, { type StatusKind } from './ui/Pill';
 import Button from './ui/Button';
+import DateField from './ui/DateField';
 import './shared.css';
 
 function errText(e: unknown, fallback: string) {
@@ -272,19 +273,11 @@ export default function AttemptV2Page() {
               )}
 
               <div className="v2-field">
-                <span className="v2-fieldLabel">发生时间（可留空 · {timezone}）</span>
-                <div className="v2-timeRow">
-                  <input
-                    className="v2-input v2-dateInput"
-                    type="datetime-local"
-                    value={observedAt}
-                    onChange={(e) => setObservedAt(e.target.value)}
-                    aria-label="发生时间"
-                  />
-                  <Button onClick={() => setObservedAt(toLocalInputValue(Date.now(), timezone))}>现在</Button>
-                  {observedAt && <Button onClick={() => setObservedAt('')}>清空</Button>}
-                </div>
-                {observedAt && <span className="v2-hint">将记录为 {dayTimeLabel(fromLocalInputValue(observedAt, timezone) ?? 0, timezone)}</span>}
+                <span className="v2-fieldLabel">发生时间（可留空 · 按 {timezone} 记录）</span>
+                <DateField value={observedAt} onChange={setObservedAt} timezone={timezone} label="发生时间" />
+                {observedAt && (
+                  <span className="v2-hint">将记录为 {dayTimeLabel(fromLocalInputValue(observedAt, timezone) ?? 0, timezone)}</span>
+                )}
               </div>
 
               <div className="v2-captureActions">
