@@ -1,6 +1,0 @@
-① 进入页面未改动：{"statusRight":"无改动","saveDisabled":true,"left":"已记录结果 · 版本 4"}
-② 改一个字：{"statusRight":"修改未保存","saveDisabled":false}
-③ 保存后：{"statusRight":"已保存 18:32","saveDisabled":true,"left":"已记录结果 · 版本 5"}
-④ 清掉测试尾巴保存后：{"statusRight":"已保存 18:32","left":"已记录结果 · 版本 6"}
-   结果文本："看了 Rainmeter、Ubuntu 的 Conky、Window 自带便签。前两个都要装东西，最后一个是手动的。"
-errors: none

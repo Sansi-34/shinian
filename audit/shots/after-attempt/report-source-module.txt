@@ -1,4 +1,0 @@
-模块列表：[{"title":"记录结果","count":"1","expanded":"true"},{"title":"来源念头","count":null,"expanded":"false"}]
-状态栏：无改动
-展开后：{"expanded":"true","text":"来源念头 念头 想给桌面加一个「开机就显示今天该做什么」的小面板：现在每天要先打开拾念，才知道昨天记的尝试还差哪一步没做。如果能直接贴在桌面上，犹豫的时间会少一点。 打开念头详情，看这个念头下的全部尝试 →","href":"/capture/cap-1795078904957-59epm5","pillCount":5}
-errors: none
