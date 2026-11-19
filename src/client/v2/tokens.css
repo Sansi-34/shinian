@@ -39,34 +39,35 @@
   --font-serif: 'Instrument Serif', Georgia, 'Songti SC', 'SimSun', serif;
 }
 
-/* ---------- 暗色（默认） ---------- */
+/* ---------- 暗色（默认）：D1 石墨 ---------- */
 .v2-root,
 .v2-root[data-v2-theme='dark'] {
   color-scheme: dark;
-  --bg: #000000;
-  --panel: #0a0a0a;
-  --raise: #141414;
-  --raise-2: #1c1c1c;
-  --sunk: #050505;
-  --ink: #ededed;
-  --ink-2: rgba(255, 255, 255, 0.64);
-  --ink-3: rgba(255, 255, 255, 0.38);
-  --line: rgba(255, 255, 255, 0.06);
-  --line-2: rgba(255, 255, 255, 0.1);
-  --hover: rgba(255, 255, 255, 0.05);
-  --accent: #22d3ee;
-  --accent-ink: #04121a;
-  --accent-soft: rgba(34, 211, 238, 0.12);
+  /* 底不用纯黑：抬到石墨，边界才看得见，彩色状态才不会在屏幕上"发光" */
+  --bg: #0e1013;
+  --panel: #14171c;
+  --raise: #1b1f26;
+  --raise-2: #232a33;
+  --sunk: #0a0c0f;
+  --ink: #e9ecf1;
+  --ink-2: rgba(233, 236, 241, 0.68);
+  --ink-3: rgba(233, 236, 241, 0.45);
+  --line: rgba(233, 236, 241, 0.09);
+  --line-2: rgba(233, 236, 241, 0.16);
+  --hover: rgba(233, 236, 241, 0.05);
+  --accent: #9db8ff;
+  --accent-ink: #0e1013;
+  --accent-soft: rgba(157, 184, 255, 0.12);
 
-  /* 状态色：B 方案的暗色镜像 */
-  --st-active: #5eead4;
-  --st-active-bg: rgba(94, 234, 212, 0.1);
-  --st-done: #bef264;
-  --st-done-bg: rgba(190, 242, 100, 0.1);
-  --st-partial: #fbbf24;
-  --st-partial-bg: rgba(251, 191, 36, 0.1);
-  --st-fail: #fca5a5;
-  --st-fail-bg: rgba(252, 165, 165, 0.1);
+  /* 状态色：D1（饱和度 43–66%，不再和强调色抢注意力） */
+  --st-active: #7fd7c4;
+  --st-active-bg: rgba(127, 215, 196, 0.12);
+  --st-done: #a8c977;
+  --st-done-bg: rgba(168, 201, 119, 0.1);
+  --st-partial: #e0b06a;
+  --st-partial-bg: rgba(224, 176, 106, 0.1);
+  --st-fail: #e08d8d;
+  --st-fail-bg: rgba(224, 141, 141, 0.1);
   --st-idle: rgba(255, 255, 255, 0.5);
   --st-idle-bg: transparent;
 }
