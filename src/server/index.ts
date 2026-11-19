@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { and, desc, eq, sql } from 'drizzle-orm';
 import { db, sqlite } from '../db/db';
+import { MAX_CAPTURE_CHARS } from './aiSettings';
 import {
   accounts,
   captures,
@@ -208,6 +209,14 @@ fastify.post('/api/captures', { preHandler: requireAuth }, async (req, reply) =>
   const { rawText } = (req.body ?? {}) as { rawText?: string };
   const text = (rawText ?? '').trim();
   if (!text) return reply.code(400).send({ error: 'rawText required' });
+  // 正文上限与前端 maxLength、AI 发送上限保持同一条规则（此前只在 AI 发送时校验）
+  if (text.length > MAX_CAPTURE_CHARS) {
+    return reply.code(400).send({
+      error: 'raw_text_too_long',
+      message: `念头原文不能超过 ${MAX_CAPTURE_CHARS} 个字符。`,
+      field: 'rawText',
+    });
+  }
   const id = `cap-${now()}-${Math.random().toString(36).slice(2, 8)}`;
   const t = now();
   const [row] = await db
@@ -242,6 +251,13 @@ fastify.patch('/api/captures/:id', { preHandler: requireAuth }, async (req, repl
   }
   const text = (rawText ?? '').trim();
   if (!text) return reply.code(400).send({ error: 'rawText required' });
+  if (text.length > MAX_CAPTURE_CHARS) {
+    return reply.code(400).send({
+      error: 'raw_text_too_long',
+      message: `念头原文不能超过 ${MAX_CAPTURE_CHARS} 个字符。`,
+      field: 'rawText',
+    });
+  }
 
   // 预检查只是给出更友好的错误；真正的并发保护靠下面 WHERE 里的 revision。
   // 先前这里只按 id 更新，两个请求同时通过预检查时会互相覆盖（后写胜出）。

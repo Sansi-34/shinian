@@ -49,9 +49,12 @@ function mark(text: string, term: string) {
 
 export default function SearchV2Page() {
   const [params] = useSearchParams();
+  // 用字符串而不是 URLSearchParams 对象做依赖：后者每次渲染都是新对象，
+  // 会让下面的同步 effect 在每次渲染时把输入框清空（输入即被擦掉）。
+  const qParam = params.get('q') ?? '';
   const navigate = useNavigate();
-  const [input, setInput] = useState(params.get('q') ?? '');
-  const [query, setQuery] = useState(params.get('q') ?? '');
+  const [input, setInput] = useState(qParam);
+  const [query, setQuery] = useState(qParam);
   const [filter, setFilter] = useState<Filter>('all');
 
   const [captures, setCaptures] = useState<SearchCaptureHit[]>([]);
@@ -93,15 +96,14 @@ export default function SearchV2Page() {
   }, [query, runSearch]);
 
   useEffect(() => {
-    const next = params.get('q') ?? '';
-    setInput(next);
-    setQuery(next);
-  }, [params]);
+    setInput(qParam);
+    setQuery(qParam);
+  }, [qParam]);
 
   function submit() {
     const q = input.trim();
     setQuery(q);
-    navigate(q ? `/v2/search?q=${encodeURIComponent(q)}` : '/search', { replace: true });
+    navigate(q ? `/search?q=${encodeURIComponent(q)}` : '/search', { replace: true });
   }
 
   const counts = useMemo(

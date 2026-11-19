@@ -82,6 +82,8 @@ export default function AttemptV2Page() {
   const [schedOverlap, setSchedOverlap] = useState<{ token: string; ids: string[] } | null>(null);
   const [deleteModal, setDeleteModal] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
+  // 产品模型允许「已完成但未填结果」（导出里会明确标注），所以这里只是二次确认，不是硬拦
+  const [doneWithoutResult, setDoneWithoutResult] = useState(false);
   // 同一弹窗会话复用同一个 operationId：服务端冲突 token 把它算进签名，换 id 会永远对不上
   const [schedOpId, setSchedOpId] = useState('');
   const [delPreview, setDelPreview] = useState<AttemptDeletePreview | null>(null);
@@ -117,8 +119,9 @@ export default function AttemptV2Page() {
 
   async function save(futureScheduleAction?: 'keep' | 'cancel') {
     if (!attempt || busy) return;
-    if (state === 'done' && !result.trim()) {
-      setActionError('标记完成时需要写下结果。结果只能由你填。');
+    if (state === 'done' && !result.trim() && !doneWithoutResult) {
+      setDoneWithoutResult(true);
+      setActionError('还没写结果。仍然可以完成，但阶段回顾与导出会记为「已完成但未填结果」。再点一次「仍然标记完成」即可保存。');
       return;
     }
     setBusy(true);
@@ -136,6 +139,7 @@ export default function AttemptV2Page() {
       setAttempt(res.attempt);
       setResult(res.attempt.resultText ?? '');
       setScheduleConflict(null);
+      setDoneWithoutResult(false);
       setSavedAt(Date.now());
       // 取消过未来日程就刷新右栏
       if (futureScheduleAction === 'cancel') await load();
@@ -394,7 +398,7 @@ export default function AttemptV2Page() {
 
               <div className="v2-captureActions">
                 <Button variant="primary" onClick={() => void save()} disabled={busy}>
-                  {busy ? '保存中…' : '保存'}
+                  {busy ? '保存中…' : doneWithoutResult ? '仍然标记完成' : '保存'}
                 </Button>
                 <Button
                   onClick={() => {
