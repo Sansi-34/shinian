@@ -6,6 +6,13 @@
    ========================================================================== */
 
 .v2-root {
+  /* V2 根节点自占满视口：旧外壳的 padding 不再影响它 */
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  background: var(--bg);
+  color: var(--ink);
+
   /* 间距：只有 6 档 */
   --sp-1: 4px;
   --sp-2: 8px;
@@ -101,5 +108,7 @@
   max-width: none;
 }
 .app.v2-mode {
-  background: #000;
+  /* 根节点自己绘背景；这里保持透明，避免纸张主题下露出黑边 */
+  background: transparent;
+  padding: 0;
 }

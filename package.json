@@ -35,6 +35,7 @@
     "backup": "node scripts/backup.mjs",
     "restore": "node scripts/restore.mjs",
     "verify": "python scripts/verify_main.py",
+    "check:v2": "node scripts/check_v2_shell.mjs",
     "seed": "python scripts/seed_acceptance.py"
   },
   "dependencies": {
