@@ -301,14 +301,6 @@ export default function AttemptV2Page() {
               排日程
             </button>
           </div>
-          <div>
-            <h3 className="v2-groupTitle">旧版入口</h3>
-            <p className="v2-groupNote">经验采用、AI 复盘仍走旧版页面。</p>
-            <Link className="v2-groupItem" to={'/legacy/attempt/' + attemptId}>
-              打开旧版尝试页
-              <span>→</span>
-            </Link>
-          </div>
         </>
       }
       statusLeft={attempt ? `${st.label} · 版本 ${attempt.revision}` : '加载中'}

@@ -2,25 +2,17 @@
 // V2.2：桌面轻量侧栏 + 移动折叠菜单；仅改外壳，路由与功能入口全部保留。
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams, Link, NavLink, useLocation } from 'react-router-dom';
-import HomePage from './pages/HomePage';
-import CaptureDetailPage from './pages/CaptureDetailPage';
-import AttemptDetailPage from './pages/AttemptDetailPage';
-import SearchPage from './pages/SearchPage';
 import LoginPage from './pages/LoginPage';
 import SettingsAiPage from './pages/SettingsAiPage';
 import ActivityPage from './pages/ActivityPage';
 import ReviewPage from './pages/ReviewPage';
 import ReviewDetailPage from './pages/ReviewDetailPage';
 import NextActionPage from './pages/NextActionPage';
-import SchedulePage from './pages/SchedulePage';
 import ResearchPage from './pages/ResearchPage';
-import ResearchIndexPage from './pages/ResearchIndexPage';
 import AskPage from './pages/AskPage';
 import AskDetailPage from './pages/AskDetailPage';
-import ExperiencesPage from './pages/ExperiencesPage';
 import ExperienceDetailPage from './pages/ExperienceDetailPage';
 import GraphPage from './pages/GraphPage';
-import TopicsPage from './pages/TopicsPage';
 import TopicPage from './pages/TopicPage';
 import ThemeSwitcher from './ThemeSwitcher';
 import HomeV2Page from './v2/HomeV2Page';
@@ -58,6 +50,12 @@ const SECONDARY_NAV: Array<{ to: string; label: string; icon: string }> = [
   { to: '/research', label: '深度研究', icon: '🔍' },
   { to: '/settings/ai', label: '偏好设置', icon: '⚙' },
 ];
+
+// 兼容跳转要保住 query：旧书签 /v2/search?q=xxx 不能把 q 丢掉
+function KeepQueryRedirect({ to }: { to: string }) {
+  const location = useLocation();
+  return <Navigate to={to + location.search} replace />;
+}
 
 function CaptureRedirect() {
   const { captureId } = useParams();
@@ -246,23 +244,16 @@ function Shell() {
           <Route path="/settings/ai" element={<SettingsAiPage />} />
           <Route path="/login" element={<LoginPage onLogin={setUsername} />} />
 
-          {/* ---------- 旧版：V2 接管正式路径后留在这里对照 / 兜底 ---------- */}
-          <Route path="/legacy" element={<HomePage />} />
-          <Route path="/legacy/search" element={<SearchPage />} />
-          <Route path="/legacy/topics" element={<TopicsPage />} />
-          <Route path="/legacy/experiences" element={<ExperiencesPage />} />
-          <Route path="/legacy/schedule" element={<SchedulePage />} />
-          <Route path="/legacy/research" element={<ResearchIndexPage />} />
-          <Route path="/legacy/capture/:captureId" element={<CaptureDetailPage />} />
-          <Route path="/legacy/attempt/:attemptId" element={<AttemptDetailPage />} />
+          {/* ---------- 未匹配：旧书签（/legacy/* 等）一律回首页，不留空白页 ---------- */}
+          <Route path="*" element={<Navigate to="/" replace />} />
 
           {/* ---------- 老书签兼容 ---------- */}
           <Route path="/v2" element={<Navigate to="/" replace />} />
-          <Route path="/v2/search" element={<Navigate to="/search" replace />} />
-          <Route path="/v2/topics" element={<Navigate to="/topics" replace />} />
-          <Route path="/v2/experiences" element={<Navigate to="/experiences" replace />} />
-          <Route path="/v2/schedule" element={<Navigate to="/schedule" replace />} />
-          <Route path="/v2/research" element={<Navigate to="/research" replace />} />
+          <Route path="/v2/search" element={<KeepQueryRedirect to="/search" />} />
+          <Route path="/v2/topics" element={<KeepQueryRedirect to="/topics" />} />
+          <Route path="/v2/experiences" element={<KeepQueryRedirect to="/experiences" />} />
+          <Route path="/v2/schedule" element={<KeepQueryRedirect to="/schedule" />} />
+          <Route path="/v2/research" element={<KeepQueryRedirect to="/research" />} />
           <Route path="/v2/capture/:captureId" element={<CaptureRedirect />} />
           <Route path="/v2/attempt/:attemptId" element={<AttemptRedirect />} />
         </Routes>

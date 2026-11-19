@@ -1,6 +1,5 @@
-// 拾念 V2 · 主题列表（只读视图；详情页仍是旧版）
+// 拾念 V2 · 主题列表（只读视图；新建与详情还没搬进新版）
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import api from '../api';
 import type { Topic } from '../types';
 import V2Shell from './V2Shell';
@@ -68,17 +67,14 @@ export default function TopicsV2Page() {
           <div>
             <h3 className="v2-groupTitle">说明</h3>
             <p className="v2-groupNote">主题是一组稳定 ID 的集合，不复制正文；成员不代表相互支持或相似，也不会增加图谱边。</p>
-            <Link className="v2-groupItem" to="/legacy/topics">
-              旧版主题页（可新建）
-              <span>→</span>
-            </Link>
+            <span className="v2-hint">新建主题还没搬进新版（下一步）</span>
           </div>
         </>
       }
       statusLeft={`主题 ${topics.length} · 记录 ${members}`}
       statusRight={<span>只读视图</span>}
     >
-      <Module title="我的主题" count={topics.length} action={<Link to="/legacy/topics">新建 / 管理</Link>}>
+      <Module title="我的主题" count={topics.length} action={<span className="v2-hint">新建主题还没搬进新版</span>}>
         {loading && <p className="v2-state"><Spinner /></p>}
         {!loading && error && (
           <p className="v2-state">
@@ -90,7 +86,7 @@ export default function TopicsV2Page() {
         )}
         {!loading && !error && topics.length === 0 && (
           <p className="v2-state">
-            还没有主题。主题用来把围绕同一个问题的一组记录收在一起——去旧版主题页新建一个。
+            还没有主题。主题用来把围绕同一个问题的一组记录收在一起——新建主题还没搬进新版。
           </p>
         )}
         {topics.map((t, i) => (

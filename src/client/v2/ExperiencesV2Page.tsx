@@ -1,6 +1,5 @@
-// 拾念 V2 · 经验列表（只读视图；详情页仍是旧版）
+// 拾念 V2 · 经验列表（只读视图；整理与详情还没搬进新版）
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import api from '../api';
 import type { ExperienceListItem } from '../types';
 import V2Shell from './V2Shell';
@@ -73,17 +72,14 @@ export default function ExperiencesV2Page() {
           <div>
             <h3 className="v2-groupTitle">说明</h3>
             <p className="v2-groupNote">经验必须挂在仍可访问的来源上；模型整理的正文会标注「由模型推断整理」，保存只代表你愿意留下它，不代表已证实。</p>
-            <Link className="v2-groupItem" to="/legacy/experiences">
-              旧版经验页
-              <span>→</span>
-            </Link>
+            <span className="v2-hint">整理经验还没搬进新版（下一步）</span>
           </div>
         </>
       }
       statusLeft={`经验 ${items.length} · 待修订 ${needRevision}`}
       statusRight={<span>只读视图</span>}
     >
-      <Module title="我整理的经验" count={items.length} action={<Link to="/legacy/experiences">旧版管理</Link>}>
+      <Module title="我整理的经验" count={items.length} action={<span className="v2-hint">整理经验还没搬进新版</span>}>
         {loading && <p className="v2-state"><Spinner /></p>}
         {!loading && error && (
           <p className="v2-state">

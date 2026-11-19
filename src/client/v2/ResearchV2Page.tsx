@@ -1,6 +1,5 @@
-// 拾念 V2 · 深度研究列表（只读视图；发起与生成仍在旧版）
+// 拾念 V2 · 深度研究列表（只读视图；发起与生成还没搬进新版）
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import api from '../api';
 import type { ResearchListItem } from '../types';
 import V2Shell from './V2Shell';
@@ -79,17 +78,14 @@ export default function ResearchV2Page() {
           <div>
             <h3 className="v2-groupTitle">说明</h3>
             <p className="v2-groupNote">研究只读取 GitHub 公开资料，模型引用必须指向本次实际取回的来源；结论不足时会直接说不足。</p>
-            <Link className="v2-groupItem" to="/legacy/research">
-              旧版研究页（发起 / 继续）
-              <span>→</span>
-            </Link>
+            <span className="v2-hint">发起研究还没搬进新版（下一步）</span>
           </div>
         </>
       }
       statusLeft={`研究 ${items.length} · 已完成 ${done}`}
       statusRight={<span>只读视图</span>}
     >
-      <Module title="已保存的研究" count={items.length} action={<Link to="/legacy/research">旧版管理</Link>}>
+      <Module title="已保存的研究" count={items.length} action={<span className="v2-hint">发起研究还没搬进新版</span>}>
         {loading && <p className="v2-state"><Spinner /></p>}
         {!loading && error && (
           <p className="v2-state">
@@ -100,7 +96,7 @@ export default function ResearchV2Page() {
           </p>
         )}
         {!loading && !error && items.length === 0 && (
-          <p className="v2-state">还没有保存的研究。从一条念头的「研究一下」发起，或去旧版研究页检索公开仓库。</p>
+          <p className="v2-state">还没有保存的研究。研究方向还没搬进新版——下一步接。</p>
         )}
         {items.map((r, i) => {
           const st = STATUS[r.status] ?? { kind: 'idle' as StatusKind, label: r.status };

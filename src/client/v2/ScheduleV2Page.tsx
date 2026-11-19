@@ -1,6 +1,5 @@
-// 拾念 V2 · 日程（未来 7 天只读视图；新建/改时间仍在旧版）
+// 拾念 V2 · 日程（未来 7 天视图；新建走尝试详情的「排日程」）
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import api from '../api';
 import type { ScheduleBlock } from '../types';
 import {
@@ -88,10 +87,7 @@ export default function ScheduleV2Page() {
           <div>
             <h3 className="v2-groupTitle">说明</h3>
             <p className="v2-groupNote">日程只是时间占位，不会自动创建尝试或改状态；冲突需要你自己判断。</p>
-            <Link className="v2-groupItem" to="/legacy/schedule">
-              旧版日程页（新建 / 改时间）
-              <span>→</span>
-            </Link>
+            <span className="v2-hint">新建日程还没搬进新版（先在尝试详情的「排日程」里建）</span>
           </div>
         </>
       }
@@ -108,7 +104,7 @@ export default function ScheduleV2Page() {
         </p>
       )}
       {!loading && !error && items.length === 0 && (
-        <p className="v2-state">接下来 7 天没有安排。日程只能手动创建——去旧版日程页排一段时间。</p>
+        <p className="v2-state">接下来 7 天没有安排。日程在尝试详情里点「排日程」创建——不是自动排的。</p>
       )}
 
       {groups.map(([key, list]) => {

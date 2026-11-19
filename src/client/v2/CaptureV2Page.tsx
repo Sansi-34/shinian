@@ -317,15 +317,6 @@ export default function CaptureV2Page() {
               关联一条念头
             </button>
           </div>
-
-          <div>
-            <h3 className="v2-groupTitle">旧版入口</h3>
-            <p className="v2-groupNote">AI 帮我试一步、参考旧经验、研究一下、整理成经验仍是多步流程，暂时留在旧页。</p>
-            <Link className="v2-groupItem" to={'/legacy/capture/' + captureId}>
-              打开旧版详情
-              <span>→</span>
-            </Link>
-          </div>
         </>
       }
       statusLeft={capture ? `${dayLabel(capture.createdAt, tz, todayDateKey(tz))} · 版本 ${capture.revision} · ${attempts.length} 次尝试` : '加载中'}
@@ -395,9 +386,9 @@ export default function CaptureV2Page() {
             {!writing && (
               <div className="v2-ghosts" style={{ borderBottom: 0 }}>
                 <GhostChip onClick={() => setWriting(true)}>自己写一步</GhostChip>
-                <Link to={'/legacy/capture/' + captureId} className="v2-ghostLink">
-                  AI 帮我试一步 / 参考旧经验 / 研究一下（旧版）
-                </Link>
+                <span className="v2-ghostLink" aria-disabled="true">
+                  AI 帮我试一步 / 参考旧经验 / 研究一下 —— 还没搬进新版
+                </span>
               </div>
             )}
             {writing && (
