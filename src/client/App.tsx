@@ -31,6 +31,7 @@ import ScheduleV2Page from './v2/ScheduleV2Page';
 import ResearchV2Page from './v2/ResearchV2Page';
 import CaptureV2Page from './v2/CaptureV2Page';
 import AttemptV2Page from './v2/AttemptV2Page';
+import KitPage from './v2/KitPage';
 import api from './api';
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
@@ -113,6 +114,7 @@ function Shell() {
   // V2 已接管这些正式路径；其余（问记录/动态/回顾/图谱/设置/详情类）暂时还是旧实现
   const V2_EXACT = ['/', '/search', '/topics', '/experiences', '/schedule', '/research'];
   const v2Mode =
+    location.pathname === '/kit' ||
     V2_EXACT.includes(location.pathname) ||
     location.pathname.startsWith('/capture/') ||
     location.pathname.startsWith('/attempt/');
@@ -228,6 +230,7 @@ function Shell() {
           <Route path="/research" element={<ResearchV2Page />} />
           <Route path="/capture/:captureId" element={<CaptureV2Page />} />
           <Route path="/attempt/:attemptId" element={<AttemptV2Page />} />
+          <Route path="/kit" element={<KitPage />} />
 
           {/* ---------- 尚未迁移：先沿用旧实现（旧外壳） ---------- */}
           <Route path="/topics/:topicId" element={<TopicPage />} />
