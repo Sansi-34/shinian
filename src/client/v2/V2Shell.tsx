@@ -33,10 +33,10 @@ export function useV2Theme(): [V2Theme, (t: V2Theme) => void] {
 }
 
 const MORE = [
-  ['/experiences', '经验'],
-  ['/schedule', '日程'],
+  ['/v2/experiences', '经验'],
+  ['/v2/schedule', '日程'],
   ['/activity', '操作动态'],
-  ['/research', '深度研究'],
+  ['/v2/research', '深度研究'],
   ['/settings/ai', '设置'],
 ];
 
