@@ -120,7 +120,7 @@ export default function SearchV2Page() {
         <>
           {allCaptures.length === 0 && <p className="v2-state">还没有念头。</p>}
           {allCaptures.slice(0, 14).map((c, i) => (
-            <Link key={c.id} to={'/capture/' + c.id} className="v2-leftItem" style={{ '--i': i } as React.CSSProperties}>
+            <Link key={c.id} to={'/v2/capture/' + c.id} className="v2-leftItem" style={{ '--i': i } as React.CSSProperties}>
               <span className="v2-leftTitle">{c.rawText}</span>
               <span className="v2-leftMeta">念头</span>
             </Link>
@@ -217,7 +217,7 @@ export default function SearchV2Page() {
               key={c.id}
               index={i}
               time={c.matchField || '原文'}
-              to={'/capture/' + c.id}
+              to={'/v2/capture/' + c.id}
               title={mark(c.rawText, query)}
               sub={c.snippet && c.snippet !== c.rawText ? mark(c.snippet, query) : undefined}
               side={<Pill kind="idle">{c.archived ? '已归档' : '念头'}</Pill>}

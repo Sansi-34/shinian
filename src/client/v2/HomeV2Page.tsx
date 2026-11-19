@@ -119,7 +119,7 @@ export default function HomeV2Page() {
       items.push({
         key: 'cap-' + c.id,
         at: c.updatedAt || c.createdAt,
-        to: '/capture/' + c.id,
+        to: '/v2/capture/' + c.id,
         title: c.rawText,
         sub: '念头' + (c.archivedAt ? ' · 已归档' : ''),
         side: <Pill kind="idle">{c.archivedAt ? '已归档' : '想法'}</Pill>,
@@ -157,7 +157,7 @@ export default function HomeV2Page() {
           )}
           {!loading && !error && captures.length === 0 && <p className="v2-state">还没有念头。在中间输入框写一句开始。</p>}
           {captures.slice(0, 12).map((c, i) => (
-            <Link key={c.id} to={'/capture/' + c.id} className="v2-leftItem" style={{ '--i': i } as React.CSSProperties}>
+            <Link key={c.id} to={'/v2/capture/' + c.id} className="v2-leftItem" style={{ '--i': i } as React.CSSProperties}>
               <span className="v2-leftTitle">{c.rawText}</span>
               <span className="v2-leftMeta">{dayKey(c.createdAt)}</span>
             </Link>
