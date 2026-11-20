@@ -223,9 +223,6 @@
 }
 
 @media (max-width: 900px) {
-  .desktopOnly {
-    display: none;
-  }
   .mobileOnly {
     display: flex;
   }
@@ -251,6 +248,11 @@
 
   .group {
     display: contents;
+  }
+
+  .desktopOnly,
+  .group.desktopOnly {
+    display: none;
   }
 
   .link {

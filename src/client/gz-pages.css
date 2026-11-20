@@ -1780,7 +1780,9 @@
 }
 @media (max-width: 640px) {
   .start-choices { grid-template-columns: 1fr; }
-  .review-stat, .activity-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .review-stats, .activity-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .review-stat { grid-template-columns: minmax(0, 1fr) auto; row-gap: 4px; }
+  .review-stat .stat-label { grid-column: 1 / -1; margin-bottom: 0; }
   .gz-stats[data-count='4'] { --cols: 2; }
   .ask-candidate, .topic-card, .topic-attempt-card, .experience-list-item { flex-direction: column; align-items: stretch; }
   .topic-attempt-card { grid-template-columns: 1fr; }
@@ -2296,4 +2298,24 @@ select:focus {
 }
 @media (max-width: 620px) {
   .graph-force-field { grid-template-columns: 4.4em 1fr 3em; }
+}
+
+/* ---- 非 V2 二级页面接入 V2 统一图标栏 ---- */
+.app.legacy-with-rail {
+  max-width: none;
+  margin: 0 0 0 var(--rail, 60px);
+  padding: 0;
+}
+.app.legacy-with-rail .app-main {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 28px 36px 64px;
+}
+@media (max-width: 900px) {
+  .app.legacy-with-rail {
+    margin-left: 0;
+  }
+  .app.legacy-with-rail .app-main {
+    padding: 20px 16px 88px;
+  }
 }

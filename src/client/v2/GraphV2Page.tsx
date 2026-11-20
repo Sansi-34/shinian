@@ -28,6 +28,15 @@ const TYPE_LABEL: Record<GraphNodeType, string> = {
   schedule: '日程',
 };
 
+const TYPE_CSS_COLOR: Record<GraphNodeType, string> = {
+  capture: 'var(--ink)',
+  attempt: 'var(--st-active)',
+  experience: 'var(--st-done)',
+  research: 'var(--st-partial)',
+  review: 'var(--accent)',
+  schedule: 'var(--ink-3)',
+};
+
 const LINK_LABEL: Record<GraphLink['type'], string> = {
   contains: '包含',
   references: '引用',
@@ -52,9 +61,10 @@ function buildLayoutOptions(name: LayoutName, edgeLength: number): cytoscape.Lay
   return {
     ...base,
     quality: 'default',
-    idealEdgeLength: edgeLength,
-    nodeRepulsion: 6000,
-    gravity: 0.28,
+    idealEdgeLength: edgeLength + 24,
+    nodeRepulsion: 12000,
+    nodeSeparation: 80,
+    gravity: 0.24,
     numIter: 1800,
     randomize: true,
   } as unknown as cytoscape.LayoutOptions;
@@ -74,7 +84,7 @@ export default function GraphV2Page() {
   const [hiddenTypes, setHiddenTypes] = useState<Set<GraphNodeType>>(new Set());
   const [includeArchived, setIncludeArchived] = useState(false);
   const [layout, setLayout] = useState<LayoutName>('fcose');
-  const [spacing] = useState(80);
+  const [spacing] = useState(76);
   const [query, setQuery] = useState('');
   const [hits, setHits] = useState<GraphSearchHit[] | null>(null);
   const [searching, setSearching] = useState(false);
@@ -107,7 +117,7 @@ export default function GraphV2Page() {
       panel: v('--raise', '#1b1f26'),
       ink: v('--ink', '#e9ecf1'),
       ink2: v('--ink-2', '#a9b0bd'),
-      line: v('--line-2', 'rgba(233,236,241,0.2)'),
+      line: v('--ink-3', 'rgba(140,148,162,0.5)'),
       accent: v('--accent', '#9db8ff'),
       done: v('--st-done', '#a8c977'),
       active: v('--st-active', '#7fd7c4'),
@@ -117,8 +127,37 @@ export default function GraphV2Page() {
     };
   }, []);
 
-  const nodeColor = (type: GraphNodeType, p: ReturnType<typeof palette>) =>
-    type === 'capture' ? p.ink : type === 'attempt' ? p.active : type === 'experience' ? p.done : type === 'research' ? p.partial : type === 'review' ? p.accent : p.idle;
+  /** 把 hex / rgb(a) 加上透明度，用于「软填充 + 实边框」的节点 */
+  const withAlpha = (color: string, alpha: number) => {
+    const hex = color.trim();
+    if (hex.startsWith('#')) {
+      const h = hex.length === 4 ? '#' + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3] : hex;
+      const r = parseInt(h.slice(1, 3), 16);
+      const g = parseInt(h.slice(3, 5), 16);
+      const b = parseInt(h.slice(5, 7), 16);
+      return `rgba(${r},${g},${b},${alpha})`;
+    }
+    const m = hex.match(/rgba?\(([^)]+)\)/);
+    if (m) {
+      const [r, g, b] = m[1].split(',').map((v) => v.trim());
+      return `rgba(${r},${g},${b},${alpha})`;
+    }
+    return hex;
+  };
+
+  /** 每种节点一个色：念头蓝、尝试青、经验绿、研究橙、回顾紫调、日程中性 */
+  const typeColor = (type: GraphNodeType, p: ReturnType<typeof palette>) =>
+    type === 'capture'
+      ? p.accent
+      : type === 'attempt'
+        ? p.active
+        : type === 'experience'
+          ? p.done
+          : type === 'research'
+            ? p.partial
+            : type === 'review'
+              ? p.ink
+              : p.idle;
 
   // 建图
   useEffect(() => {
@@ -127,18 +166,36 @@ export default function GraphV2Page() {
     const visibleNodes = data.nodes.filter((n) => !hiddenTypes.has(n.type));
     const visibleIds = new Set(visibleNodes.map((n) => n.id));
     const elements = [
-      ...visibleNodes.map((n) => ({
-        data: {
-          id: n.id,
-          label: n.label.length > 18 ? n.label.slice(0, 18) + '…' : n.label,
-          color: nodeColor(n.type, p),
-          type: n.type,
-          degree: n.degree,
-        },
-      })),
+      ...visibleNodes.map((n) => {
+        const solid = typeColor(n.type, p);
+        return {
+          data: {
+            id: n.id,
+            label: n.label.length > 26 ? n.label.slice(0, 26) + '…' : n.label,
+            fill: withAlpha(solid, 0.22),
+            stroke: solid,
+            strong: solid,
+            lineColor: withAlpha(p.ink, 0.32),
+            strongColor: withAlpha(solid, 0.85),
+            labelColor: p.ink,
+            halo: p.bg,
+            type: n.type,
+            degree: n.degree,
+          },
+        };
+      }),
       ...data.links
         .filter((l) => visibleIds.has(l.source) && visibleIds.has(l.target))
-        .map((l) => ({ data: { id: l.id, source: l.source, target: l.target, kind: l.type } })),
+        .map((l) => ({
+          data: {
+            id: l.id,
+            source: l.source,
+            target: l.target,
+            kind: l.type,
+            lineColor: withAlpha(p.ink, 0.32),
+            strongColor: withAlpha(p.accent, 0.85),
+          },
+        })),
     ];
 
     const cy = cytoscape({
@@ -149,19 +206,27 @@ export default function GraphV2Page() {
         {
           selector: 'node',
           style: {
-            'background-color': 'data(color)',
-            width: 'mapData(degree, 0, 8, 12, 26)',
-            height: 'mapData(degree, 0, 8, 12, 26)',
+            'background-color': 'data(fill)',
+            'background-opacity': 1,
+            'border-width': 1.6,
+            'border-color': 'data(stroke)',
+            'border-opacity': 0.9,
+            width: 'mapData(degree, 0, 10, 18, 44)',
+            height: 'mapData(degree, 0, 10, 18, 44)',
             label: 'data(label)',
-            'font-size': 10,
-            color: p.ink2,
+            'font-size': 11,
+            'font-weight': 500,
+            color: 'data(labelColor)',
             'text-valign': 'bottom',
-            'text-margin-y': 5,
-            'text-max-width': '110px',
+            'text-halign': 'center',
+            'text-margin-y': 7,
+            'text-max-width': '86px',
             'text-wrap': 'ellipsis',
-            'border-width': 1,
-            'border-color': p.bg,
-            'min-zoomed-font-size': 7,
+            'text-outline-width': 2.5,
+            'text-outline-color': 'data(halo)',
+            'text-outline-opacity': 1,
+            'min-zoomed-font-size': 9,
+            'overlay-opacity': 0,
           },
         },
         { selector: 'node[type = "capture"]', style: { shape: 'ellipse' } },
@@ -173,29 +238,25 @@ export default function GraphV2Page() {
         {
           selector: 'edge',
           style: {
-            width: 1,
-            'line-color': p.line,
-            'target-arrow-color': p.line,
+            width: 1.2,
+            'line-color': 'data(lineColor)',
+            'target-arrow-color': 'data(lineColor)',
             'target-arrow-shape': 'triangle',
-            'arrow-scale': 0.7,
+            'arrow-scale': 0.5,
             'curve-style': 'bezier',
-            opacity: 0.75,
+            'control-point-step-size': 24,
+            opacity: 1,
+            'overlay-opacity': 0,
           },
         },
         { selector: 'edge[kind = "references"]', style: { 'line-style': 'dashed' } },
-        { selector: 'edge[kind = "related"]', style: { 'line-color': p.accent, 'target-arrow-color': p.accent } },
-        { selector: 'edge[kind = "evidence"]', style: { 'line-color': p.done, 'target-arrow-color': p.done } },
-        {
-          selector: 'node:selected',
-          style: {
-            'border-width': 2,
-            'border-color': p.accent,
-            color: p.ink,
-            'font-size': 11,
-          },
-        },
-        { selector: '.dim', style: { opacity: 0.18 } },
-        { selector: 'node.focus', style: { 'border-width': 2, 'border-color': p.partial } },
+        { selector: 'edge[kind = "related"]', style: { 'line-color': 'data(strongColor)', 'target-arrow-color': 'data(strongColor)', width: 1.8 } },
+        { selector: 'edge[kind = "evidence"]', style: { 'line-color': 'data(strongColor)', 'target-arrow-color': 'data(strongColor)', width: 1.6 } },
+        { selector: 'node:selected', style: { 'border-width': 2.4, 'border-color': 'data(stroke)', 'font-weight': 600 } },
+        { selector: '.dim', style: { opacity: 0.12, 'text-opacity': 0.1 } },
+        { selector: 'edge.dim', style: { opacity: 0.06 } },
+        { selector: 'node.focus', style: { 'border-width': 2.4 } },
+        { selector: '.hideLabel', style: { 'text-opacity': 0 } },
       ],
       layout: { name: 'preset' },
     });
@@ -204,9 +265,27 @@ export default function GraphV2Page() {
       const id = evt.target.id();
       const node = data.nodes.find((n) => n.id === id) ?? null;
       setSelected(node);
+      const keep = evt.target.closedNeighborhood();
+      cy.elements().addClass('dim');
+      keep.removeClass('dim');
+      keep.edges().removeClass('dim');
     });
     cy.on('tap', (evt) => {
-      if (evt.target === cy) setSelected(null);
+      if (evt.target === cy) {
+        setSelected(null);
+        cy.elements().removeClass('dim');
+      }
+    });
+    // 悬浮：高亮自己和直接邻居，其他淡出
+    cy.on('mouseover', 'node', (evt) => {
+      const node = evt.target;
+      const keep = node.closedNeighborhood();
+      cy.elements().addClass('dim');
+      keep.removeClass('dim');
+      keep.edges().removeClass('dim');
+    });
+    cy.on('mouseout', 'node', () => {
+      cy.elements().removeClass('dim');
     });
     cy.on('dbltap', 'node', (evt) => {
       const id = evt.target.id();
@@ -252,17 +331,18 @@ export default function GraphV2Page() {
       if (!cy) return;
       const p = palette();
       cy.nodes().forEach((n) => {
-        n.style({
-          'background-color': nodeColor(n.data('type') as GraphNodeType, p),
-          'border-color': p.bg,
-          color: p.ink2,
-        });
+        const solid = typeColor(n.data('type') as GraphNodeType, p);
+        n.data('fill', withAlpha(solid, 0.22));
+        n.data('stroke', solid);
+        n.data('labelColor', p.ink);
+        n.data('halo', p.bg);
       });
       cy.edges().forEach((e) => {
         const kind = e.data('kind') as GraphLink['type'];
-        const color = kind === 'related' ? p.accent : kind === 'evidence' ? p.done : p.line;
-        e.style({ 'line-color': color, 'target-arrow-color': color });
+        e.data('lineColor', withAlpha(p.ink, 0.32));
+        e.data('strongColor', withAlpha(kind === 'evidence' ? p.done : p.accent, 0.85));
       });
+      cy.style().update();
     };
     const mo = new MutationObserver(apply);
     const target = document.querySelector('.v2-root') ?? document.body;
@@ -290,10 +370,17 @@ export default function GraphV2Page() {
       const cy = cyRef.current;
       if (cy) {
         const ids = new Set((res.results ?? []).map((h) => h.node.id));
+        cy.elements().removeClass('dim');
         cy.nodes().forEach((n) => {
           if (ids.has(n.id())) n.addClass('focus');
           else n.removeClass('focus');
         });
+        const keep = cy.nodes('.focus');
+        if (keep.length > 0) {
+          cy.elements().addClass('dim');
+          keep.removeClass('dim');
+          keep.connectedEdges().removeClass('dim');
+        }
         if (ids.size > 0) cy.fit(cy.nodes('.focus'), 80);
       }
     } catch {
@@ -448,7 +535,10 @@ export default function GraphV2Page() {
               <h3 className="v2-groupTitle">节点</h3>
               {(Object.keys(TYPE_LABEL) as GraphNodeType[]).map((t) => (
                 <div key={t} className="v2-groupItem">
-                  <span>{TYPE_LABEL[t]}</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--ink)' }}>
+                    <i className="v2-graphDot" style={{ background: TYPE_CSS_COLOR[t] }} aria-hidden="true" />
+                    {TYPE_LABEL[t]}
+                  </span>
                   <span className="v2-hint">{stats ? (stats as Record<string, number>)[t === 'capture' ? 'captures' : t === 'attempt' ? 'attempts' : t === 'research' ? 'research' : t === 'review' ? 'reviews' : t === 'schedule' ? 'schedules' : 'experiences'] ?? 0 : '—'}</span>
                 </div>
               ))}

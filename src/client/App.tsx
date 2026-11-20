@@ -1,7 +1,7 @@
 // 拾念 SHINIAN v0.1 - 应用主组件（路由 + 会话）
-// V2.2：桌面轻量侧栏 + 移动折叠菜单；仅改外壳，路由与功能入口全部保留。
+// 全站统一使用 V2 轻量导航栏（Rail）：桌面 60px 图标栏 + 移动 56px 底栏。
 import { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams, Link, NavLink, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams, useLocation } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import SettingsAiPage from './pages/SettingsAiPage';
 import ActivityPage from './pages/ActivityPage';
@@ -10,7 +10,6 @@ import ReviewDetailPage from './pages/ReviewDetailPage';
 import NextActionPage from './pages/NextActionPage';
 import ResearchPage from './pages/ResearchPage';
 import ExperienceDetailPage from './pages/ExperienceDetailPage';
-import ThemeSwitcher from './ThemeSwitcher';
 import HomeV2Page from './v2/HomeV2Page';
 import SearchV2Page from './v2/SearchV2Page';
 import TopicsV2Page from './v2/TopicsV2Page';
@@ -24,32 +23,10 @@ import AskV2Page from './v2/AskV2Page';
 import AskV2DetailPage from './v2/AskV2DetailPage';
 import TopicV2Page from './v2/TopicV2Page';
 import GraphV2Page from './v2/GraphV2Page';
+import Rail from './v2/ui/Rail';
+import { useV2Theme } from './v2/theme';
+import './v2/tokens.css';
 import api from './api';
-
-const navClass = ({ isActive }: { isActive: boolean }) =>
-  isActive ? 'nav-link active' : 'nav-link';
-
-/**
- * 主导航：承载日常核心实践流转（记念头、聚主题、存经验、定日程）
- * 合并原先同时指向 /topics 的重复入口「学习」与「项目」为统一的「主题」。
- */
-const PRIMARY_NAV: Array<{ to: string; label: string; icon: string; end?: boolean }> = [
-  { to: '/', label: '首页', icon: '✦', end: true },
-  { to: '/search', label: '念头', icon: '✎' },
-  { to: '/topics', label: '主题', icon: '◈' },
-  { to: '/experiences', label: '经验', icon: '★' },
-  { to: '/schedule', label: '日程', icon: '◷' },
-];
-
-/** 次级导航：探索与复盘工具，所有原有入口完整保留 */
-const SECONDARY_NAV: Array<{ to: string; label: string; icon: string }> = [
-  { to: '/ask', label: '问记录', icon: '💬' },
-  { to: '/graph', label: '知识大脑', icon: '🕸' },
-  { to: '/review', label: '周期回顾', icon: '↻' },
-  { to: '/activity', label: '操作动态', icon: '⚡' },
-  { to: '/research', label: '深度研究', icon: '🔍' },
-  { to: '/settings/ai', label: '偏好设置', icon: '⚙' },
-];
 
 // 兼容跳转要保住 query：旧书签 /v2/search?q=xxx 不能把 q 丢掉
 function KeepQueryRedirect({ to }: { to: string }) {
@@ -72,7 +49,7 @@ function Shell() {
   const location = useLocation();
   const [username, setUsername] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [v2Theme] = useV2Theme();
 
   useEffect(() => {
     api
@@ -89,15 +66,6 @@ function Shell() {
     }
   }, [checked, username, location.pathname, navigate]);
 
-  // 路由变化时自动收起移动菜单
-  useEffect(() => { setMenuOpen(false); }, [location.pathname]);
-
-  async function logout() {
-    await api.destroySession().catch(() => {});
-    setUsername(null);
-    navigate('/login');
-  }
-
   if (!checked) {
     return (
       <div className="app-loading">
@@ -107,9 +75,6 @@ function Shell() {
     );
   }
 
-  const graphMode = false; // 图谱已改为 V2 页面（Cytoscape），不再需要旧的全屏画布外壳
-  // 登录页不显示侧栏；图谱页保留原有深色全屏视觉。
-  // V2 已接管这些正式路径；其余（问记录/动态/回顾/图谱/设置/详情类）暂时还是旧实现
   const V2_EXACT = ['/', '/search', '/topics', '/experiences', '/schedule', '/research'];
   const v2Mode =
     location.pathname === '/kit' ||
@@ -120,105 +85,15 @@ function Shell() {
     V2_EXACT.includes(location.pathname) ||
     location.pathname.startsWith('/capture/') ||
     location.pathname.startsWith('/attempt/');
-  const showShell = !graphMode && !v2Mode && location.pathname !== '/login';
+  const isLogin = location.pathname === '/login';
+  const showLegacyRail = !v2Mode && !isLogin;
 
   return (
-    <div
-      className={`app shell-v2${
-        location.pathname.startsWith('/research') ||
-        location.pathname.startsWith('/ask') ||
-        location.pathname.startsWith('/topics')
-          ? ' wide'
-          : ''
-      }${graphMode ? ' graph-mode' : ''}${v2Mode ? ' v2-mode' : ''}${showShell ? '' : ' no-shell'}`}
-    >
-      {showShell && (
-        <aside className={`app-sidebar${menuOpen ? ' open' : ''}`} aria-label="主导航">
-          <div className="sidebar-top">
-            <Link to="/" className="brand" aria-label="拾念首页">
-              <span className="brand-badge">念</span>
-              <span className="brand-text">拾念</span>
-              <span className="brand-sub">SHINIAN</span>
-            </Link>
-            <button
-              type="button"
-              className="sidebar-close"
-              onClick={() => setMenuOpen(false)}
-              aria-label="关闭菜单"
-            >
-              ✕
-            </button>
-          </div>
-
-          <div className="sidebar-scrollable">
-            <div className="sidebar-section-label">日常流转</div>
-            <nav className="app-nav sidebar-nav" aria-label="主要导航">
-              {PRIMARY_NAV.map((item) => (
-                <NavLink key={item.to + item.label} to={item.to} end={item.end} className={navClass}>
-                  <span className="nav-icon" aria-hidden="true">{item.icon}</span>
-                  <span className="nav-label">{item.label}</span>
-                </NavLink>
-              ))}
-            </nav>
-
-            <div className="sidebar-section-label">探索与回顾</div>
-            <nav className="app-nav sidebar-nav secondary" aria-label="次级导航">
-              {SECONDARY_NAV.map((item) => (
-                <NavLink key={item.to} to={item.to} className={navClass}>
-                  <span className="nav-icon" aria-hidden="true">{item.icon}</span>
-                  <span className="nav-label">{item.label}</span>
-                </NavLink>
-              ))}
-            </nav>
-          </div>
-
-          <div className="sidebar-bottom">
-            <ThemeSwitcher />
-            {username ? (
-              <div className="user-profile-bar">
-                <span className="user-avatar" title={`当前用户：${username}`}>
-                  {username.slice(0, 1).toUpperCase()}
-                </span>
-                <span className="user-name" title={username}>{username}</span>
-                <button type="button" className="btn-logout" onClick={logout} title="退出登录">
-                  退出
-                </button>
-              </div>
-            ) : (
-              <Link to="/login" className="btn small primary full-width">登录</Link>
-            )}
-          </div>
-        </aside>
-      )}
-
-      {showShell && menuOpen && (
-        <button
-          type="button"
-          className="sidebar-scrim"
-          onClick={() => setMenuOpen(false)}
-          aria-label="关闭菜单"
-        />
-      )}
-
-      {showShell && (
-        <header className="app-header">
-          <button
-            type="button"
-            className="menu-toggle"
-            onClick={() => setMenuOpen((v) => !v)}
-            aria-label="打开菜单"
-            aria-expanded={menuOpen}
-          >
-            <span className="menu-glyph" aria-hidden="true">☰</span>
-            <span className="menu-text">导航</span>
-          </button>
-          <Link to="/" className="mobile-header-brand">
-            拾念 <span>SHINIAN</span>
-          </Link>
-          <Link to="/search" className="header-search" aria-label="搜索">
-            <span className="search-glyph" aria-hidden="true">⌕</span>
-          </Link>
-        </header>
+    <div className={`app${v2Mode ? ' v2-mode' : ''}${showLegacyRail ? ' legacy-with-rail' : ''}${isLogin ? ' no-shell' : ''}`}>
+      {showLegacyRail && (
+        <div className="v2-chrome" data-v2-theme={v2Theme}>
+          <Rail />
+        </div>
       )}
 
       <main className="app-main">
@@ -234,7 +109,7 @@ function Shell() {
           <Route path="/attempt/:attemptId" element={<AttemptV2Page />} />
           <Route path="/kit" element={<KitPage />} />
 
-          {/* ---------- 尚未迁移：先沿用旧实现（旧外壳） ---------- */}
+          {/* ---------- 二级详情与设置页（共享 V2 导航条） ---------- */}
           <Route path="/topics/:topicId" element={<TopicV2Page />} />
           <Route path="/experience/:id" element={<ExperienceDetailPage />} />
           <Route path="/research/:researchId" element={<ResearchPage />} />

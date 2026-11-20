@@ -573,44 +573,16 @@ a.v2-groupItem:hover {
   min-width: 0;
 }
 
-/* ---------- 知识图谱（Graph V2） ---------- */
 .v2-graphWrap {
   position: relative;
-  flex: 1 1 auto;
-  min-height: 520px;
-  height: calc(100dvh - var(--status) - 48px);
-  background: radial-gradient(circle at 46% 42%, var(--accent-soft), transparent 58%), var(--bg);
-  border-bottom: 1px solid var(--line);
-}
-.v2-graphCanvas {
-  width: 100%;
-  height: 100%;
-  touch-action: none;
-}
-.v2-graphDot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  margin-right: 6px;
-  flex: none;
-}
-
-@media (max-width: 900px) {
-  .v2-graphWrap {
-    min-height: 360px;
-    height: 58dvh;
-  }
-}
-
-/* ---------- 知识图谱（Cytoscape 画布） ---------- */
-.v2-graphWrap {
-  position: relative;
-  height: min(70vh, 620px);
+  flex: 0 0 auto;
+  height: min(72vh, 660px);
   margin: var(--sp-3) var(--sp-4);
   border: 1px solid var(--line);
   border-radius: var(--r-2);
-  background: var(--sunk);
+  background:
+    radial-gradient(circle at 50% 42%, var(--accent-soft), transparent 62%),
+    var(--sunk);
   overflow: hidden;
 }
 .v2-graphCanvas {

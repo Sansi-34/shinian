@@ -401,6 +401,12 @@ time,
   color: #ffffff;
   box-shadow: 0 4px 10px rgba(0, 47, 167, 0.32);
 }
+.btn.primary:disabled {
+  background: var(--grey-1);
+  border-color: var(--line);
+  color: var(--text-helper);
+  opacity: 1;
+}
 .btn.primary-outline {
   background: var(--accent-soft, #eef2ff);
   border-color: var(--accent-border, #c7d2fe);
