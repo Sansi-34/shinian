@@ -503,3 +503,16 @@ html[data-theme='dark'] .v2-root .v2-dateInput::-webkit-calendar-picker-indicato
   gap: var(--sp-2);
   margin-top: var(--sp-2);
 }
+
+/* 左栏：一行 = 链接 + 右侧小按钮（主题成员用） */
+.v2-leftRow {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  animation: v2-rise 240ms ease-out backwards;
+  animation-delay: calc(var(--i, 0) * 28ms);
+}
+.v2-leftRow .v2-leftItem {
+  flex: 1;
+  min-width: 0;
+}

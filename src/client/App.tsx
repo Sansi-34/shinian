@@ -11,7 +11,6 @@ import NextActionPage from './pages/NextActionPage';
 import ResearchPage from './pages/ResearchPage';
 import ExperienceDetailPage from './pages/ExperienceDetailPage';
 import GraphPage from './pages/GraphPage';
-import TopicPage from './pages/TopicPage';
 import ThemeSwitcher from './ThemeSwitcher';
 import HomeV2Page from './v2/HomeV2Page';
 import SearchV2Page from './v2/SearchV2Page';
@@ -24,6 +23,7 @@ import AttemptV2Page from './v2/AttemptV2Page';
 import KitPage from './v2/KitPage';
 import AskV2Page from './v2/AskV2Page';
 import AskV2DetailPage from './v2/AskV2DetailPage';
+import TopicV2Page from './v2/TopicV2Page';
 import api from './api';
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
@@ -115,6 +115,7 @@ function Shell() {
     location.pathname === '/kit' ||
     location.pathname === '/ask' ||
     location.pathname.startsWith('/ask/') ||
+    location.pathname.startsWith('/topics/') ||
     V2_EXACT.includes(location.pathname) ||
     location.pathname.startsWith('/capture/') ||
     location.pathname.startsWith('/attempt/');
@@ -233,7 +234,7 @@ function Shell() {
           <Route path="/kit" element={<KitPage />} />
 
           {/* ---------- 尚未迁移：先沿用旧实现（旧外壳） ---------- */}
-          <Route path="/topics/:topicId" element={<TopicPage />} />
+          <Route path="/topics/:topicId" element={<TopicV2Page />} />
           <Route path="/experience/:id" element={<ExperienceDetailPage />} />
           <Route path="/research/:researchId" element={<ResearchPage />} />
           <Route path="/next-action/:nextActionId" element={<NextActionPage />} />
