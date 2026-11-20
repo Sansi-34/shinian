@@ -36,7 +36,9 @@
     "restore": "node scripts/restore.mjs",
     "verify": "python scripts/verify_main.py",
     "check:v2": "node scripts/check_v2_shell.mjs",
-    "seed": "python scripts/seed_acceptance.py"
+    "seed": "python scripts/seed_acceptance.py",
+    "audit:flow": "node scripts/audit_flow.mjs",
+    "audit:flow2": "node scripts/audit_flow2.mjs"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "3.0.90",

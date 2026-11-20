@@ -96,6 +96,13 @@ export default function AttemptV2Page() {
   const [scheduleModal, setScheduleModal] = useState(false);
   const [schedStart, setSchedStart] = useState('');
   const [schedEnd, setSchedEnd] = useState('09:30');
+  /** hh:mm 加分钟，用于默认结束时间与自动纠正 */
+  function plusMinutes(hhmm: string, minutes: number): string {
+    const m = /^(\d{2}):(\d{2})$/.exec(hhmm);
+    if (!m) return hhmm;
+    const total = Math.min(23 * 60 + 59, Number(m[1]) * 60 + Number(m[2]) + minutes);
+    return String(Math.floor(total / 60)).padStart(2, '0') + ':' + String(total % 60).padStart(2, '0');
+  }
   const [schedNote, setSchedNote] = useState('');
   const [schedOverlap, setSchedOverlap] = useState<{ token: string; ids: string[] } | null>(null);
   const [deleteModal, setDeleteModal] = useState(false);
@@ -364,6 +371,10 @@ export default function AttemptV2Page() {
                 setSchedOverlap(null);
                 setModalError(null);
                 setSchedOpId('v2sch-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6));
+                // 默认给一个明天此刻起、半小时的合法时段，避免下午/晚上打开时默认值就非法
+                const start = schedStart || `${new Date().toISOString().slice(0, 10)}T${new Date().toTimeString().slice(0, 5)}`;
+                if (!schedStart) setSchedStart(start);
+                setSchedEnd(plusMinutes(start.slice(11, 16), 30));
               }}
             >
               排日程
@@ -526,11 +537,15 @@ export default function AttemptV2Page() {
           <>
             <Button onClick={() => setScheduleModal(false)}>取消</Button>
             {schedOverlap ? (
-              <Button variant="primary" onClick={() => void addSchedule(true)} disabled={busy}>
+              <Button variant="primary" onClick={() => void addSchedule(true)} disabled={busy || (!!schedStart && schedEnd <= schedStart.slice(11, 16))}>
                 仍然保存
               </Button>
             ) : (
-              <Button variant="primary" onClick={() => void addSchedule(false)} disabled={busy}>
+              <Button
+                variant="primary"
+                onClick={() => void addSchedule(false)}
+                disabled={busy || (!!schedStart && schedEnd <= schedStart.slice(11, 16))}
+              >
                 {busy ? '保存中…' : '保存'}
               </Button>
             )}
@@ -539,7 +554,16 @@ export default function AttemptV2Page() {
       >
         <div className="v2-field">
           <span className="v2-fieldLabel">开始（按 {timezone}）</span>
-          <DateField value={schedStart} onChange={setSchedStart} timezone={timezone} label="开始时间" />
+          <DateField
+            value={schedStart}
+            onChange={(next) => {
+              setSchedStart(next);
+              // 结束早于开始就顺手往后推半小时，不让人先撞一次 400
+              if (next && schedEnd <= next.slice(11, 16)) setSchedEnd(plusMinutes(next.slice(11, 16), 30));
+            }}
+            timezone={timezone}
+            label="开始时间"
+          />
         </div>
         <div className="v2-field">
           <span className="v2-fieldLabel">结束时间 HH:mm</span>
@@ -563,6 +587,11 @@ export default function AttemptV2Page() {
             maxLength={300}
           />
         </div>
+        {!!schedStart && schedEnd <= schedStart.slice(11, 16) && (
+          <p className="v2-groupNote" style={{ color: 'var(--st-fail)' }}>
+            结束时间要晚于开始时间（现在填的是 {schedStart.slice(11, 16)} → {schedEnd}）。
+          </p>
+        )}
         {modalError && (
           <p className="v2-groupNote" style={{ color: 'var(--st-fail)' }}>
             {modalError}

@@ -11,6 +11,56 @@ import { MAX_CAPTURE_CHARS } from './aiSettings';
 // 尝试文本上限：此前服务端完全没有校验，直连 API 可以写任意长度（实测 2 万字返回 200）
 const ATTEMPT_STEP_MAX = 500;
 const ATTEMPT_RESULT_MAX = 4000;
+
+// 枚举白名单：此前 state/outcome 接受任意字符串并原样落库（实测存进 "zzz_bad"）
+const ATTEMPT_STATES = ['todo', 'in_progress', 'done', 'cancelled'] as const;
+const ATTEMPT_OUTCOMES = ['success', 'failure', 'partial', 'undetermined'] as const;
+
+type ValidationError = { error: string; message: string; field: string };
+
+/** 字符串字段类型校验：undefined 视为未提供，null 按调用方 allowNull 决定 */
+function expectString(
+  value: unknown,
+  field: string,
+  label: string,
+  allowNull = false
+): ValidationError | null {
+  if (value === undefined) return null;
+  if (value === null) {
+    return allowNull ? null : { error: `invalid_${field}`, message: `${label}不能为空。`, field };
+  }
+  if (typeof value !== 'string') {
+    return { error: `invalid_${field}`, message: `${label}必须是文本。`, field };
+  }
+  return null;
+}
+
+/** 数字字段类型校验（拒绝 NaN / Infinity / 非数字类型） */
+function expectNumber(value: unknown, field: string, label: string): ValidationError | null {
+  if (value === undefined || value === null) return null;
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return { error: `invalid_${field}`, message: `${label}必须是数字。`, field };
+  }
+  return null;
+}
+
+/** 枚举字段校验 */
+function expectEnum<T extends string>(
+  value: unknown,
+  allowed: readonly T[],
+  field: string,
+  label: string
+): ValidationError | null {
+  if (value === undefined || value === null) return null;
+  if (typeof value !== 'string' || !(allowed as readonly string[]).includes(value)) {
+    return {
+      error: `invalid_${field}`,
+      message: `${label}只能是 ${allowed.join(' / ')}。`,
+      field,
+    };
+  }
+  return null;
+}
 import {
   accounts,
   captures,
@@ -210,8 +260,10 @@ fastify.get('/api/captures', { preHandler: requireAuth }, async (req) => {
 });
 
 fastify.post('/api/captures', { preHandler: requireAuth }, async (req, reply) => {
-  const { rawText } = (req.body ?? {}) as { rawText?: string };
-  const text = (rawText ?? '').trim();
+  const { rawText } = (req.body ?? {}) as { rawText?: unknown };
+  const typeError = expectString(rawText, 'raw_text', '念头正文');
+  if (typeError) return reply.code(400).send(typeError);
+  const text = (typeof rawText === 'string' ? rawText : '').trim();
   if (!text) return reply.code(400).send({ error: 'rawText required' });
   // 正文上限与前端 maxLength、AI 发送上限保持同一条规则（此前只在 AI 发送时校验）
   if (text.length > MAX_CAPTURE_CHARS) {
@@ -239,7 +291,9 @@ fastify.get('/api/captures/:id', { preHandler: requireAuth }, async (req, reply)
 
 fastify.patch('/api/captures/:id', { preHandler: requireAuth }, async (req, reply) => {
   const { id } = req.params as { id: string };
-  const { rawText, revision } = (req.body ?? {}) as { rawText?: string; revision?: number };
+  const { rawText, revision } = (req.body ?? {}) as { rawText?: unknown; revision?: number };
+  const typeError = expectString(rawText, 'raw_text', '念头正文');
+  if (typeError) return reply.code(400).send(typeError);
   const [existing] = await db.select().from(captures).where(eq(captures.id, id)).limit(1);
   if (!existing) return reply.code(404).send({ error: 'capture not found' });
 
@@ -253,7 +307,7 @@ fastify.patch('/api/captures/:id', { preHandler: requireAuth }, async (req, repl
       currentRawText: existing.rawText,
     });
   }
-  const text = (rawText ?? '').trim();
+  const text = (typeof rawText === 'string' ? rawText : '').trim();
   if (!text) return reply.code(400).send({ error: 'rawText required' });
   if (text.length > MAX_CAPTURE_CHARS) {
     return reply.code(400).send({
@@ -442,15 +496,29 @@ function getReceipt(operationKey: string) {
 fastify.post('/api/captures/:captureId/attempts', { preHandler: requireAuth }, async (req, reply) => {
   const { captureId } = req.params as { captureId: string };
   const body = (req.body ?? {}) as {
-    step?: string;
-    state?: string;
-    resultText?: string | null;
-    outcome?: string | null;
-    sourceUrl?: string | null;
+    step?: unknown;
+    state?: unknown;
+    resultText?: unknown;
+    outcome?: unknown;
+    sourceUrl?: unknown;
     operationId?: string;
   };
-  const step = (body.step ?? '').trim();
+  {
+    const errors = [
+      expectString(body.step, 'step', '尝试步骤'),
+      expectString(body.resultText, 'result_text', '结果', true),
+      expectString(body.sourceUrl, 'source_url', '来源链接', true),
+      expectEnum(body.state, ATTEMPT_STATES, 'state', '尝试状态'),
+      expectEnum(body.outcome, ATTEMPT_OUTCOMES, 'outcome', '结果结论'),
+    ].filter((item): item is ValidationError => item !== null);
+    if (errors.length > 0) return reply.code(400).send(errors[0]);
+  }
+  const step = (typeof body.step === 'string' ? body.step : '').trim();
   if (!step) return reply.code(400).send({ error: 'step required' });
+  const bodyState = typeof body.state === 'string' ? body.state : null;
+  const bodyResultText = typeof body.resultText === 'string' ? body.resultText : null;
+  const bodyOutcome = typeof body.outcome === 'string' ? body.outcome : null;
+  const bodySourceUrl = typeof body.sourceUrl === 'string' ? body.sourceUrl : null;
   if (step.length > ATTEMPT_STEP_MAX) {
     return reply.code(400).send({
       error: 'step_too_long',
@@ -467,10 +535,10 @@ fastify.post('/api/captures/:captureId/attempts', { preHandler: requireAuth }, a
     op: 'create-attempt',
     captureId,
     step,
-    state: body.state ?? 'todo',
-    resultText: body.resultText ?? null,
-    outcome: body.outcome ?? null,
-    sourceUrl: body.sourceUrl ?? null,
+    state: bodyState ?? 'todo',
+    resultText: bodyResultText,
+    outcome: bodyOutcome,
+    sourceUrl: bodySourceUrl,
   });
 
   const existing = getReceipt(body.operationId);
@@ -494,10 +562,10 @@ fastify.post('/api/captures/:captureId/attempts', { preHandler: requireAuth }, a
             id,
             captureId,
             step,
-            state: body.state ?? 'todo',
-            resultText: body.resultText ?? null,
-            outcome: body.outcome ?? null,
-            sourceUrl: body.sourceUrl ?? null,
+            state: bodyState ?? 'todo',
+            resultText: bodyResultText,
+            outcome: bodyOutcome,
+            sourceUrl: bodySourceUrl,
             observedAt,
             revision: 1,
             createdAt: t,
@@ -643,15 +711,27 @@ function attemptRowToApi(row: RawAttemptRow) {
 fastify.patch('/api/attempts/:id', { preHandler: requireAuth }, async (req, reply) => {
   const { id } = req.params as { id: string };
   const body = (req.body ?? {}) as {
-    state?: string;
-    step?: string;
-    resultText?: string | null;
-    outcome?: string | null;
-    sourceUrl?: string | null;
-    observedAt?: number | null;
+    state?: unknown;
+    step?: unknown;
+    resultText?: unknown;
+    outcome?: unknown;
+    sourceUrl?: unknown;
+    observedAt?: unknown;
     revision?: number;
     futureScheduleAction?: string;
   };
+
+  {
+    const errors = [
+      expectString(body.step, 'step', '尝试步骤'),
+      expectString(body.resultText, 'result_text', '结果', true),
+      expectString(body.sourceUrl, 'source_url', '来源链接', true),
+      expectNumber(body.observedAt, 'observed_at', '发生时间'),
+      expectEnum(body.state, ATTEMPT_STATES, 'state', '尝试状态'),
+      expectEnum(body.outcome, ATTEMPT_OUTCOMES, 'outcome', '结果结论'),
+    ].filter((item): item is ValidationError => item !== null);
+    if (errors.length > 0) return reply.code(400).send(errors[0]);
+  }
 
   if (body.revision === undefined) return reply.code(428).send({ error: 'revision required' });
   if (
