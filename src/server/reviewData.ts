@@ -141,12 +141,15 @@ function formatInTimezone(ms: number, timezone: string): string {
   return `${values.year}-${values.month}-${values.day} ${values.hour}:${values.minute}`;
 }
 
-export function parseReviewRange(raw: {
-  from?: unknown;
-  to?: unknown;
-  timezone?: unknown;
-  preset?: unknown;
-}): ParseReviewRangeResult {
+export function parseReviewRange(
+  raw: {
+    from?: unknown;
+    to?: unknown;
+    timezone?: unknown;
+    preset?: unknown;
+  },
+  maxRangeDays: number = REVIEW_MAX_RANGE_DAYS
+): ParseReviewRangeResult {
   const from = parseTimestamp(raw.from);
   if (from === null || from <= 0) {
     return rangeError('invalid_range', 'from 必须是大于 0 的整数毫秒时间戳。', 'from');
@@ -161,10 +164,10 @@ export function parseReviewRange(raw: {
   if (from > MAX_DATE_MS || to > MAX_DATE_MS) {
     return rangeError('invalid_range', '时间戳超出可表示的时间范围。', 'to');
   }
-  if (to - from > REVIEW_MAX_RANGE_DAYS * DAY_MS) {
+  if (to - from > maxRangeDays * DAY_MS) {
     return rangeError(
       'invalid_range',
-      `时间范围不能超过 ${REVIEW_MAX_RANGE_DAYS} 天。`,
+      `时间范围不能超过 ${maxRangeDays} 天。`,
       'to'
     );
   }
@@ -1206,6 +1209,147 @@ function saveFingerprint(reviewId: string): string {
   return sha256(JSON.stringify({ op: 'review-save', reviewId }));
 }
 
+function dateKeyInTimezone(ms: number, timezone: string): string {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date(ms));
+  const values: Record<string, string> = {};
+  for (const part of parts) {
+    if (part.type !== 'literal') values[part.type] = part.value;
+  }
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+function enumerateDateKeysInRange(
+  from: number,
+  to: number,
+  timezone: string,
+  maxKeys = 380
+): string[] {
+  const startKey = dateKeyInTimezone(from, timezone);
+  const endKey = dateKeyInTimezone(Math.max(from, to - 1), timezone);
+  const keys: string[] = [];
+  const [sy, sm, sd] = startKey.split('-').map(Number);
+  const [ey, em, ed] = endKey.split('-').map(Number);
+  const cursor = new Date(Date.UTC(sy, sm - 1, sd));
+  const endUtc = new Date(Date.UTC(ey, em - 1, ed));
+  while (cursor.getTime() <= endUtc.getTime() && keys.length <= maxKeys) {
+    const y = cursor.getUTCFullYear();
+    const m = String(cursor.getUTCMonth() + 1).padStart(2, '0');
+    const d = String(cursor.getUTCDate()).padStart(2, '0');
+    keys.push(`${y}-${m}-${d}`);
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  return keys;
+}
+
+type DailyBucket = {
+  date: string;
+  capturesCount: number;
+  attemptsCount: number;
+  aiCount: number;
+  aiTokens: number;
+  aiBreakdown: {
+    generations: number;
+    reviews: number;
+    asks: number;
+    research: number;
+    assist: number;
+  };
+};
+
+function parseTotalTokens(usageJson: string | null): number {
+  const parsed = parseJson<{ totalTokens?: unknown; inputTokens?: unknown; outputTokens?: unknown }>(
+    usageJson
+  );
+  if (!parsed) return 0;
+  if (typeof parsed.totalTokens === 'number' && Number.isFinite(parsed.totalTokens)) {
+    return Math.max(0, Math.round(parsed.totalTokens));
+  }
+  const inp = typeof parsed.inputTokens === 'number' && Number.isFinite(parsed.inputTokens) ? parsed.inputTokens : 0;
+  const out = typeof parsed.outputTokens === 'number' && Number.isFinite(parsed.outputTokens) ? parsed.outputTokens : 0;
+  return Math.max(0, Math.round(inp + out));
+}
+
+function collectReviewDailyData(range: ReviewRange) {
+  const keys = enumerateDateKeysInRange(range.from, range.to, range.timezone);
+  const map = new Map<string, DailyBucket>();
+  for (const date of keys) {
+    map.set(date, {
+      date,
+      capturesCount: 0,
+      attemptsCount: 0,
+      aiCount: 0,
+      aiTokens: 0,
+      aiBreakdown: { generations: 0, reviews: 0, asks: 0, research: 0, assist: 0 },
+    });
+  }
+
+  const capRows = sqlite
+    .prepare('SELECT created_at AS createdAt FROM captures WHERE created_at >= ? AND created_at < ?')
+    .all(range.from, range.to) as Array<{ createdAt: number }>;
+  for (const r of capRows) {
+    const b = map.get(dateKeyInTimezone(r.createdAt, range.timezone));
+    if (b) b.capturesCount += 1;
+  }
+
+  const attRows = sqlite
+    .prepare('SELECT created_at AS createdAt FROM attempts WHERE created_at >= ? AND created_at < ?')
+    .all(range.from, range.to) as Array<{ createdAt: number }>;
+  for (const r of attRows) {
+    const b = map.get(dateKeyInTimezone(r.createdAt, range.timezone));
+    if (b) b.attemptsCount += 1;
+  }
+
+  const aiTables: Array<{
+    sql: string;
+    field: keyof DailyBucket['aiBreakdown'];
+  }> = [
+    {
+      sql: 'SELECT created_at AS createdAt, usage_json AS usageJson FROM ai_generations WHERE created_at >= ? AND created_at < ?',
+      field: 'generations',
+    },
+    {
+      sql: 'SELECT created_at AS createdAt, usage_json AS usageJson FROM stage_reviews WHERE created_at >= ? AND created_at < ?',
+      field: 'reviews',
+    },
+    {
+      sql: 'SELECT created_at AS createdAt, usage_json AS usageJson FROM record_queries WHERE created_at >= ? AND created_at < ?',
+      field: 'asks',
+    },
+    {
+      sql: 'SELECT created_at AS createdAt, usage_json AS usageJson FROM research_runs WHERE created_at >= ? AND created_at < ?',
+      field: 'research',
+    },
+    {
+      sql: 'SELECT created_at AS createdAt, usage_json AS usageJson FROM ai_assist_logs WHERE created_at >= ? AND created_at < ?',
+      field: 'assist',
+    },
+  ];
+
+  for (const { sql, field } of aiTables) {
+    const rows = sqlite.prepare(sql).all(range.from, range.to) as Array<{
+      createdAt: number;
+      usageJson: string | null;
+    }>;
+    for (const r of rows) {
+      const b = map.get(dateKeyInTimezone(r.createdAt, range.timezone));
+      if (!b) continue;
+      b.aiCount += 1;
+      b.aiBreakdown[field] += 1;
+      b.aiTokens += parseTotalTokens(r.usageJson);
+    }
+  }
+
+  return {
+    today: dateKeyInTimezone(Date.now(), range.timezone),
+    days: keys.map((k) => map.get(k)!),
+  };
+}
+
 export function registerReviewRoutes(fastify: FastifyInstance): void {
   // GET /api/review/range?from=&to=&timezone=&preset=
   fastify.get('/api/review/range', { preHandler: requireAuth }, async (req, reply) => {
@@ -1261,6 +1405,38 @@ export function registerReviewRoutes(fastify: FastifyInstance): void {
       return reply.code(500).send({
         error: 'internal_error',
         message: '读取阶段回顾数据失败，请稍后重试。',
+      });
+    }
+  });
+
+  // GET /api/review/daily?from=&to=&timezone=&preset= —— 每日念头活动与 AI 调用统计（支持近 12 个月 53 周视图）
+  fastify.get('/api/review/daily', { preHandler: requireAuth }, async (req, reply) => {
+    const query = (req.query ?? {}) as Record<string, unknown>;
+    const parsed = parseReviewRange(
+      {
+        from: query.from,
+        to: query.to,
+        timezone: query.timezone,
+        preset: query.preset,
+      },
+      380
+    );
+    if (!parsed.ok) {
+      return reply.code(parsed.status).send({
+        error: parsed.error,
+        ...(parsed.field ? { field: parsed.field } : {}),
+        message: parsed.message,
+      });
+    }
+    try {
+      const range = makeReviewRange(parsed.value);
+      const daily = collectReviewDailyData(range);
+      return { range, ...daily };
+    } catch (error) {
+      req.log.error({ err: error }, 'review daily failed');
+      return reply.code(500).send({
+        error: 'internal_error',
+        message: '读取每日统计失败，请稍后重试。',
       });
     }
   });

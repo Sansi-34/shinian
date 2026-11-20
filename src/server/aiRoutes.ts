@@ -17,6 +17,7 @@ import {
   MAX_CONSTRAINT_CHARS,
   classifyError,
   computeTestFingerprint,
+  createGuardedFetch,
   decryptApiKey,
   deleteAiSettings,
   errorMessageForCode,
@@ -24,11 +25,19 @@ import {
   getSettingsRow,
   publicConfigOf,
   recordTestResult,
+  redactSecrets,
   saveAiSettings,
   validateAndNormalizeBaseUrl,
   type AiErrorCode,
 } from './aiSettings';
-import { generateSuggestion, testConnection } from './aiProvider';
+import {
+  assistCaptureWithAi,
+  generateSuggestion,
+  streamAssistCaptureWithAi,
+  testConnection,
+  type ModelUsage,
+  type ProviderConfig,
+} from './aiProvider';
 import {
   buildContextSnapshot,
   contextTokenForSources,
@@ -386,6 +395,95 @@ export function registerAiRoutes(fastify: FastifyInstance): void {
     return getPublicSettings();
   });
 
+  fastify.get('/api/settings/ai/models', { preHandler: requireAuth }, async () => {
+    const row = await getSettingsRow();
+    if (!row || !row.apiKeyCiphertext) {
+      return {
+        configured: false,
+        enabled: false,
+        configName: null,
+        baseUrl: null,
+        currentModelId: null,
+        models: [] as string[],
+        fetched: false,
+        note: '尚未配置 AI 模型，请先前往设置。',
+      };
+    }
+    const urlResult = validateAndNormalizeBaseUrl(row.baseUrl, row.allowLocal === 1);
+    if (!urlResult.ok) {
+      return {
+        configured: true,
+        enabled: row.enabled === 1,
+        configName: row.name,
+        baseUrl: row.baseUrl,
+        currentModelId: row.modelId,
+        models: [row.modelId],
+        fetched: false,
+        note: urlResult.message,
+      };
+    }
+
+    let apiKey = '';
+    try {
+      apiKey = decryptApiKey(row.apiKeyCiphertext);
+      const guardedFetch = createGuardedFetch({ allowLocal: row.allowLocal === 1 });
+      const res = await guardedFetch(`${urlResult.baseUrl}/models`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          Accept: 'application/json',
+        },
+        signal: AbortSignal.timeout(5000),
+      });
+      if (!res.ok) {
+        return {
+          configured: true,
+          enabled: row.enabled === 1,
+          configName: row.name,
+          baseUrl: urlResult.baseUrl,
+          currentModelId: row.modelId,
+          models: [row.modelId],
+          fetched: false,
+          note: `接口未提供可用模型列表（HTTP ${res.status}），可直接输入 Model ID 切换。`,
+        };
+      }
+      const json = (await res.json().catch(() => null)) as { data?: Array<{ id?: unknown }> } | null;
+      const set = new Set<string>();
+      set.add(row.modelId);
+      if (json && Array.isArray(json.data)) {
+        for (const item of json.data) {
+          if (item && typeof item.id === 'string' && item.id.trim()) {
+            set.add(item.id.trim());
+          }
+        }
+      }
+      return {
+        configured: true,
+        enabled: row.enabled === 1,
+        configName: row.name,
+        baseUrl: urlResult.baseUrl,
+        currentModelId: row.modelId,
+        models: Array.from(set),
+        fetched: Boolean(json && Array.isArray(json.data)),
+        note: null,
+      };
+    } catch (err) {
+      return {
+        configured: true,
+        enabled: row.enabled === 1,
+        configName: row.name,
+        baseUrl: urlResult.baseUrl,
+        currentModelId: row.modelId,
+        models: [row.modelId],
+        fetched: false,
+        note: redactSecrets(
+          err instanceof Error ? err.message : '拉取模型列表失败，可直接输入 Model ID 切换。',
+          apiKey ? [apiKey] : []
+        ),
+      };
+    }
+  });
+
   fastify.put('/api/settings/ai', { preHandler: requireAuth }, async (req, reply) => {
     const body = (req.body ?? {}) as Record<string, unknown>;
     const result = await saveAiSettings(body);
@@ -402,6 +500,191 @@ export function registerAiRoutes(fastify: FastifyInstance): void {
   fastify.delete('/api/settings/ai', { preHandler: requireAuth }, async () => {
     await deleteAiSettings();
     return { ok: true };
+  });
+
+  // ---------- 首页对话式 AI 问答与辅助记录 ----------
+  async function prepareAssistCall(rawBody: unknown): Promise<
+    | {
+        ok: true;
+        message: string;
+        history: Array<{ role: 'user' | 'assistant'; text: string }>;
+        modelId: string;
+        configName: string;
+        providerConfig: ProviderConfig;
+      }
+    | { ok: false; status: number; body: Record<string, unknown> }
+  > {
+    const body = (rawBody ?? {}) as { message?: unknown; history?: unknown };
+    const message = typeof body.message === 'string' ? body.message.trim() : '';
+    if (!message || message.length > 4000) {
+      return {
+        ok: false,
+        status: 400,
+        body: { error: 'invalid_message', field: 'message', message: '请输入 1–4000 个字符的内容。' },
+      };
+    }
+    const history: Array<{ role: 'user' | 'assistant'; text: string }> = [];
+    if (Array.isArray(body.history)) {
+      for (const item of body.history.slice(-6)) {
+        if (
+          item &&
+          typeof item === 'object' &&
+          ((item as any).role === 'user' || (item as any).role === 'assistant') &&
+          typeof (item as any).text === 'string' &&
+          (item as any).text.trim()
+        ) {
+          history.push({
+            role: (item as any).role,
+            text: String((item as any).text).trim().slice(0, 1200),
+          });
+        }
+      }
+    }
+
+    const settings = await getSettingsRow();
+    if (!settings || !settings.apiKeyCiphertext) {
+      return {
+        ok: false,
+        status: 409,
+        body: { error: 'ai_not_configured', message: '尚未配置 AI 模型与 API Key。' },
+      };
+    }
+    if (settings.enabled !== 1) {
+      return {
+        ok: false,
+        status: 409,
+        body: { error: 'ai_disabled', message: 'AI 模型当前已停用，请先启用后再试。' },
+      };
+    }
+    const urlResult = validateAndNormalizeBaseUrl(settings.baseUrl, settings.allowLocal === 1);
+    if (!urlResult.ok) {
+      return {
+        ok: false,
+        status: 502,
+        body: { error: urlResult.code, message: `${errorMessageForCode(urlResult.code)}：${urlResult.message}` },
+      };
+    }
+    const apiKey = decryptApiKey(settings.apiKeyCiphertext);
+    return {
+      ok: true,
+      message,
+      history,
+      modelId: settings.modelId,
+      configName: settings.name,
+      providerConfig: {
+        baseUrl: urlResult.baseUrl,
+        modelId: settings.modelId,
+        apiKey,
+        allowLocal: settings.allowLocal === 1,
+      },
+    };
+  }
+
+  function recordAssistLog(
+    modelId: string,
+    configName: string,
+    status: 'succeeded' | 'failed',
+    usage: ModelUsage | null,
+    durationMs: number
+  ) {
+    const logId = `assist-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    sqlite
+      .prepare(
+        `INSERT INTO ai_assist_logs (id, model_id, config_name, status, usage_json, duration_ms, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`
+      )
+      .run(logId, modelId, configName, status, usage ? JSON.stringify(usage) : null, durationMs, Date.now());
+  }
+
+  fastify.post('/api/ai/assist-capture', { preHandler: requireAuth }, async (req, reply) => {
+    const prep = await prepareAssistCall(req.body);
+    if (!prep.ok) {
+      return reply.code(prep.status).send(prep.body);
+    }
+    const startedAt = Date.now();
+    try {
+      const res = await assistCaptureWithAi(prep.providerConfig, {
+        message: prep.message,
+        history: prep.history,
+      });
+      recordAssistLog(prep.modelId, prep.configName, 'succeeded', res.usage, res.durationMs);
+      return {
+        reply: res.reply,
+        draft: res.draft,
+        modelId: prep.modelId,
+        configName: prep.configName,
+        usage: res.usage,
+        durationMs: res.durationMs,
+      };
+    } catch (error) {
+      const classified = classifyError(error, prep.providerConfig.apiKey ? [prep.providerConfig.apiKey] : []);
+      recordAssistLog(prep.modelId, prep.configName, 'failed', null, Date.now() - startedAt);
+      return reply.code(502).send({
+        error: classified.code,
+        message: `${errorMessageForCode(classified.code)}：${classified.detail}`,
+      });
+    }
+  });
+
+  fastify.post('/api/ai/assist-capture/stream', { preHandler: requireAuth }, async (req, reply) => {
+    const prep = await prepareAssistCall(req.body);
+    if (!prep.ok) {
+      return reply.code(prep.status).send(prep.body);
+    }
+
+    reply.hijack();
+    const rawRes = reply.raw;
+    rawRes.writeHead(200, {
+      'Content-Type': 'text/event-stream; charset=utf-8',
+      'Cache-Control': 'no-cache, no-transform',
+      Connection: 'keep-alive',
+      'X-Accel-Buffering': 'no',
+    });
+
+    const abortController = new AbortController();
+    rawRes.on('close', () => {
+      if (!rawRes.writableEnded) {
+        abortController.abort();
+      }
+    });
+
+    const sendEvent = (event: string, data: unknown) => {
+      if (rawRes.writableEnded || rawRes.destroyed) return;
+      rawRes.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+    };
+
+    const startedAt = Date.now();
+    sendEvent('start', { modelId: prep.modelId, configName: prep.configName });
+
+    try {
+      const res = await streamAssistCaptureWithAi(
+        prep.providerConfig,
+        { message: prep.message, history: prep.history, signal: abortController.signal },
+        (_full, piece) => sendEvent('delta', { text: piece })
+      );
+      recordAssistLog(prep.modelId, prep.configName, 'succeeded', res.usage, res.durationMs);
+      sendEvent('done', {
+        reply: res.reply,
+        draft: res.draft,
+        modelId: prep.modelId,
+        configName: prep.configName,
+        usage: res.usage,
+        durationMs: res.durationMs,
+      });
+    } catch (error) {
+      if (abortController.signal.aborted) {
+        if (!rawRes.writableEnded) rawRes.end();
+        return;
+      }
+      const classified = classifyError(error, prep.providerConfig.apiKey ? [prep.providerConfig.apiKey] : []);
+      recordAssistLog(prep.modelId, prep.configName, 'failed', null, Date.now() - startedAt);
+      sendEvent('error', {
+        error: classified.code,
+        message: `${errorMessageForCode(classified.code)}：${classified.detail}`,
+      });
+    } finally {
+      if (!rawRes.writableEnded) rawRes.end();
+    }
   });
 
   fastify.post('/api/settings/ai/test', { preHandler: requireAuth }, async (req, reply) => {

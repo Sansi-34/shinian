@@ -542,6 +542,23 @@ export const topicMembers = sqliteTable(
 export type Topic = typeof topics.$inferSelect;
 export type TopicMemberRow = typeof topicMembers.$inferSelect;
 
+// 首页对话式 AI 辅助记录调用记录（只记调用状态与用量，不存用户正文）
+export const aiAssistLogs = sqliteTable(
+  'ai_assist_logs',
+  {
+    id: text('id').primaryKey(),
+    modelId: text('model_id').notNull(),
+    configName: text('config_name').notNull(),
+    status: text('status').notNull(), // succeeded | failed
+    usageJson: text('usage_json'),
+    durationMs: integer('duration_ms'),
+    createdAt: integer('created_at').notNull(),
+  },
+  (table) => ({
+    createdIdx: index('ai_assist_logs_created_idx').on(table.createdAt),
+  })
+);
+
 export const ALL_TABLES = [
   accounts,
   captures,
@@ -551,6 +568,7 @@ export const ALL_TABLES = [
   mutationReceipts,
   aiSettings,
   aiGenerations,
+  aiAssistLogs,
   stageReviews,
   scheduleBlocks,
   experienceNotes,

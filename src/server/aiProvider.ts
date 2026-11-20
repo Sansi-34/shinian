@@ -1,5 +1,5 @@
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
-import { generateText } from 'ai';
+import { generateText, streamText } from 'ai';
 import { z } from 'zod';
 import {
   AiError,
@@ -305,6 +305,305 @@ export async function generateSuggestion(
     sources.map((source) => source.attemptId)
   );
   return { suggestion, usage: result.usage, durationMs: result.durationMs };
+}
+
+// ---------- 对话式 AI 问答与辅助记录 ----------
+
+const ASSIST_SYSTEM_PROMPT = [
+  '你是「拾念」内置的通用 AI 助手兼辅助记录伙伴。你既能像 ChatGPT / Claude 一样直接回答各类问题、分析方案、拆解任务、润色表达、编写或讲解技术细节，也能帮用户把零散的想法与试错过程整理成「念头 + 尝试」记录草案。',
+  '',
+  '【正文回复要求】',
+  '1. 当用户向你提问、求助或让你帮忙完成某项任务时，请直接、详尽、条理清晰地解答（可使用分点、小标题或代码块，不要敷衍成一两句话）。',
+  '2. 当用户叙述自己遇到的状况、想法或刚试过的做法时，给出真诚有用的启发或可行建议，同时忠于原意帮他梳理清楚。',
+  '3. 当用户只是打招呼（如「你好」「在吗」）或客套致谢时，友好简短回应，欢迎他自由提问或聊聊最近在试的事。',
+  '4. 严禁编造用户自身未曾说过的工作经历、实验结果、数字或日期；通用知识请如实作答，不确定的地方坦诚说明。',
+  '',
+  '【末尾结构化草案标记（供前端一键存为念头使用）】',
+  '只要本轮用户输入包含实质性的问题、想法、任务或实验经历（即不是纯打招呼或客套话），请在全部正文回复的最末尾另起一行附上且仅附上一个标记块：',
+  '<shinian_draft>',
+  '{"autoOpen":boolean,"captureText":string,"attempts":[{"step":string,"state":"todo"|"done","resultText":string|null,"outcome":"success"|"failure"|"undetermined"|null}]}',
+  '</shinian_draft>',
+  '标记字段规则：',
+  '- autoOpen：若用户明显在记录一件事/想法/实验经过，设为 true；若用户主要是提问求助或让 AI 帮忙分析/写作，设为 false。',
+  '- captureText：凝练清晰、便于日后回看的一句或一段中文念头（不超过 400 字）。若是问答求助，可总结「想解决的问题与核心方向」。',
+  '- attempts（0~3 条）：',
+  '  * 用户明确说过某件已做且观察到结果的事 -> state:"done"，填上 step 与忠实概括的 resultText，outcome 选 success/failure/undetermined；',
+  '  * 针对待解问题或后续建议中具体可执行的一小步 -> state:"todo"，resultText:null，outcome:null。',
+  '- 除上述纯 JSON（单行或多行）外，不要在 <shinian_draft> 标签内写注释，也不要把 JSON 语法带进正文。',
+].join('\n');
+
+const assistDraftSchema = z.object({
+  shouldRecord: z.boolean().optional().default(true),
+  autoOpen: z.boolean().optional().default(true),
+  captureText: z.string().trim().max(800),
+  attempts: z
+    .array(
+      z.object({
+        step: z.string().trim().min(1).max(300),
+        state: z.enum(['todo', 'done']),
+        resultText: z.string().trim().max(1000).nullable().optional(),
+        outcome: z.enum(['success', 'failure', 'undetermined']).nullable().optional(),
+      })
+    )
+    .max(3)
+    .default([]),
+});
+
+const assistOutputSchema = z.object({
+  reply: z.string().trim().min(1).max(8000),
+  draft: assistDraftSchema.nullable().optional(),
+});
+
+export type AssistDraftAttempt = {
+  step: string;
+  state: 'todo' | 'done';
+  resultText: string | null;
+  outcome: 'success' | 'failure' | 'undetermined' | null;
+};
+
+export type AssistDraft = {
+  captureText: string;
+  attempts: AssistDraftAttempt[];
+  autoOpen?: boolean;
+};
+
+export type AssistCaptureResult = {
+  reply: string;
+  draft: AssistDraft | null;
+  usage: ModelUsage | null;
+  durationMs: number;
+};
+
+function normalizeAssistDraft(rawDraft: z.infer<typeof assistDraftSchema>): AssistDraft | null {
+  if (rawDraft.shouldRecord === false || !rawDraft.captureText.trim()) {
+    return null;
+  }
+  return {
+    captureText: rawDraft.captureText.trim().slice(0, 4000),
+    autoOpen: rawDraft.autoOpen !== false,
+    attempts: rawDraft.attempts
+      .filter((a) => a.step.trim().length > 0)
+      .slice(0, 3)
+      .map((a) => ({
+        step: a.step.trim().slice(0, 500),
+        state: a.state,
+        resultText: a.state === 'done' && a.resultText ? a.resultText.trim().slice(0, 4000) : null,
+        outcome: a.state === 'done' ? a.outcome ?? 'undetermined' : null,
+      })),
+  };
+}
+
+export function parseAssistCaptureOutput(raw: string): { reply: string; draft: AssistDraft | null } {
+  const trimmed = raw.trim();
+
+  // 1) 新协议：正文在前，末尾附带 <shinian_draft>...</shinian_draft>
+  const tagMatch = trimmed.match(/<shinian_draft>\s*([\s\S]*?)\s*<\/shinian_draft>/i);
+  if (tagMatch) {
+    const cleanReply = trimmed.slice(0, tagMatch.index).trim() || trimmed.replace(tagMatch[0], '').trim();
+    try {
+      const jsonText = extractJsonText(tagMatch[1]);
+      const parsed = assistDraftSchema.safeParse(JSON.parse(jsonText));
+      if (parsed.success) {
+        const draft = normalizeAssistDraft(parsed.data);
+        if (cleanReply) {
+          return { reply: cleanReply, draft };
+        }
+      }
+    } catch {
+      /* 标记块 JSON 解析失败时仍保留完整自然回复正文 */
+    }
+    if (cleanReply) {
+      return { reply: cleanReply, draft: null };
+    }
+  }
+
+  // 防截断兜底：若生成在 <shinian_draft> 中途被截断，剥除未闭合尾巴，避免泄露源码标签
+  const unclosedIdx = trimmed.search(/<shinian_draft>/i);
+  if (unclosedIdx > 0) {
+    return { reply: trimmed.slice(0, unclosedIdx).trim().slice(0, 8000), draft: null };
+  }
+
+  // 2) 向后兼容旧格式：{ "reply": ..., "draft": ... }
+  if (trimmed.startsWith('{') || trimmed.startsWith('```')) {
+    try {
+      const jsonText = extractJsonText(trimmed);
+      const checked = assistOutputSchema.safeParse(JSON.parse(jsonText));
+      if (checked.success) {
+        const draft = checked.data.draft ? normalizeAssistDraft(checked.data.draft) : null;
+        return { reply: checked.data.reply, draft };
+      }
+    } catch {
+      /* 非结构化纯文本回复，直接按自然正文展示 */
+    }
+  }
+
+  return { reply: trimmed.slice(0, 8000), draft: null };
+}
+
+const DRAFT_OPEN_TAG = '<shinian_draft>';
+
+/** 计算流式推送期间可安全展示给用户的前缀文本，隐藏末尾草案标记及未闭合片段 */
+export function visibleReplyPrefix(raw: string): string {
+  const trimmedLeft = raw.trimStart();
+  if (!trimmedLeft) return '';
+  // 若偶发模型按旧 JSON 顶层包壳，暂缓至结束解析出 cleanReply 再展示
+  if (trimmedLeft.startsWith('{')) return '';
+
+  const lower = raw.toLowerCase();
+  const tagIdx = lower.indexOf(DRAFT_OPEN_TAG);
+  if (tagIdx >= 0) {
+    return raw.slice(0, tagIdx).trimEnd();
+  }
+
+  // 检查末尾是否正在吐出半截 <shinian_draft> 标签前缀
+  const tailStart = Math.max(0, raw.length - DRAFT_OPEN_TAG.length);
+  const lastLt = raw.lastIndexOf('<');
+  if (lastLt >= tailStart) {
+    const tailLower = raw.slice(lastLt).toLowerCase();
+    if (DRAFT_OPEN_TAG.startsWith(tailLower)) {
+      return raw.slice(0, lastLt).trimEnd();
+    }
+  }
+  return raw;
+}
+
+function buildAssistUserPrompt(input: {
+  message: string;
+  history?: Array<{ role: 'user' | 'assistant'; text: string }>;
+}): string {
+  const lines: string[] = [];
+  const hist = (input.history ?? []).slice(-6);
+  if (hist.length > 0) {
+    lines.push('近期对话上下文：');
+    for (const h of hist) {
+      lines.push(`${h.role === 'user' ? '用户' : '助手'}：${h.text.slice(0, 1200)}`);
+    }
+    lines.push('');
+  }
+  lines.push(`当前用户输入：${input.message}`);
+  return lines.join('\n');
+}
+
+export async function assistCaptureWithAi(
+  config: ProviderConfig,
+  input: {
+    message: string;
+    history?: Array<{ role: 'user' | 'assistant'; text: string }>;
+  }
+): Promise<AssistCaptureResult> {
+  const result = await callModel(config, {
+    system: ASSIST_SYSTEM_PROMPT,
+    prompt: buildAssistUserPrompt(input),
+    maxOutputTokens: 1800,
+    temperature: 0.45,
+    timeoutMs: Math.max(getAiTimeoutMs(), 90_000),
+  });
+  const parsed = parseAssistCaptureOutput(result.text);
+  return {
+    reply: parsed.reply,
+    draft: parsed.draft,
+    usage: result.usage,
+    durationMs: result.durationMs,
+  };
+}
+
+export async function streamAssistCaptureWithAi(
+  config: ProviderConfig,
+  input: {
+    message: string;
+    history?: Array<{ role: 'user' | 'assistant'; text: string }>;
+    signal?: AbortSignal;
+  },
+  onDelta: (visibleFullText: string, deltaText: string) => void
+): Promise<AssistCaptureResult> {
+  const provider = createOpenAICompatible({
+    name: 'shinian',
+    baseURL: config.baseUrl,
+    apiKey: config.apiKey,
+    fetch: createGuardedFetch({ allowLocal: config.allowLocal }),
+    includeUsage: true,
+  });
+
+  const controller = new AbortController();
+  const idleTimeoutMs = Math.max(getAiTimeoutMs(), 60_000);
+  const totalTimeoutMs = Math.max(getAiTimeoutMs() * 3, 180_000);
+  let timedOut = false;
+
+  const totalTimer = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, totalTimeoutMs);
+
+  let idleTimer = setTimeout(() => {
+    timedOut = true;
+    controller.abort();
+  }, idleTimeoutMs);
+
+  const resetIdle = () => {
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, idleTimeoutMs);
+  };
+
+  const onAbort = () => controller.abort();
+  if (input.signal) {
+    if (input.signal.aborted) controller.abort();
+    else input.signal.addEventListener('abort', onAbort, { once: true });
+  }
+
+  const startedAt = Date.now();
+  let fullRaw = '';
+  let emittedLength = 0;
+
+  try {
+    const result = streamText({
+      model: provider.chatModel(config.modelId),
+      system: ASSIST_SYSTEM_PROMPT,
+      prompt: buildAssistUserPrompt(input),
+      maxOutputTokens: 1800,
+      temperature: 0.45,
+      maxRetries: 0,
+      abortSignal: controller.signal,
+    });
+
+    for await (const delta of result.textStream) {
+      resetIdle();
+      fullRaw += delta;
+      const nextVisible = visibleReplyPrefix(fullRaw);
+      if (nextVisible.length > emittedLength) {
+        const piece = nextVisible.slice(emittedLength);
+        emittedLength = nextVisible.length;
+        onDelta(nextVisible, piece);
+      }
+    }
+
+    if (!fullRaw.trim()) {
+      throw invalidResponse('模型返回了空文本。');
+    }
+
+    const totalUsage = await Promise.resolve(result.totalUsage).catch(() => undefined);
+    const parsed = parseAssistCaptureOutput(fullRaw);
+    return {
+      reply: parsed.reply,
+      draft: parsed.draft,
+      usage: totalUsage ? mapUsage(totalUsage) : null,
+      durationMs: Date.now() - startedAt,
+    };
+  } catch (error) {
+    if (timedOut) {
+      throw new AiError('timeout', '请求超时。', `模型流式响应超时（空闲 > ${idleTimeoutMs}ms 或总耗时超限）。`);
+    }
+    if (input.signal?.aborted) {
+      throw new AiError('cancelled', '已停止生成。', '用户已停止本次生成。');
+    }
+    throw error;
+  } finally {
+    clearTimeout(idleTimer);
+    clearTimeout(totalTimer);
+    if (input.signal) input.signal.removeEventListener('abort', onAbort);
+  }
 }
 
 export type { AiErrorCode };

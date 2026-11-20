@@ -1268,6 +1268,17 @@ registerExperienceRoutes(fastify);
 registerTopicRoutes(fastify);
 registerTopicExportRoutes(fastify);
 
+// ---------- 单页宣传站（站内同源直达，供左侧「拾」图标跳转） ----------
+const landingHtmlPath = path.resolve(__dirname, '../../shinian-landing.html');
+if (fs.existsSync(landingHtmlPath)) {
+  fastify.get('/promo', async (_req, reply) => {
+    return reply.type('text/html; charset=utf-8').send(fs.createReadStream(landingHtmlPath));
+  });
+  fastify.get('/landing', async (_req, reply) => {
+    return reply.redirect('/promo');
+  });
+}
+
 // ---------- 静态前端 ----------
 const clientDir = path.resolve(__dirname, '../../dist/client');
 const hasClient = fs.existsSync(path.join(clientDir, 'index.html'));
