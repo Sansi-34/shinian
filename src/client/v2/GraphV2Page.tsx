@@ -1,7 +1,7 @@
 // 拾念 V2 · 知识图谱
 // 渲染交给 Cytoscape.js（MIT，11k+ star）：布局、拖拽、缩放、选中全部用它的成熟实现，
 // 我们只负责数据映射、类型配色与交互意图。
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import cytoscape from 'cytoscape';
 import fcose from 'cytoscape-fcose';
@@ -16,6 +16,7 @@ import Button from './ui/Button';
 import Spinner from './ui/Spinner';
 import Segment from './ui/Segment';
 import './shared.css';
+import styles from './GraphV2Page.module.css';
 
 cytoscape.use(fcose);
 
@@ -29,13 +30,26 @@ const TYPE_LABEL: Record<GraphNodeType, string> = {
 };
 
 const TYPE_CSS_COLOR: Record<GraphNodeType, string> = {
-  capture: 'var(--ink)',
+  capture: 'var(--accent)',
   attempt: 'var(--st-active)',
   experience: 'var(--st-done)',
   research: 'var(--st-partial)',
-  review: 'var(--accent)',
-  schedule: 'var(--ink-3)',
+  review: 'var(--st-review)',
+  schedule: '#8e8e93',
 };
+
+function NodeShapeIcon({ type }: { type: GraphNodeType }) {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" fillOpacity="0.28" stroke="currentColor" strokeWidth="1.35" aria-hidden="true">
+      {type === 'capture' && <circle cx="6" cy="6" r="4.2" />}
+      {type === 'attempt' && <rect x="2" y="2" width="8" height="8" rx="2.2" />}
+      {type === 'experience' && <polygon points="6,1.4 10.6,6 6,10.6 1.4,6" />}
+      {type === 'research' && <polygon points="6,1.4 10,3.7 10,8.3 6,10.6 2,8.3 2,3.7" />}
+      {type === 'review' && <polygon points="6,1.8 10.4,9.8 1.6,9.8" />}
+      {type === 'schedule' && <rect x="2.2" y="2.2" width="7.6" height="7.6" rx="0.6" />}
+    </svg>
+  );
+}
 
 const LINK_LABEL: Record<GraphLink['type'], string> = {
   contains: '包含',
@@ -113,16 +127,17 @@ export default function GraphV2Page() {
     const cs = getComputedStyle(el ?? document.body);
     const v = (name: string, fallback: string) => (cs.getPropertyValue(name) || fallback).trim();
     return {
-      bg: v('--bg', '#0e1013'),
-      panel: v('--raise', '#1b1f26'),
-      ink: v('--ink', '#e9ecf1'),
+      bg: v('--bg', '#080a0f'),
+      panel: v('--raise', '#222631'),
+      ink: v('--ink', '#f5f5f7'),
       ink2: v('--ink-2', '#a9b0bd'),
       line: v('--ink-3', 'rgba(140,148,162,0.5)'),
-      accent: v('--accent', '#9db8ff'),
-      done: v('--st-done', '#a8c977'),
-      active: v('--st-active', '#7fd7c4'),
-      partial: v('--st-partial', '#e0b06a'),
-      fail: v('--st-fail', '#e08d8d'),
+      accent: v('--accent', '#0a84ff'),
+      done: v('--st-done', '#30d158'),
+      active: v('--st-active', '#64d2ff'),
+      partial: v('--st-partial', '#ff9f0a'),
+      fail: v('--st-fail', '#ff6961'),
+      review: v('--st-review', '#bf5af2'),
       idle: v('--ink-3', '#8b929e'),
     };
   }, []);
@@ -156,7 +171,7 @@ export default function GraphV2Page() {
           : type === 'research'
             ? p.partial
             : type === 'review'
-              ? p.ink
+              ? p.review
               : p.idle;
 
   // 建图
@@ -171,11 +186,11 @@ export default function GraphV2Page() {
         return {
           data: {
             id: n.id,
-            label: n.label.length > 26 ? n.label.slice(0, 26) + '…' : n.label,
-            fill: withAlpha(solid, 0.22),
+            label: n.label.length > 28 ? n.label.slice(0, 28) + '…' : n.label,
+            fill: withAlpha(solid, 0.28),
             stroke: solid,
             strong: solid,
-            lineColor: withAlpha(p.ink, 0.32),
+            lineColor: withAlpha(p.ink, 0.28),
             strongColor: withAlpha(solid, 0.85),
             labelColor: p.ink,
             halo: p.bg,
@@ -192,7 +207,7 @@ export default function GraphV2Page() {
             source: l.source,
             target: l.target,
             kind: l.type,
-            lineColor: withAlpha(p.ink, 0.32),
+            lineColor: withAlpha(p.ink, 0.28),
             strongColor: withAlpha(p.accent, 0.85),
           },
         })),
@@ -208,11 +223,15 @@ export default function GraphV2Page() {
           style: {
             'background-color': 'data(fill)',
             'background-opacity': 1,
-            'border-width': 1.6,
+            'border-width': 1.8,
             'border-color': 'data(stroke)',
-            'border-opacity': 0.9,
-            width: 'mapData(degree, 0, 10, 18, 44)',
-            height: 'mapData(degree, 0, 10, 18, 44)',
+            'border-opacity': 0.92,
+            'underlay-color': 'data(stroke)',
+            'underlay-padding': 4,
+            'underlay-opacity': 0.12,
+            'underlay-shape': 'ellipse',
+            width: 'mapData(degree, 0, 10, 20, 44)',
+            height: 'mapData(degree, 0, 10, 20, 44)',
             label: 'data(label)',
             'font-size': 11,
             'font-weight': 500,
@@ -220,11 +239,12 @@ export default function GraphV2Page() {
             'text-valign': 'bottom',
             'text-halign': 'center',
             'text-margin-y': 7,
-            'text-max-width': '86px',
-            'text-wrap': 'ellipsis',
-            'text-outline-width': 2.5,
+            'text-max-width': '118px',
+            'text-wrap': 'wrap',
+            'line-height': 1.35,
+            'text-outline-width': 3,
             'text-outline-color': 'data(halo)',
-            'text-outline-opacity': 1,
+            'text-outline-opacity': 0.9,
             'min-zoomed-font-size': 9,
             'overlay-opacity': 0,
           },
@@ -238,11 +258,11 @@ export default function GraphV2Page() {
         {
           selector: 'edge',
           style: {
-            width: 1.2,
+            width: 1.25,
             'line-color': 'data(lineColor)',
             'target-arrow-color': 'data(lineColor)',
             'target-arrow-shape': 'triangle',
-            'arrow-scale': 0.5,
+            'arrow-scale': 0.52,
             'curve-style': 'bezier',
             'control-point-step-size': 24,
             opacity: 1,
@@ -252,10 +272,26 @@ export default function GraphV2Page() {
         { selector: 'edge[kind = "references"]', style: { 'line-style': 'dashed' } },
         { selector: 'edge[kind = "related"]', style: { 'line-color': 'data(strongColor)', 'target-arrow-color': 'data(strongColor)', width: 1.8 } },
         { selector: 'edge[kind = "evidence"]', style: { 'line-color': 'data(strongColor)', 'target-arrow-color': 'data(strongColor)', width: 1.6 } },
-        { selector: 'node:selected', style: { 'border-width': 2.4, 'border-color': 'data(stroke)', 'font-weight': 600 } },
-        { selector: '.dim', style: { opacity: 0.12, 'text-opacity': 0.1 } },
+        {
+          selector: 'node:selected',
+          style: {
+            'border-width': 2.5,
+            'border-color': 'data(stroke)',
+            'underlay-padding': 7,
+            'underlay-opacity': 0.34,
+            'font-weight': 600,
+          },
+        },
+        { selector: '.dim', style: { opacity: 0.14, 'text-opacity': 0.12, 'underlay-opacity': 0 } },
         { selector: 'edge.dim', style: { opacity: 0.06 } },
-        { selector: 'node.focus', style: { 'border-width': 2.4 } },
+        {
+          selector: 'node.focus',
+          style: {
+            'border-width': 2.5,
+            'underlay-padding': 7,
+            'underlay-opacity': 0.34,
+          },
+        },
         { selector: '.hideLabel', style: { 'text-opacity': 0 } },
       ],
       layout: { name: 'preset' },
@@ -332,14 +368,14 @@ export default function GraphV2Page() {
       const p = palette();
       cy.nodes().forEach((n) => {
         const solid = typeColor(n.data('type') as GraphNodeType, p);
-        n.data('fill', withAlpha(solid, 0.22));
+        n.data('fill', withAlpha(solid, 0.28));
         n.data('stroke', solid);
         n.data('labelColor', p.ink);
         n.data('halo', p.bg);
       });
       cy.edges().forEach((e) => {
         const kind = e.data('kind') as GraphLink['type'];
-        e.data('lineColor', withAlpha(p.ink, 0.32));
+        e.data('lineColor', withAlpha(p.ink, 0.28));
         e.data('strongColor', withAlpha(kind === 'evidence' ? p.done : p.accent, 0.85));
       });
       cy.style().update();
@@ -402,44 +438,62 @@ export default function GraphV2Page() {
       leftCount={visibleCount}
       left={
         <>
-          <div className="v2-form" style={{ padding: '0 var(--sp-3)' }}>
-            <div className="v2-field">
-              <span className="v2-fieldLabel">搜索节点</span>
-              <input
-                className="v2-input"
-                style={{ maxWidth: 'none', width: '100%' }}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  const composing = e.nativeEvent.isComposing || e.keyCode === 229;
-                  if (e.key === 'Enter' && !composing) void runSearch();
-                }}
-                placeholder="标题或正文"
-                aria-label="搜索节点"
-              />
+          <div className={styles.filterBlock}>
+            <div className={styles.sectionHeader}>
+              <h3 className={styles.sectionTitle}>搜索节点</h3>
             </div>
-            <div className="v2-captureActions">
-              <Button onClick={() => void runSearch()} disabled={searching}>
-                {searching ? '搜索中…' : '搜索'}
-              </Button>
-              {hits && (
-                <Button
-                  onClick={() => {
-                    setHits(null);
-                    setQuery('');
-                    cyRef.current?.nodes().removeClass('focus');
-                    cyRef.current?.fit(undefined, 40);
+            <div className={styles.searchRow}>
+              <div className={styles.searchShell}>
+                <svg className={styles.searchIcon} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m20 20-3.5-3.5" />
+                </svg>
+                <input
+                  className={styles.searchInput}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    const composing = e.nativeEvent.isComposing || e.keyCode === 229;
+                    if (e.key === 'Enter' && !composing) void runSearch();
                   }}
-                >
-                  清除
-                </Button>
-              )}
+                  placeholder="标题或正文"
+                  aria-label="搜索节点"
+                />
+                {(query || hits) && (
+                  <button
+                    type="button"
+                    className={styles.clearIconBtn}
+                    aria-label="清除搜索"
+                    title="清除"
+                    onClick={() => {
+                      setHits(null);
+                      setQuery('');
+                      cyRef.current?.nodes().removeClass('focus');
+                      cyRef.current?.elements().removeClass('dim');
+                      cyRef.current?.fit(undefined, 40);
+                    }}
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+              <button
+                type="button"
+                className={styles.searchSubmit}
+                onClick={() => void runSearch()}
+                disabled={searching}
+              >
+                {searching ? '…' : '搜索'}
+              </button>
             </div>
           </div>
+
           {hits && (
-            <div style={{ padding: '0 var(--sp-3) var(--sp-2)' }}>
-              <h3 className="v2-groupTitle">命中 {hits.length}</h3>
-              {hits.length === 0 && <p className="v2-groupNote">没有命中。</p>}
+            <div className={styles.hitsBlock}>
+              <div className={styles.hitsHead}>
+                <h3 className={styles.sectionTitle}>命中 {hits.length}</h3>
+              </div>
+              {hits.length === 0 && <p className="v2-groupNote" style={{ padding: '0 6px' }}>没有命中。</p>}
               {hits.slice(0, 12).map((h) => (
                 <button
                   key={h.node.id}
@@ -463,19 +517,75 @@ export default function GraphV2Page() {
               ))}
             </div>
           )}
-          <div style={{ padding: '0 var(--sp-3)' }}>
-            <h3 className="v2-groupTitle">显示哪些</h3>
-            {(Object.keys(TYPE_LABEL) as GraphNodeType[]).map((t) => (
-              <label key={t} className="v2-check">
-                <input type="checkbox" checked={!hiddenTypes.has(t)} onChange={() => toggleType(t)} />
-                <span>{TYPE_LABEL[t]}</span>
-                <span className="v2-hint">{(data?.nodes ?? []).filter((n) => n.type === t).length}</span>
+
+          <div className={styles.filterBlock}>
+            <div className={styles.sectionHeader}>
+              <h3 className={styles.sectionTitle}>显示哪些</h3>
+              {hiddenTypes.size > 0 && (
+                <button
+                  type="button"
+                  className={styles.resetLink}
+                  onClick={() => {
+                    setHiddenTypes(new Set());
+                    setSelected(null);
+                  }}
+                >
+                  全部显示
+                </button>
+              )}
+            </div>
+            <div className={styles.filterList}>
+              {(Object.keys(TYPE_LABEL) as GraphNodeType[]).map((t) => {
+                const active = !hiddenTypes.has(t);
+                const count = (data?.nodes ?? []).filter((n) => n.type === t).length;
+                return (
+                  <label
+                    key={t}
+                    className={styles.filterRow}
+                    data-active={active}
+                  >
+                    <input
+                      type="checkbox"
+                      className={styles.srInput}
+                      checked={active}
+                      onChange={() => toggleType(t)}
+                    />
+                    <span
+                      className={styles.typeDot}
+                      style={{ backgroundColor: TYPE_CSS_COLOR[t] }}
+                      aria-hidden="true"
+                    />
+                    <span className={styles.filterName}>{TYPE_LABEL[t]}</span>
+                    <span className={`${styles.filterCount}${count === 0 ? ' ' + styles.filterCountZero : ''}`}>
+                      {count}
+                    </span>
+                    <span className={styles.switchTrack} aria-hidden="true">
+                      <span className={styles.switchThumb} />
+                    </span>
+                  </label>
+                );
+              })}
+
+              <div className={styles.divider} aria-hidden="true" />
+
+              <label
+                className={styles.filterRow}
+                data-active={includeArchived}
+              >
+                <input
+                  type="checkbox"
+                  className={styles.srInput}
+                  checked={includeArchived}
+                  onChange={(e) => setIncludeArchived(e.target.checked)}
+                />
+                <span className={styles.filterName}>
+                  包含已归档
+                </span>
+                <span className={styles.switchTrack} aria-hidden="true">
+                  <span className={styles.switchThumb} />
+                </span>
               </label>
-            ))}
-            <label className="v2-check">
-              <input type="checkbox" checked={includeArchived} onChange={(e) => setIncludeArchived(e.target.checked)} />
-              <span>包含已归档</span>
-            </label>
+            </div>
           </div>
         </>
       }
@@ -484,7 +594,7 @@ export default function GraphV2Page() {
         <>
           <div>
             <h3 className="v2-groupTitle">布局</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-2)', alignItems: 'flex-start' }}>
+            <div className={styles.layoutWrap}>
               <Segment
                 ariaLabel="布局"
                 items={[
@@ -496,7 +606,9 @@ export default function GraphV2Page() {
                 value={layout}
                 onChange={setLayout}
               />
-              <Button onClick={() => cyRef.current?.fit(undefined, 40)}>适应窗口</Button>
+              <div className={styles.fitRow}>
+                <Button onClick={() => cyRef.current?.fit(undefined, 40)}>适应窗口</Button>
+              </div>
             </div>
           </div>
         {selected ? (
@@ -535,8 +647,10 @@ export default function GraphV2Page() {
               <h3 className="v2-groupTitle">节点</h3>
               {(Object.keys(TYPE_LABEL) as GraphNodeType[]).map((t) => (
                 <div key={t} className="v2-groupItem">
-                  <span style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--ink)' }}>
-                    <i className="v2-graphDot" style={{ background: TYPE_CSS_COLOR[t] }} aria-hidden="true" />
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: 'var(--ink)' }}>
+                    <span className={styles.shapeBadge} style={{ '--node-color': TYPE_CSS_COLOR[t] } as CSSProperties}>
+                      <NodeShapeIcon type={t} />
+                    </span>
                     {TYPE_LABEL[t]}
                   </span>
                   <span className="v2-hint">{stats ? (stats as Record<string, number>)[t === 'capture' ? 'captures' : t === 'attempt' ? 'attempts' : t === 'research' ? 'research' : t === 'review' ? 'reviews' : t === 'schedule' ? 'schedules' : 'experiences'] ?? 0 : '—'}</span>
@@ -548,12 +662,17 @@ export default function GraphV2Page() {
               <p className="v2-groupNote">
                 共 {stats?.links ?? 0} 条，其中手动关联 {stats?.manualLinks ?? 0} 条。连线只表示记录里写下的关系，不做相似度推断。
               </p>
-              {(Object.keys(LINK_LABEL) as Array<GraphLink['type']>).map((k) => (
-                <div key={k} className="v2-groupItem">
-                  <span>{LINK_LABEL[k]}</span>
-                  <span className="v2-hint">{(data?.links ?? []).filter((l) => l.type === k).length}</span>
-                </div>
-              ))}
+              <div className={styles.linkGrid}>
+                {(Object.keys(LINK_LABEL) as Array<GraphLink['type']>).map((k) => {
+                  const cnt = (data?.links ?? []).filter((l) => l.type === k).length;
+                  return (
+                    <div key={k} className={`${styles.linkItem}${cnt === 0 ? ' ' + styles.linkItemZero : ''}`}>
+                      <span>{LINK_LABEL[k]}</span>
+                      <span className="v2-hint">{cnt}</span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
             <div>
               <h3 className="v2-groupTitle">提示</h3>

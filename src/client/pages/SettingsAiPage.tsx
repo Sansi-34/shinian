@@ -4,6 +4,12 @@ import { Link } from 'react-router-dom';
 import api, { ApiError } from '../api';
 import type { AiSettings } from '../types';
 import {
+  CALENDAR_COLOR_PRESETS,
+  DEFAULT_CALENDAR_COLOR,
+  useCalendarColor,
+} from '../v2/preferences';
+import prefStyles from './SettingsPrefs.module.css';
+import {
   AI_CONFIG_STATUS_LABEL,
   aiErrorText,
   formatTime,
@@ -41,6 +47,7 @@ export default function SettingsAiPage() {
   const [clearOpen, setClearOpen] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [clearError, setClearError] = useState<string | null>(null);
+  const [calendarColor, setCalendarColor] = useCalendarColor();
 
   // GitHub Token（可选，研究一下）
   const [github, setGithub] = useState<{
@@ -730,6 +737,72 @@ export default function SettingsAiPage() {
           </div>
         </div>
       )}
+
+      <section id="calendar-color" className="section info-section" aria-label="周期回顾日程表颜色偏好">
+        <h3>周期回顾偏好</h3>
+        <p className="hint">
+          自定义「周期回顾」中念头日程表有念头日期的点亮颜色（保存在本机）。
+        </p>
+        <div className={prefStyles.prefGroup}>
+          <div className={prefStyles.prefRow}>
+            <span className={prefStyles.prefLabel}>日程表有念头时点亮颜色（无念头固定为灰色）</span>
+            <div className={prefStyles.swatchBar}>
+              {CALENDAR_COLOR_PRESETS.map((preset) => {
+                const active = calendarColor === preset.value;
+                return (
+                  <button
+                    key={preset.value}
+                    type="button"
+                    className={`${prefStyles.swatch}${active ? ' ' + prefStyles.swatchActive : ''}`}
+                    style={{ backgroundColor: preset.value, color: preset.value }}
+                    title={preset.name}
+                    aria-label={`选择颜色 ${preset.name}`}
+                    aria-pressed={active}
+                    onClick={() => setCalendarColor(preset.value)}
+                  />
+                );
+              })}
+              <label className={prefStyles.customColorLabel}>
+                <input
+                  type="color"
+                  className={prefStyles.colorPicker}
+                  value={calendarColor}
+                  aria-label="自定义日程表点亮颜色"
+                  onChange={(e) => setCalendarColor(e.target.value)}
+                />
+                <span>自定义</span>
+                <span className={prefStyles.hexText}>{calendarColor.toUpperCase()}</span>
+              </label>
+              {calendarColor !== DEFAULT_CALENDAR_COLOR && (
+                <button
+                  type="button"
+                  className="btn small"
+                  onClick={() => setCalendarColor(DEFAULT_CALENDAR_COLOR)}
+                >
+                  恢复默认蓝
+                </button>
+              )}
+            </div>
+            <div className={prefStyles.previewBar} aria-label="日程表颜色实时预览">
+              <span className={prefStyles.previewItem}>
+                <span className={`${prefStyles.previewCell} ${prefStyles.previewCellGray}`} aria-hidden="true" />
+                无念头（灰色）
+              </span>
+              <span className={prefStyles.previewItem}>
+                <span
+                  className={prefStyles.previewCell}
+                  style={{
+                    backgroundColor: calendarColor,
+                    boxShadow: `0 0 10px ${calendarColor}66`,
+                  }}
+                  aria-hidden="true"
+                />
+                有念头（当前点亮色）
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section className="section info-section">
         <h3>主密钥</h3>

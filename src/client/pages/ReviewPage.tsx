@@ -5,6 +5,7 @@ import type {
   Capture,
   NextAction,
   ReviewContent,
+  ReviewDailyResponse,
   ReviewItem,
   ReviewListItem,
   ReviewPreset,
@@ -31,6 +32,7 @@ import {
 } from '../types';
 import api, { ApiError } from '../api';
 import NextActionEditor from '../components/NextActionEditor';
+import ReviewInsightsPanel from './ReviewInsightsPanel';
 
 // ===== 通用工具 =====
 
@@ -86,6 +88,20 @@ function presetRangeInput(preset: '7d' | '30d'): ReviewRangeInput {
     to: addLocalDays(today, 1),
     timezone: resolvedTimezone(),
     preset,
+  };
+}
+
+/** 固定近 12 个月（从 52 周前的周一起到今天，共 53 列完整热力图范围） */
+function annualDailyRangeInput(): ReviewRangeInput {
+  const today = startOfLocalDay(Date.now());
+  const d = new Date(today);
+  const mondayOffset = (d.getDay() + 6) % 7;
+  const startMonday = addLocalDays(today, -(mondayOffset + 52 * 7));
+  return {
+    from: startMonday,
+    to: addLocalDays(today, 1),
+    timezone: resolvedTimezone(),
+    preset: 'custom',
   };
 }
 
@@ -507,6 +523,9 @@ export default function ReviewPage() {
   const [data, setData] = useState<ReviewRangeResponse | null>(null);
   const [rangeLoading, setRangeLoading] = useState(true);
   const [rangeError, setRangeError] = useState<string | null>(null);
+  const [daily, setDaily] = useState<ReviewDailyResponse | null>(null);
+  const [dailyLoading, setDailyLoading] = useState(true);
+  const [dailyError, setDailyError] = useState<string | null>(null);
   const [restoreError, setRestoreError] = useState<string | null>(null);
 
   // 记录筛选
@@ -553,6 +572,8 @@ export default function ReviewPage() {
     const seq = ++rangeSeqRef.current;
     setRangeLoading(true);
     setRangeError(null);
+    setDailyLoading(true);
+    setDailyError(null);
     api
       .getReviewRange(range)
       .then((res) => {
@@ -573,6 +594,20 @@ export default function ReviewPage() {
       })
       .finally(() => {
         if (rangeSeqRef.current === seq) setRangeLoading(false);
+      });
+
+    api
+      .getReviewDaily(annualDailyRangeInput())
+      .then((res) => {
+        if (rangeSeqRef.current !== seq) return;
+        setDaily(res);
+      })
+      .catch((e) => {
+        if (rangeSeqRef.current !== seq) return;
+        setDailyError(errorMessage(e, '无法读取近 12 个月每日额度与日程统计'));
+      })
+      .finally(() => {
+        if (rangeSeqRef.current === seq) setDailyLoading(false);
       });
   }, [range]);
 
@@ -1579,6 +1614,13 @@ export default function ReviewPage() {
       )}
 
       {data && <ReviewStatsPanel stats={data.stats} definitions={data.statDefinitions} />}
+
+      <ReviewInsightsPanel
+        daily={daily}
+        loading={dailyLoading}
+        error={dailyError}
+        onRetry={() => setRange((prev) => ({ ...prev }))}
+      />
 
       {data?.coverage.truncated && (
         <div className="review-banner warn" role="status">
