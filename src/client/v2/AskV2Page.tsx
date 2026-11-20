@@ -46,10 +46,15 @@ export default function AskV2Page() {
   const [tz] = useDisplayTimezone();
 
   // 提问
-  const [question, setQuestion] = useState(params.get('q') ?? '');
+  const qParam = params.get('q') ?? '';
+  const [question, setQuestion] = useState(qParam);
   const [keywords, setKeywords] = useState('');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
+
+  useEffect(() => {
+    if (qParam) setQuestion(qParam);
+  }, [qParam]);
 
   // 检索结果
   const [search, setSearch] = useState<AskSearchResponse | null>(null);
@@ -303,7 +308,8 @@ export default function AskV2Page() {
                   value={question}
                   onChange={(e) => setQuestion(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') void runSearch();
+                    const composing = e.nativeEvent.isComposing || e.keyCode === 229;
+                    if (e.key === 'Enter' && !composing) void runSearch();
                   }}
                   placeholder="例如：调光闪烁这件事，我试过的方案里哪个有效？"
                   aria-label="问题"
@@ -380,7 +386,15 @@ export default function AskV2Page() {
                 >
                   全选前 {MAX_PICK} 条
                 </button>
-                <button type="button" className="v2-linkBtn" onClick={() => setSelected(new Set())}>
+                <button
+                  type="button"
+                  className="v2-linkBtn"
+                  onClick={() => {
+                    setSelected(new Set());
+                    setPreview(null);
+                    setNotice(null);
+                  }}
+                >
                   全不选
                 </button>
               </div>

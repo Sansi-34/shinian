@@ -10,6 +10,7 @@ import {
   sortSchedules,
   todayDateKey,
   useDisplayTimezone,
+  weekdayLabel,
 } from '../scheduleTime';
 import V2Shell from './V2Shell';
 import Module from './ui/Module';
@@ -25,8 +26,6 @@ function errText(e: unknown, fallback: string) {
   if (anyErr?.status === 0 || anyErr?.message === 'Failed to fetch') return '网络连接失败，请检查网络或服务是否在运行，然后重试。';
   return fallback;
 }
-
-const DAY_LABEL = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
 
 export default function ScheduleV2Page() {
   const [timezone] = useDisplayTimezone();
@@ -122,14 +121,13 @@ export default function ScheduleV2Page() {
       )}
 
       {groups.map(([key, list]) => {
-        const d = new Date(key + 'T00:00:00');
         const isToday = key === today;
         return (
           <Module
             key={key}
             title={
               <>
-                {isToday ? '今天' : DAY_LABEL[d.getDay()]}
+                {isToday ? '今天' : weekdayLabel(key)}
                 <span className="v2-date" style={{ marginLeft: 'var(--sp-2)' }}>{key}</span>
               </>
             }

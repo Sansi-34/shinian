@@ -1,11 +1,11 @@
 // 拾念 V2 · 单次问答详情（/ask/:queryId）
-// 只读视图：问题、状态、答案、依据记录；生成中的可以取消。
-import { useCallback, useEffect, useState } from 'react';
+// 只读视图：问题、状态、答案、依据记录；生成中的自动轮询并可取消；左栏保留历史列表便于切换。
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import api from '../api';
-import type { AskPublic } from '../types';
-import { useDisplayTimezone } from '../scheduleTime';
-import { dayTimeLabel } from './format';
+import type { AskListItem, AskPublic } from '../types';
+import { todayDateKey, useDisplayTimezone } from '../scheduleTime';
+import { dayLabel, dayTimeLabel } from './format';
 import V2Shell from './V2Shell';
 import Module from './ui/Module';
 import Pill, { type StatusKind } from './ui/Pill';
@@ -26,10 +26,22 @@ export default function AskV2DetailPage() {
   const { queryId = '' } = useParams();
   const [tz] = useDisplayTimezone();
   const [query, setQuery] = useState<AskPublic | null>(null);
+  const [recent, setRecent] = useState<AskListItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const pollRef = useRef<number | null>(null);
+
+  const loadRecent = useCallback(async () => {
+    try {
+      const res = await api.listAskQueries(12);
+      setRecent(res.queries ?? []);
+    } catch {
+      setRecent([]);
+    }
+  }, []);
 
   const load = useCallback(async () => {
+    if (!queryId) return;
     setLoading(true);
     setError(null);
     try {
@@ -45,13 +57,37 @@ export default function AskV2DetailPage() {
 
   useEffect(() => {
     void load();
-  }, [load]);
+    void loadRecent();
+  }, [load, loadRecent]);
+
+  // 生成中自动轮询刷新
+  useEffect(() => {
+    if (pollRef.current !== null) {
+      window.clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+    if (!query || query.status !== 'pending') return;
+    pollRef.current = window.setInterval(async () => {
+      try {
+        const res = await api.getAskQuery(query.id);
+        setQuery(res.query);
+        if (res.query.status !== 'pending') void loadRecent();
+      } catch {
+        /* 轮询失败不打断页面，下一次继续 */
+      }
+    }, 1500);
+    return () => {
+      if (pollRef.current !== null) window.clearInterval(pollRef.current);
+      pollRef.current = null;
+    };
+  }, [query, loadRecent]);
 
   async function cancel() {
     if (!query) return;
     try {
       const res = await api.cancelAskQuery(query.id);
       setQuery(res.query);
+      void loadRecent();
     } catch {
       setError('取消失败，请重试。');
     }
@@ -61,6 +97,33 @@ export default function AskV2DetailPage() {
 
   return (
     <V2Shell
+      leftTitle="问答记录"
+      leftCount={recent?.length ?? 0}
+      left={
+        <>
+          {recent === null && (
+            <p className="v2-state">
+              <Spinner />
+            </p>
+          )}
+          {recent?.length === 0 && <p className="v2-state">还没有问答记录。</p>}
+          {(recent ?? []).map((r, i) => (
+            <Link
+              key={r.id}
+              to={'/ask/' + r.id}
+              className="v2-leftItem"
+              aria-current={r.id === queryId ? 'page' : undefined}
+              style={{ '--i': i } as React.CSSProperties}
+            >
+              <span className="v2-leftTitle">{r.question}</span>
+              <span className="v2-leftMeta">
+                {dayLabel(r.createdAt, tz, todayDateKey(tz))} · {STATUS[r.status]?.label ?? r.status}
+                {r.insufficientEvidence ? ' · 证据不足' : ''}
+              </span>
+            </Link>
+          ))}
+        </>
+      }
       rightTitle="这次问答"
       right={
         <>
@@ -69,10 +132,12 @@ export default function AskV2DetailPage() {
             <p className="v2-groupNote">答案只能引用提问时勾选的记录。来源被删或改动后，这里会标出来。</p>
           </div>
           <div>
-            <h3 className="v2-groupTitle">返回</h3>
-            <Link className="v2-groupItem" to="/ask">
-              回到问记录
-            </Link>
+            <h3 className="v2-groupTitle">操作</h3>
+            <div className="v2-sideActions">
+              <Link className="v2-sideAction" to="/ask">
+                <span>← 回到问记录 / 新提问</span>
+              </Link>
+            </div>
           </div>
         </>
       }

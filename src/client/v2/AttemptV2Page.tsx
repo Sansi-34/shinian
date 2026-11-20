@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
 import type { Attempt, AttemptDeletePreview, Capture, ScheduleBlock } from '../types';
-import { formatScheduleTimeRange, sortSchedules, timeInTimezone, useDisplayTimezone } from '../scheduleTime';
+import { formatScheduleTimeRange, sortSchedules, timeInTimezone, todayDateKey, useDisplayTimezone } from '../scheduleTime';
 import { dayTimeLabel, fromLocalInputValue, toLocalInputValue } from './format';
 import V2Shell from './V2Shell';
 import Module from './ui/Module';
@@ -141,9 +141,21 @@ export default function AttemptV2Page() {
     } finally {
       setLoading(false);
     }
-  }, [attemptId]);
+  }, [attemptId, timezone]);
 
   useEffect(() => {
+    setBusy(false);
+    setActionError(null);
+    setSavedAt(null);
+    setScheduleConflict(null);
+    setScheduleModal(false);
+    setSchedStart('');
+    setSchedNote('');
+    setSchedOverlap(null);
+    setDeleteModal(false);
+    setModalError(null);
+    setDoneWithoutResult(false);
+    setSnapshot(null);
     void load();
   }, [load]);
 
@@ -257,19 +269,19 @@ export default function AttemptV2Page() {
     try {
       setDelPreview(await api.getAttemptDeletePreview(attemptId));
     } catch (e) {
-      setActionError(errText(e, '删除预览加载失败。'));
+      setModalError(errText(e, '删除预览加载失败。'));
     }
   }
 
   async function confirmDelete() {
     setBusy(true);
-    setActionError(null);
+    setModalError(null);
     try {
       await api.deleteAttempt(attemptId);
       setDeleteModal(false);
       navigate(capture ? '/capture/' + capture.id : '/');
     } catch (e) {
-      setActionError(errText(e, '删除失败，请重试。'));
+      setModalError(errText(e, '删除失败，请重试。'));
     } finally {
       setBusy(false);
     }
@@ -363,22 +375,25 @@ export default function AttemptV2Page() {
                 )}
               </div>
             ))}
-            <button
-              type="button"
-              className="v2-linkBtn"
-              onClick={() => {
-                setScheduleModal(true);
-                setSchedOverlap(null);
-                setModalError(null);
-                setSchedOpId('v2sch-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6));
-                // 默认给一个明天此刻起、半小时的合法时段，避免下午/晚上打开时默认值就非法
-                const start = schedStart || `${new Date().toISOString().slice(0, 10)}T${new Date().toTimeString().slice(0, 5)}`;
-                if (!schedStart) setSchedStart(start);
-                setSchedEnd(plusMinutes(start.slice(11, 16), 30));
-              }}
-            >
-              排日程
-            </button>
+            <div className="v2-sideActions">
+              <button
+                type="button"
+                className="v2-sideAction"
+                onClick={() => {
+                  setScheduleModal(true);
+                  setSchedOverlap(null);
+                  setModalError(null);
+                  setSchedOpId('v2sch-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6));
+                  // 使用显示时区的今天与当前时刻，不用 UTC toISOString()，避免跨时区错一天
+                  const now = Date.now();
+                  const start = schedStart || `${todayDateKey(timezone, now)}T${timeInTimezone(now, timezone)}`;
+                  if (!schedStart) setSchedStart(start);
+                  setSchedEnd(plusMinutes(start.slice(11, 16), 30));
+                }}
+              >
+                <span>+ 排日程</span>
+              </button>
+            </div>
           </div>
         </>
       }
@@ -457,7 +472,18 @@ export default function AttemptV2Page() {
             <div className="v2-form">
               <label className="v2-field">
                 <span className="v2-fieldLabel">状态</span>
-                <Segment ariaLabel="尝试状态" items={STATES} value={state} onChange={setState} />
+                <Segment
+                  ariaLabel="尝试状态"
+                  items={STATES}
+                  value={state}
+                  onChange={(next) => {
+                    setState(next);
+                    if (next !== 'done' && doneWithoutResult) {
+                      setDoneWithoutResult(false);
+                      setActionError(null);
+                    }
+                  }}
+                />
               </label>
 
               <label className="v2-field">
@@ -466,7 +492,14 @@ export default function AttemptV2Page() {
                   className="v2-editor"
                   maxLength={4000}
                   value={result}
-                  onChange={(e) => setResult(e.target.value)}
+                  onChange={(e) => {
+                    const next = e.target.value;
+                    setResult(next);
+                    if (next.trim() && doneWithoutResult) {
+                      setDoneWithoutResult(false);
+                      setActionError(null);
+                    }
+                  }}
                   placeholder="实际发生了什么？条件是什么？有没有对照？"
                   aria-label="结果文本"
                 />
@@ -558,6 +591,8 @@ export default function AttemptV2Page() {
             value={schedStart}
             onChange={(next) => {
               setSchedStart(next);
+              setSchedOverlap(null);
+              setModalError(null);
               // 结束早于开始就顺手往后推半小时，不让人先撞一次 400
               if (next && schedEnd <= next.slice(11, 16)) setSchedEnd(plusMinutes(next.slice(11, 16), 30));
             }}
@@ -570,7 +605,11 @@ export default function AttemptV2Page() {
           <input
             className="v2-input"
             value={schedEnd}
-            onChange={(e) => setSchedEnd(e.target.value)}
+            onChange={(e) => {
+              setSchedEnd(e.target.value);
+              setSchedOverlap(null);
+              setModalError(null);
+            }}
             placeholder="09:30"
             aria-label="结束时间"
           />
@@ -581,7 +620,11 @@ export default function AttemptV2Page() {
             className="v2-input"
             style={{ maxWidth: 'none', width: '100%' }}
             value={schedNote}
-            onChange={(e) => setSchedNote(e.target.value)}
+            onChange={(e) => {
+              setSchedNote(e.target.value);
+              setSchedOverlap(null);
+              setModalError(null);
+            }}
             placeholder="晚上做一次对比"
             aria-label="备注"
             maxLength={300}

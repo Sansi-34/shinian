@@ -50,6 +50,7 @@ export default function TopicV2Page() {
   const [attempts, setAttempts] = useState<TopicAttempt[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const [editing, setEditing] = useState(false);
@@ -85,6 +86,13 @@ export default function TopicV2Page() {
   }, [topicId]);
 
   useEffect(() => {
+    setEditing(false);
+    setModal(null);
+    setModalError(null);
+    setActionError(null);
+    setPicked([]);
+    setCandQuery('');
+    setDeletePreview(null);
     void load();
   }, [load]);
 
@@ -97,11 +105,11 @@ export default function TopicV2Page() {
     if (!topic || busy) return;
     const name = nameDraft.trim();
     if (!name) {
-      setError('主题标题不能为空。');
+      setActionError('主题标题不能为空。');
       return;
     }
     setBusy(true);
-    setError(null);
+    setActionError(null);
     try {
       const res = await api.updateTopic(topic.id, {
         name,
@@ -114,7 +122,7 @@ export default function TopicV2Page() {
       setEditing(false);
       await load();
     } catch (e) {
-      setError(errText(e, '保存失败，请重试。'));
+      setActionError(errText(e, '保存失败，请重试。'));
     } finally {
       setBusy(false);
     }
@@ -123,7 +131,7 @@ export default function TopicV2Page() {
   async function toggleArchive() {
     if (!topic || busy) return;
     setBusy(true);
-    setError(null);
+    setActionError(null);
     try {
       const res = topic.archivedAt
         ? await api.restoreTopic(topic.id, topic.revision, newOpId())
@@ -131,7 +139,7 @@ export default function TopicV2Page() {
       if (res.topic) setTopic(res.topic);
       await load();
     } catch (e) {
-      setError(errText(e, '归档操作失败，请重试。'));
+      setActionError(errText(e, '归档操作失败，请重试。'));
     } finally {
       setBusy(false);
     }
@@ -178,12 +186,12 @@ export default function TopicV2Page() {
   async function removeMember(captureId: string) {
     if (busy) return;
     setBusy(true);
-    setError(null);
+    setActionError(null);
     try {
       await api.removeTopicMember(topicId, captureId);
       await load();
     } catch (e) {
-      setError(errText(e, '移出成员失败，请重试。'));
+      setActionError(errText(e, '移出成员失败，请重试。'));
     } finally {
       setBusy(false);
     }
@@ -270,25 +278,27 @@ export default function TopicV2Page() {
         <>
           <div>
             <h3 className="v2-groupTitle">操作</h3>
-            <button type="button" className="v2-linkBtn" onClick={() => void openMembers()}>
-              收一条记录
-            </button>
-            <button
-              type="button"
-              className="v2-linkBtn"
-              onClick={() => {
-                setModal('next');
-                setModalError(null);
-              }}
-            >
-              固定下次继续
-            </button>
-            <button type="button" className="v2-linkBtn" onClick={() => void toggleArchive()} disabled={busy}>
-              {topic?.archivedAt ? '恢复主题' : '归档主题'}
-            </button>
-            <button type="button" className="v2-linkBtn" onClick={() => void openDelete()} disabled={busy}>
-              删除主题…
-            </button>
+            <div className="v2-sideActions">
+              <button type="button" className="v2-sideAction" onClick={() => void openMembers()}>
+                <span>+ 收一条记录</span>
+              </button>
+              <button
+                type="button"
+                className="v2-sideAction"
+                onClick={() => {
+                  setModal('next');
+                  setModalError(null);
+                }}
+              >
+                <span>固定下次继续</span>
+              </button>
+              <button type="button" className="v2-sideAction" onClick={() => void toggleArchive()} disabled={busy}>
+                <span>{topic?.archivedAt ? '恢复主题' : '归档主题'}</span>
+              </button>
+              <button type="button" className="v2-sideAction danger" onClick={() => void openDelete()} disabled={busy}>
+                <span>删除主题…</span>
+              </button>
+            </div>
           </div>
           <div>
             <h3 className="v2-groupTitle">说明</h3>
@@ -323,17 +333,17 @@ export default function TopicV2Page() {
             {!editing ? (
               <>
                 <p className="v2-captureText">{topic.name}</p>
-                {topic.exploringQuestion && <p className="v2-groupNote">在探索：{topic.exploringQuestion}</p>}
+                {topic.exploringQuestion && <p className="v2-captureSub">在探索：{topic.exploringQuestion}</p>}
                 <div className="v2-captureActions">
                   <Button onClick={() => setEditing(true)}>改标题 / 问题</Button>
-                  <Link className="v2-linkBtn" to={'/ask?q=' + encodeURIComponent(topic.exploringQuestion || topic.name)}>
-                    就这个主题提问
+                  <Link className="v2-ghostLink" to={'/ask?q=' + encodeURIComponent(topic.exploringQuestion || topic.name)}>
+                    就这个主题提问 →
                   </Link>
                 </div>
               </>
             ) : (
               <>
-                <div className="v2-form" style={{ width: '100%' }}>
+                <div className="v2-form" style={{ width: '100%', padding: 0, marginBottom: 'var(--sp-3)' }}>
                   <div className="v2-field">
                     <span className="v2-fieldLabel">标题</span>
                     <input
@@ -366,12 +376,18 @@ export default function TopicV2Page() {
                       setEditing(false);
                       setNameDraft(topic.name);
                       setQuestionDraft(topic.exploringQuestion ?? '');
+                      setActionError(null);
                     }}
                   >
                     取消
                   </Button>
                 </div>
               </>
+            )}
+            {actionError && (
+              <p className="v2-state" style={{ color: 'var(--st-fail)', paddingLeft: 0, paddingBottom: 0 }}>
+                {actionError}
+              </p>
             )}
           </div>
 

@@ -1,6 +1,6 @@
 .rail {
   position: fixed;
-  inset: 0 auto var(--status) 0;
+  inset: 0 auto 0 0;
   width: var(--rail);
   z-index: 40;
   display: flex;
@@ -12,13 +12,34 @@
   border-right: 1px solid var(--line);
 }
 
+/* 在 V2 布局下底部让出状态栏高度，防止两者重叠压住图标栏按钮 */
+:global(.v2-root) .rail {
+  bottom: var(--status);
+}
+
 .brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-bottom: var(--sp-3);
+  border-radius: var(--r-2);
   font-family: var(--font-serif);
   font-style: italic;
   font-size: var(--fs-brand);
   line-height: 1;
   color: var(--ink);
-  margin-bottom: var(--sp-4);
+  text-decoration: none;
+  transition: background 140ms var(--ease-out), color 140ms var(--ease-out);
+}
+.brand:hover {
+  background: var(--hover);
+  color: var(--accent);
+}
+.brand:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .group {
@@ -50,49 +71,253 @@
   color: var(--ink-3);
   background: transparent;
   border: 0;
+  text-decoration: none;
   cursor: pointer;
-  transition: background 120ms ease-out, color 120ms ease-out;
+  transition: background 140ms var(--ease-out), color 140ms var(--ease-out);
 }
 .link:hover {
   background: var(--hover);
-  color: var(--ink-2);
+  color: var(--ink);
 }
 .link:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
-.active {
-  color: var(--ink);
-  background: var(--hover);
+.active,
+.activeDesktop {
+  color: var(--accent);
+  background: var(--accent-soft);
 }
-.active::before {
+.active::before,
+.activeDesktop::before {
   content: '';
   position: absolute;
   left: -10px;
   top: 50%;
   translate: 0 -50%;
-  width: 2px;
+  width: 3px;
   height: 20px;
-  border-radius: 9999px;
+  border-radius: var(--r-pill);
   background: var(--accent);
+}
+
+.activeMobile {
+  /* 桌面端不触发移动端独有项的高亮 */
 }
 
 /* 气泡提示：hover/focus 才 display，避免撑出横向溢出 */
 .tip {
   position: absolute;
-  left: 46px;
+  left: 48px;
   z-index: 50;
   display: none;
   white-space: nowrap;
-  padding: 2px 8px;
+  padding: 4px 10px;
   border-radius: var(--r-1);
   font-size: var(--fs-meta);
   background: var(--raise-2);
   border: 1px solid var(--line-2);
   color: var(--ink);
+  box-shadow: var(--shadow-pop);
+  pointer-events: none;
 }
 .link:hover .tip,
 .link:focus-visible .tip {
   display: block;
+}
+
+.tabLabel {
+  display: none;
+}
+
+.mobileOnly {
+  display: none;
+}
+
+/* 更多弹出面板 */
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    translate: 0 6px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+.panel {
+  position: fixed;
+  left: calc(var(--rail) + var(--sp-2));
+  bottom: var(--sp-3);
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 184px;
+  padding: var(--sp-2);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-2);
+  background: var(--raise-2);
+  box-shadow: var(--shadow-pop);
+  animation: panelIn 160ms var(--ease-out);
+}
+:global(.v2-root) .panel {
+  bottom: calc(var(--status) + var(--sp-2));
+}
+
+.panelLabel {
+  padding: var(--sp-1) var(--sp-3) var(--sp-2);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+}
+
+.panelItem {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  min-height: 36px;
+  padding: 0 var(--sp-3);
+  border: 0;
+  border-radius: var(--r-1);
+  background: transparent;
+  color: var(--ink-2);
+  font-family: inherit;
+  font-size: var(--fs-body);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 120ms var(--ease-out), color 120ms var(--ease-out);
+}
+.panelItem:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+.panelItem:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+.panelItemActive {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.panelSep {
+  height: 1px;
+  margin: var(--sp-1) var(--sp-2);
+  background: var(--line);
+}
+
+@media (max-width: 900px) {
+  .desktopOnly {
+    display: none;
+  }
+  .mobileOnly {
+    display: flex;
+  }
+
+  .rail,
+  :global(.v2-root) .rail {
+    inset: auto 0 0 0;
+    width: 100%;
+    height: calc(var(--tabbar) + env(safe-area-inset-bottom));
+    padding: 0 var(--sp-2) env(safe-area-inset-bottom);
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: stretch;
+    gap: 0;
+    border-right: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .brand,
+  .spacer {
+    display: none;
+  }
+
+  .group {
+    display: contents;
+  }
+
+  .link {
+    flex: 1;
+    width: auto;
+    height: var(--tabbar);
+    flex-direction: column;
+    gap: 3px;
+    border-radius: var(--r-1);
+  }
+
+  .activeDesktop {
+    color: var(--ink-3);
+    background: transparent;
+  }
+  .activeDesktop::before {
+    display: none;
+  }
+  .activeMobile {
+    color: var(--accent);
+    background: transparent;
+  }
+  .activeMobile::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    translate: -50% 0;
+    width: 24px;
+    height: 2px;
+    border-radius: var(--r-pill);
+    background: var(--accent);
+  }
+
+  .active {
+    background: transparent;
+  }
+  .active::before {
+    left: 50%;
+    top: 0;
+    translate: -50% 0;
+    width: 24px;
+    height: 2px;
+  }
+
+  .tip {
+    display: none !important;
+  }
+
+  .tabLabel {
+    display: block;
+    font-size: 11px;
+    line-height: 1;
+    letter-spacing: 0.02em;
+  }
+
+  .panel,
+  :global(.v2-root) .panel {
+    left: auto;
+    right: var(--sp-3);
+    bottom: calc(var(--tabbar) + env(safe-area-inset-bottom) + var(--sp-2));
+    min-width: 196px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    animation: none;
+  }
 }

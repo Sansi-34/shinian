@@ -5,10 +5,13 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../api';
 import type { Capture, SearchAttemptHit, SearchCaptureHit, SearchExperienceHit } from '../types';
 import { OUTCOME_LABEL, STATE_LABEL } from '../types';
+import { todayDateKey, useDisplayTimezone } from '../scheduleTime';
+import { dayLabel } from './format';
 import V2Shell from './V2Shell';
 import Module from './ui/Module';
 import Row from './ui/Row';
 import Pill, { type StatusKind } from './ui/Pill';
+import Button from './ui/Button';
 import Spinner from './ui/Spinner';
 import Segment from './ui/Segment';
 import './shared.css';
@@ -48,6 +51,7 @@ function mark(text: string, term: string) {
 }
 
 export default function SearchV2Page() {
+  const [timezone] = useDisplayTimezone();
   const [params] = useSearchParams();
   // 用字符串而不是 URLSearchParams 对象做依赖：后者每次渲染都是新对象，
   // 会让下面的同步 effect 在每次渲染时把输入框清空（输入即被擦掉）。
@@ -56,6 +60,7 @@ export default function SearchV2Page() {
   const [input, setInput] = useState(qParam);
   const [query, setQuery] = useState(qParam);
   const [filter, setFilter] = useState<Filter>('all');
+  const [showAllLeft, setShowAllLeft] = useState(false);
 
   const [captures, setCaptures] = useState<SearchCaptureHit[]>([]);
   const [attempts, setAttempts] = useState<SearchAttemptHit[]>([]);
@@ -123,12 +128,17 @@ export default function SearchV2Page() {
       left={
         <>
           {allCaptures.length === 0 && <p className="v2-state">还没有念头。</p>}
-          {allCaptures.slice(0, 14).map((c, i) => (
-            <Link key={c.id} to={'/capture/' + c.id} className="v2-leftItem" style={{ '--i': i } as React.CSSProperties}>
+          {(showAllLeft ? allCaptures : allCaptures.slice(0, 20)).map((c, i) => (
+            <Link key={c.id} to={'/capture/' + c.id} className="v2-leftItem" style={{ '--i': Math.min(i, 12) } as React.CSSProperties}>
               <span className="v2-leftTitle">{c.rawText}</span>
-              <span className="v2-leftMeta">念头</span>
+              <span className="v2-leftMeta">{dayLabel(c.createdAt, timezone, todayDateKey(timezone))}</span>
             </Link>
           ))}
+          {allCaptures.length > 20 && !showAllLeft && (
+            <button type="button" className="v2-leftItem v2-leftBtn" style={{ color: 'var(--accent)' }} onClick={() => setShowAllLeft(true)}>
+              展开全部 {allCaptures.length} 条 →
+            </button>
+          )}
         </>
       }
       rightTitle="本次命中"
@@ -185,9 +195,9 @@ export default function SearchV2Page() {
           value={filter}
           onChange={setFilter}
         />
-        <button type="button" className="v2-linkBtn" onClick={submit}>
+        <Button variant="primary" onClick={submit}>
           搜索
-        </button>
+        </Button>
       </div>
 
       {loading && <p className="v2-state"><Spinner label="检索中" /></p>}

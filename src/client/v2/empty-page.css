@@ -118,12 +118,11 @@
   }
 }
 
-/* 窄屏：留白收一点，仍然垂直居中；
-   窄屏图标栏固定在左侧并盖住内容，空态让出这条宽度，文字不会被裁掉 */
+/* 窄屏：留白收一点，仍然垂直居中 */
 @media (max-width: 900px) {
   .v2-empty {
     min-height: min(56vh, 480px);
-    padding: var(--sp-5) var(--sp-4) var(--sp-5) calc(var(--rail) + var(--sp-4));
+    padding: var(--sp-5) var(--sp-4);
   }
   .v2-empty-mark {
     width: 64px;

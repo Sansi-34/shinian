@@ -51,6 +51,12 @@ export default function HoldConfirm({
 
   useEffect(() => () => stop(false), [stop]);
 
+  useEffect(() => {
+    if (!hint) return;
+    const id = window.setTimeout(() => setHint(false), 1800);
+    return () => window.clearTimeout(id);
+  }, [hint]);
+
   const holding = progress > 0;
 
   return (

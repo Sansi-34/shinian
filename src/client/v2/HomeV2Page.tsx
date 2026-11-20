@@ -58,6 +58,8 @@ export default function HomeV2Page() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
 
+  const [topicsTotal, setTopicsTotal] = useState(0);
+
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -65,8 +67,8 @@ export default function HomeV2Page() {
       const [capRes, attRes, topicRes, expRes, schRes] = await Promise.all([
         api.listCaptures(false),
         api.listRecentAttempts(8),
-        api.listTopics({ limit: 20, archived: 'exclude' }),
-        api.listExperiences({ archived: 'exclude', limit: 5 }),
+        api.listTopics({ limit: 50, archived: 'exclude' }),
+        api.listExperiences({ archived: 'exclude', limit: 50 }),
         api.listSchedules({
           from: todayDateKey(timezone),
           to: addDaysToDateKey(todayDateKey(timezone), 1),
@@ -76,6 +78,7 @@ export default function HomeV2Page() {
       setCaptures(capRes.captures ?? []);
       setAttempts(attRes.attempts ?? []);
       setTopics(topicRes.topics ?? []);
+      setTopicsTotal(topicRes.total ?? (topicRes.topics ?? []).length);
       setExperiences(expRes.experiences ?? []);
       setSchedules(sortSchedules(schRes.schedules ?? []));
     } catch (e) {
@@ -105,9 +108,18 @@ export default function HomeV2Page() {
     }
   }
 
+  const scheduledAttemptIds = useMemo(
+    () => new Set(schedules.map((s) => s.attemptId).filter(Boolean)),
+    [schedules]
+  );
+
+  // 今天已排过日程的尝试不再重复在待办栏列一遍，避免「现在要做」里同一条出现两次
   const todoAttempts = useMemo(
-    () => attempts.filter((a) => a.state === 'todo' || a.state === 'in_progress').slice(0, 3),
-    [attempts]
+    () =>
+      attempts
+        .filter((a) => (a.state === 'todo' || a.state === 'in_progress') && !scheduledAttemptIds.has(a.id))
+        .slice(0, 3),
+    [attempts, scheduledAttemptIds]
   );
 
   const recent = useMemo(() => {
@@ -192,7 +204,7 @@ export default function HomeV2Page() {
           </div>
         </>
       }
-      statusLeft={`本地库 · ${captures.length} 念头 · ${topics.length} 主题 · ${experiences.length} 经验`}
+      statusLeft={`本地库 · ${captures.length} 念头 · ${topicsTotal} 主题 · ${experiences.length} 经验`}
       statusRight={<span>{schedules.length > 0 ? `今天 ${schedules.length} 项安排` : '今天没有安排'}</span>}
     >
       <div className="v2-compose">
@@ -264,7 +276,7 @@ export default function HomeV2Page() {
         <GhostChip count={experiences.length} to="/experiences">
           我整理的经验
         </GhostChip>
-        <GhostChip count={topics.length} to="/topics">
+        <GhostChip count={topicsTotal} to="/topics">
           我的主题
         </GhostChip>
         <GhostChip count={schedules.length} to="/schedule">

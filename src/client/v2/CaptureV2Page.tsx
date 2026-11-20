@@ -95,6 +95,13 @@ export default function CaptureV2Page() {
   }, [captureId]);
 
   useEffect(() => {
+    setEditing(false);
+    setWriting(false);
+    setStepDraft('');
+    setModal(null);
+    setActionError(null);
+    setModalError(null);
+    setDeletePreview(null);
     void load();
   }, [load]);
 
@@ -162,7 +169,7 @@ export default function CaptureV2Page() {
       const res = await api.listTopics({ limit: 50, archived: 'exclude' });
       setAllTopics(res.topics ?? []);
     } catch (e) {
-      setActionError(errText(e, '主题列表加载失败。'));
+      setModalError(errText(e, '主题列表加载失败。'));
     }
   }
 
@@ -204,17 +211,18 @@ export default function CaptureV2Page() {
       const res = await api.searchCaptureLinkCandidates(captureId, '', 12);
       setCandidates(res.captures ?? []);
     } catch (e) {
-      setActionError(errText(e, '候选加载失败。'));
+      setModalError(errText(e, '候选加载失败。'));
     }
   }
 
   async function searchCandidates(q: string) {
     setCandQuery(q);
+    setModalError(null);
     try {
       const res = await api.searchCaptureLinkCandidates(captureId, q, 12);
       setCandidates(res.captures ?? []);
     } catch (e) {
-      setActionError(errText(e, '候选加载失败。'));
+      setModalError(errText(e, '候选加载失败。'));
     }
   }
 
@@ -254,7 +262,7 @@ export default function CaptureV2Page() {
       const preview = await api.deletePreview(captureId);
       setDeletePreview(preview);
     } catch (e) {
-      setActionError(errText(e, '删除预览加载失败。'));
+      setModalError(errText(e, '删除预览加载失败。'));
     }
   }
 
@@ -289,15 +297,17 @@ export default function CaptureV2Page() {
             {topics.length === 0 && <p className="v2-groupNote">还没有加入主题。</p>}
             {topics.map((t) => (
               <div key={t.id} className="v2-groupItem">
-                <Link to={'/topics/' + t.id}>{t.name}</Link>
+                <Link to={'/topics/' + t.id} title={t.name}>{t.name}</Link>
                 <button type="button" className="v2-miniBtn" onClick={() => void removeFromTopic(t.id)} disabled={busy}>
                   移出
                 </button>
               </div>
             ))}
-            <button type="button" className="v2-linkBtn" onClick={() => void openTopicModal()}>
-              加入主题
-            </button>
+            <div className="v2-sideActions">
+              <button type="button" className="v2-sideAction" onClick={() => void openTopicModal()}>
+                <span>+ 加入主题</span>
+              </button>
+            </div>
           </div>
 
           <div>
@@ -305,17 +315,19 @@ export default function CaptureV2Page() {
             {linkRows.length === 0 && <p className="v2-groupNote">没有手动关联。关联只记录你写下的关系，不做相似度推断。</p>}
             {linkRows.map((r) => (
               <div key={r.key} className="v2-groupItem">
-                <Link to={'/capture/' + r.item.capture.id}>
-                  {r.label}：{r.item.capture.rawText.slice(0, 14)}
+                <Link to={'/capture/' + r.item.capture.id} title={r.item.capture.rawText}>
+                  {r.label}：{r.item.capture.rawText}
                 </Link>
                 <button type="button" className="v2-miniBtn" onClick={() => void unlink(r.item.id)} disabled={busy}>
                   解除
                 </button>
               </div>
             ))}
-            <button type="button" className="v2-linkBtn" onClick={() => void openLinkModal()}>
-              关联一条念头
-            </button>
+            <div className="v2-sideActions">
+              <button type="button" className="v2-sideAction" onClick={() => void openLinkModal()}>
+                <span>+ 关联一条念头</span>
+              </button>
+            </div>
           </div>
         </>
       }

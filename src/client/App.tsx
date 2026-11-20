@@ -10,7 +10,6 @@ import ReviewDetailPage from './pages/ReviewDetailPage';
 import NextActionPage from './pages/NextActionPage';
 import ResearchPage from './pages/ResearchPage';
 import ExperienceDetailPage from './pages/ExperienceDetailPage';
-import GraphPage from './pages/GraphPage';
 import ThemeSwitcher from './ThemeSwitcher';
 import HomeV2Page from './v2/HomeV2Page';
 import SearchV2Page from './v2/SearchV2Page';
@@ -24,6 +23,7 @@ import KitPage from './v2/KitPage';
 import AskV2Page from './v2/AskV2Page';
 import AskV2DetailPage from './v2/AskV2DetailPage';
 import TopicV2Page from './v2/TopicV2Page';
+import GraphV2Page from './v2/GraphV2Page';
 import api from './api';
 
 const navClass = ({ isActive }: { isActive: boolean }) =>
@@ -107,7 +107,7 @@ function Shell() {
     );
   }
 
-  const graphMode = location.pathname.startsWith('/graph');
+  const graphMode = false; // 图谱已改为 V2 页面（Cytoscape），不再需要旧的全屏画布外壳
   // 登录页不显示侧栏；图谱页保留原有深色全屏视觉。
   // V2 已接管这些正式路径；其余（问记录/动态/回顾/图谱/设置/详情类）暂时还是旧实现
   const V2_EXACT = ['/', '/search', '/topics', '/experiences', '/schedule', '/research'];
@@ -116,6 +116,7 @@ function Shell() {
     location.pathname === '/ask' ||
     location.pathname.startsWith('/ask/') ||
     location.pathname.startsWith('/topics/') ||
+    location.pathname === '/graph' ||
     V2_EXACT.includes(location.pathname) ||
     location.pathname.startsWith('/capture/') ||
     location.pathname.startsWith('/attempt/');
@@ -243,7 +244,7 @@ function Shell() {
           <Route path="/review/:reviewId" element={<ReviewDetailPage />} />
           <Route path="/ask" element={<AskV2Page />} />
           <Route path="/ask/:queryId" element={<AskV2DetailPage />} />
-          <Route path="/graph" element={<GraphPage />} />
+          <Route path="/graph" element={<GraphV2Page />} />
           <Route path="/settings/ai" element={<SettingsAiPage />} />
           <Route path="/login" element={<LoginPage onLogin={setUsername} />} />
 

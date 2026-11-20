@@ -2,16 +2,16 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 28px;
-  padding: 0 var(--sp-2);
+  min-height: 40px;
+  padding: 0 var(--sp-3);
   border: 1px solid var(--line-2);
   border-radius: var(--r-1);
   background: transparent;
   color: var(--ink-2);
   font-family: inherit;
-  font-size: var(--fs-meta);
+  font-size: var(--fs-body);
   cursor: pointer;
-  transition: color 160ms ease-out, border-color 160ms ease-out;
+  transition: background 140ms var(--ease-out), color 140ms var(--ease-out), border-color 140ms var(--ease-out);
 }
 .btn:hover {
   background: var(--hover);

@@ -3,6 +3,8 @@
    - 所有页面只允许使用这里的变量；禁止在组件里写字面色值
    - 两套调色板共用同一份 DOM：[data-v2-theme="dark"（默认）| "paper"]
    - 状态色只保留 5 个语义：active / done / partial / fail / idle
+   - .v2-root  = V2 页面根节点（自占满视口）
+     .v2-chrome = 旧页面上挂的 V2 导航（图标栏 / 更多菜单），只取 token，不改布局
    ========================================================================== */
 
 .v2-root {
@@ -12,7 +14,10 @@
   overflow-y: auto;
   background: var(--bg);
   color: var(--ink);
+}
 
+.v2-root,
+.v2-chrome {
   /* 间距：只有 6 档 */
   --sp-1: 4px;
   --sp-2: 8px;
@@ -34,14 +39,18 @@
 
   --rail: 60px;
   --status: 40px;
+  --tabbar: 56px;
 
   --font-sans: 'Geist', 'Inter', 'Segoe UI', 'Microsoft YaHei', system-ui, sans-serif;
   --font-serif: 'Instrument Serif', Georgia, 'Songti SC', 'SimSun', serif;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* ---------- 暗色（默认）：D1 石墨 ---------- */
 .v2-root,
-.v2-root[data-v2-theme='dark'] {
+.v2-root[data-v2-theme='dark'],
+.v2-chrome,
+.v2-chrome[data-v2-theme='dark'] {
   color-scheme: dark;
   /* 底不用纯黑：抬到石墨，边界才看得见，彩色状态才不会在屏幕上"发光" */
   --bg: #0e1013;
@@ -50,14 +59,15 @@
   --raise-2: #232a33;
   --sunk: #0a0c0f;
   --ink: #e9ecf1;
-  --ink-2: rgba(233, 236, 241, 0.68);
-  --ink-3: rgba(233, 236, 241, 0.62);
-  --line: rgba(233, 236, 241, 0.09);
-  --line-2: rgba(233, 236, 241, 0.24);
-  --hover: rgba(233, 236, 241, 0.05);
+  --ink-2: rgba(233, 236, 241, 0.7);
+  --ink-3: rgba(233, 236, 241, 0.56);
+  --line: rgba(233, 236, 241, 0.08);
+  --line-2: rgba(233, 236, 241, 0.2);
+  --hover: rgba(233, 236, 241, 0.045);
   --accent: #9db8ff;
   --accent-ink: #0e1013;
   --accent-soft: rgba(157, 184, 255, 0.12);
+  --shadow-pop: 0 18px 48px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
 
   /* 状态色：D1（饱和度 43–66%，不再和强调色抢注意力） */
   --st-active: #7fd7c4;
@@ -73,22 +83,24 @@
 }
 
 /* ---------- 纸张（暖纸 + 墨；面不用纯白，状态栏用下沉面） ---------- */
-.v2-root[data-v2-theme='paper'] {
+.v2-root[data-v2-theme='paper'],
+.v2-chrome[data-v2-theme='paper'] {
   color-scheme: light;
-  --bg: #f1ede4;
-  --panel: #f6f2e9;
-  --raise: #efeade;
-  --raise-2: #e9e4d7;
-  --sunk: #e9e4d7;
+  --bg: #f3efe6;
+  --panel: #f8f5ee;
+  --raise: #fbf9f4;
+  --raise-2: #ffffff;
+  --sunk: #ebe6da;
   --ink: #161d19;
   --ink-2: #424c46;
   --ink-3: #6a6359;
-  --line: #e2ded3;
-  --line-2: #d3cfc2;
+  --line: #e2ddd1;
+  --line-2: #d0cbbd;
   --hover: rgba(22, 29, 25, 0.045);
   --accent: #1d4ed8;
   --accent-ink: #f7f5ef;
   --accent-soft: rgba(29, 78, 216, 0.08);
+  --shadow-pop: 0 18px 44px rgba(58, 48, 30, 0.16), 0 2px 6px rgba(58, 48, 30, 0.08);
 
   /* 状态色：B 方案的纸张取值（全部 ≥5.1:1，WCAG AA 需 4.5） */
   --st-active: #24564a;
@@ -101,6 +113,19 @@
   --st-fail-bg: rgba(163, 52, 31, 0.1);
   --st-idle: #645d55;
   --st-idle-bg: transparent;
+}
+
+/* 选中文字也跟着主题走 */
+.v2-root ::selection {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+/* 细滚动条：默认的灰白粗条在暗色底上很扎眼 */
+.v2-root,
+.v2-root * {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-2) transparent;
 }
 
 /* V2 外壳自己管背景与留白：让应用主区不再加内边距 */
