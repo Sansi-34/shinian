@@ -24,8 +24,10 @@ import AskV2DetailPage from './v2/AskV2DetailPage';
 import TopicV2Page from './v2/TopicV2Page';
 import GraphV2Page from './v2/GraphV2Page';
 import Rail from './v2/ui/Rail';
+import CosmosBackdrop from './v2/ui/CosmosBackdrop';
 import { useV2Theme } from './v2/theme';
 import './v2/tokens.css';
+import './v2/legacy-cosmos.css';
 import api from './api';
 
 // 兼容跳转要保住 query：旧书签 /v2/search?q=xxx 不能把 q 丢掉
@@ -89,11 +91,17 @@ function Shell() {
   const showLegacyRail = !v2Mode && !isLogin;
 
   return (
-    <div className={`app${v2Mode ? ' v2-mode' : ''}${showLegacyRail ? ' legacy-with-rail' : ''}${isLogin ? ' no-shell' : ''}`}>
+    <div
+      className={`app${v2Mode ? ' v2-mode' : ''}${showLegacyRail ? ' legacy-with-rail' : ''}${isLogin ? ' no-shell' : ''}`}
+      data-v2-theme={showLegacyRail ? v2Theme : undefined}
+    >
       {showLegacyRail && (
-        <div className="v2-chrome" data-v2-theme={v2Theme}>
-          <Rail />
-        </div>
+        <>
+          <CosmosBackdrop active={v2Theme === 'dark'} />
+          <div className="v2-chrome" data-v2-theme={v2Theme}>
+            <Rail />
+          </div>
+        </>
       )}
 
       <main className="app-main">

@@ -7,9 +7,40 @@
   flex-direction: column;
   align-items: center;
   gap: var(--sp-2);
-  padding: var(--sp-4) 0;
+  padding: 12px 0 var(--sp-4);
   background: var(--panel);
+  backdrop-filter: var(--vibrancy);
+  -webkit-backdrop-filter: var(--vibrancy);
   border-right: 1px solid var(--line);
+}
+
+/* macOS 窗口红黄绿三色交通灯 */
+.trafficLights {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 16px;
+  margin-bottom: 4px;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.28);
+}
+
+.dotClose {
+  background: #ff5f57;
+}
+
+.dotMin {
+  background: #febc2e;
+}
+
+.dotMax {
+  background: #28c840;
 }
 
 /* 在 V2 布局下底部让出状态栏高度，防止两者重叠压住图标栏按钮 */
@@ -23,18 +54,22 @@
   justify-content: center;
   width: 36px;
   height: 36px;
-  margin-bottom: var(--sp-3);
-  border-radius: var(--r-2);
+  margin-bottom: var(--sp-2);
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--raise);
+  box-shadow: var(--glass-shine);
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: var(--fs-brand);
+  font-size: 18px;
   line-height: 1;
   color: var(--ink);
   text-decoration: none;
-  transition: background 140ms var(--ease-out), color 140ms var(--ease-out);
+  transition: background 140ms var(--ease-out), color 140ms var(--ease-out), border-color 140ms var(--ease-out), transform 140ms var(--ease-out);
 }
 .brand:hover {
   background: var(--hover);
+  border-color: var(--line-2);
   color: var(--accent);
 }
 .brand:focus-visible {
@@ -88,18 +123,11 @@
 .activeDesktop {
   color: var(--accent);
   background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 32%, transparent);
 }
 .active::before,
 .activeDesktop::before {
-  content: '';
-  position: absolute;
-  left: -10px;
-  top: 50%;
-  translate: 0 -50%;
-  width: 3px;
-  height: 20px;
-  border-radius: var(--r-pill);
-  background: var(--accent);
+  display: none;
 }
 
 .activeMobile {
@@ -164,11 +192,13 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 184px;
-  padding: var(--sp-2);
+  min-width: 192px;
+  padding: 6px;
   border: 1px solid var(--line-2);
-  border-radius: var(--r-2);
+  border-radius: 12px;
   background: var(--raise-2);
+  backdrop-filter: var(--vibrancy);
+  -webkit-backdrop-filter: var(--vibrancy);
   box-shadow: var(--shadow-pop);
   animation: panelIn 160ms var(--ease-out);
 }
@@ -241,6 +271,7 @@
     border-top: 1px solid var(--line);
   }
 
+  .trafficLights,
   .brand,
   .spacer {
     display: none;

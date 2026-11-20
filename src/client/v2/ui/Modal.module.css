@@ -6,10 +6,12 @@
   align-items: center;
   justify-content: center;
   padding: var(--sp-4);
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(2px);
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
+/* macOS Sheet / Dialog 质感 */
 .panel {
   max-width: 100%;
   min-width: 320px;
@@ -17,8 +19,10 @@
   display: flex;
   flex-direction: column;
   border: 1px solid var(--line-2);
-  border-radius: var(--r-2);
-  background: var(--raise);
+  border-radius: 14px;
+  background: var(--raise-2);
+  backdrop-filter: var(--vibrancy);
+  -webkit-backdrop-filter: var(--vibrancy);
   color: var(--ink);
   box-shadow: var(--shadow-pop);
   outline: none;
@@ -28,26 +32,31 @@
   display: flex;
   align-items: center;
   gap: var(--sp-3);
-  padding: var(--sp-3) var(--sp-4);
+  padding: 14px var(--sp-4);
   border-bottom: 1px solid var(--line);
 }
 .title {
   margin: 0;
+  font-family: var(--font-display);
   font-size: var(--fs-title);
-  font-weight: 500;
+  font-weight: 600;
 }
 .close {
   margin-left: auto;
-  width: 32px;
-  height: 32px;
-  border: 1px solid var(--line-2);
-  border-radius: var(--r-1);
-  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--line);
+  border-radius: 9999px;
+  background: var(--hover);
   color: var(--ink-2);
   cursor: pointer;
+  transition: background 120ms var(--ease-out), color 120ms var(--ease-out);
 }
 .close:hover {
-  background: var(--hover);
+  background: var(--line-2);
   color: var(--ink);
 }
 
@@ -77,7 +86,7 @@
   .panel {
     width: 100% !important;
     max-height: 88dvh;
-    border-radius: var(--r-2) var(--r-2) 0 0;
+    border-radius: 16px 16px 0 0;
     padding-bottom: env(safe-area-inset-bottom);
   }
 }

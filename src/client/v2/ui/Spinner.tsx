@@ -3,7 +3,15 @@
 // 这里按拾念的 token 重画，不引入第三方包。
 import styles from './Spinner.module.css';
 
-export default function Spinner({ size = 14, label = '加载中' }: { size?: number; label?: string }) {
+export default function Spinner({
+  size = 14,
+  label = '加载中',
+  hideLabel = false,
+}: {
+  size?: number;
+  label?: string;
+  hideLabel?: boolean;
+}) {
   return (
     <span className={styles.wrap} role="status" aria-label={label}>
       <svg width={size} height={size} viewBox="0 0 24 24" className={styles.svg} aria-hidden="true">
@@ -20,7 +28,7 @@ export default function Spinner({ size = 14, label = '加载中' }: { size?: num
           className={styles.arc}
         />
       </svg>
-      <span className={styles.text}>{label}</span>
+      {!hideLabel && <span className={styles.text}>{label}</span>}
     </span>
   );
 }

@@ -558,18 +558,18 @@ time,
   font-size: var(--fs-small);
 }
 
-/* ---- 表单控件 ---- */
+/* ---- 表单控件（仅作用于旧页面，不污染 V2 原生毛玻璃组件） ---- */
 .capture-input,
-textarea,
-input[type='text'],
-input[type='url'],
-input[type='password'],
-input[type='search'],
-input[type='datetime-local'],
-input[type='date'],
-input[type='time'],
-input[type='number'],
-select {
+textarea:not(.v2-root *):not(.v2-chrome *),
+input[type='text']:not(.v2-root *):not(.v2-chrome *),
+input[type='url']:not(.v2-root *):not(.v2-chrome *),
+input[type='password']:not(.v2-root *):not(.v2-chrome *),
+input[type='search']:not(.v2-root *):not(.v2-chrome *),
+input[type='datetime-local']:not(.v2-root *):not(.v2-chrome *),
+input[type='date']:not(.v2-root *):not(.v2-chrome *),
+input[type='time']:not(.v2-root *):not(.v2-chrome *),
+input[type='number']:not(.v2-root *):not(.v2-chrome *),
+select:not(.v2-root *):not(.v2-chrome *) {
   width: 100%;
   min-height: var(--control-h);
   border: 1px solid var(--line-strong);
@@ -583,11 +583,11 @@ select {
   resize: vertical;
   transition: border-color var(--dur-fast-2) var(--ease-standard);
 }
-textarea { min-height: 44px; line-height: var(--lh-small); }
+textarea:not(.v2-root *):not(.v2-chrome *) { min-height: 44px; line-height: var(--lh-small); }
 .capture-input:focus,
-textarea:focus,
-input:focus,
-select:focus {
+textarea:focus:not(.v2-root *):not(.v2-chrome *),
+input:focus:not(.v2-root *):not(.v2-chrome *),
+select:focus:not(.v2-root *):not(.v2-chrome *) {
   outline: none;
   border-color: var(--accent-ink);
   box-shadow: inset 0 0 0 1px var(--accent-ink);

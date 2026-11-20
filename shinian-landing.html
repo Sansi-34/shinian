@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>拾念 SHINIAN — 把试过的结果留住，下次遇到不用重试</title>
+  <meta name="description" content="拾念是单机单人使用的记录工具：把「试过什么、结果如何、条件是什么」留下来，下次遇到同类问题时能找回来并核对。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;300;400&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --void: #05060a;
+      --surface: rgba(14, 16, 22, 0.78);
+      --surface-solid: #10131a;
+      --raise: rgba(24, 27, 36, 0.86);
+      --ink: #eef0f6;
+      --ink-2: rgba(238, 240, 246, 0.72);
+      --ink-3: rgba(238, 240, 246, 0.48);
+      --line: rgba(238, 240, 246, 0.11);
+      --line-2: rgba(238, 240, 246, 0.22);
+      --cyan: #7fd7c4;
+      --cyan-border: rgba(127, 215, 196, 0.52);
+      --cyan-glow: rgba(127, 215, 196, 0.14);
+      --accent: #9db8ff;
+      --done: #a8c977;
+      --partial: #e0b06a;
+      --fail: #e08d8d;
+      --serif: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', 'NSimSun', 'SimSun', Georgia, serif;
+      --sans: 'Noto Sans SC', 'Inter', 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;
+      --mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background: var(--void);
+      color: var(--ink);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--void);
+      color: var(--ink);
+      overflow-x: hidden;
+      line-height: 1.65;
+    }
+
+    ::selection {
+      background: rgba(127, 215, 196, 0.22);
+      color: var(--ink);
+    }
+
+    /* ---------- 固定全屏深空背景 ---------- */
+    .cosmos-stage {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+      background: var(--void);
+    }
+
+    #cosmos-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* 四周压暗遮罩：确保中央标题与文字任何时候都清晰可读 */
+    .cosmos-vignette {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 74% 62% at 50% 42%, transparent 25%, rgba(5, 6, 10, 0.62) 76%, rgba(5, 6, 10, 0.94) 100%),
+        linear-gradient(180deg, rgba(5, 6, 10, 0.45) 0%, transparent 18%, transparent 78%, rgba(5, 6, 10, 0.88) 100%);
+    }
+
+    /* ---------- 顶部半透明黑色导航栏 (~64px) ---------- */
+    .topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      z-index: 40;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(20px, 4vw, 56px);
+      background: rgba(5, 6, 10, 0.56);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(238, 240, 246, 0.08);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 10px;
+      color: var(--ink);
+      text-decoration: none;
+      font-family: var(--serif);
+      font-weight: 300;
+      font-size: 22px;
+      letter-spacing: 0.08em;
+    }
+
+    .brand-en {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--ink-3);
+    }
+
+    /* 圆角主行动按钮 */
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 0 24px;
+      border-radius: 9999px;
+      border: 1px solid rgba(238, 240, 246, 0.28);
+      background: rgba(238, 240, 246, 0.94);
+      color: #080a0f;
+      font-family: var(--sans);
+      font-size: 14.5px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      text-decoration: none;
+      cursor: pointer;
+      transition: transform 240ms var(--ease), background 200ms var(--ease), box-shadow 240ms var(--ease), border-color 200ms var(--ease);
+    }
+
+    .cta-btn:hover {
+      background: #ffffff;
+      border-color: var(--cyan-border);
+      box-shadow: 0 0 28px rgba(127, 215, 196, 0.24);
+      transform: translateY(-1px);
+    }
+
+    .cta-btn:focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 3px;
+    }
+
+    .cta-btn-sm {
+      min-height: 36px;
+      padding: 0 18px;
+      font-size: 13px;
+      background: rgba(238, 240, 246, 0.1);
+      color: var(--ink);
+      border-color: rgba(238, 240, 246, 0.22);
+    }
+
+    .cta-btn-sm:hover {
+      background: rgba(238, 240, 246, 0.18);
+      border-color: var(--cyan-border);
+      color: #ffffff;
+      box-shadow: 0 0 20px rgba(127, 215, 196, 0.16);
+    }
+
+    /* ---------- 页面主内容流 ---------- */
+    .page {
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ---------- 首屏：1440×900 基准，底部露出演示区上边缘 ---------- */
+    .hero {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      min-height: clamp(540px, 76dvh, 730px);
+      padding: 112px 24px 44px;
+    }
+
+    .hero-inner {
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+
+    .hero-title {
+      margin: 0;
+      font-family: var(--serif);
+      font-weight: 200;
+      font-size: clamp(38px, 6vw, 88px);
+      line-height: 1.18;
+      letter-spacing: -0.015em;
+      color: var(--ink);
+      text-shadow: 0 8px 38px rgba(0, 0, 0, 0.65);
+    }
+
+    .hero-title .line {
+      display: block;
+    }
+
+    .hero-lead {
+      margin: 26px auto 34px;
+      max-width: 34em;
+      font-size: clamp(15px, 1.3vw, 18px);
+      font-weight: 300;
+      line-height: 1.75;
+      color: var(--ink-2);
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    /* ---------- 向下滚动：1100px 宽幅演示区 ---------- */
+    .demo-section {
+      padding: 0 24px 120px;
+      scroll-margin-top: 84px;
+    }
+
+    /* 可点击演示容器：悬停放大 1.02 + 冷青边框微光 */
+    .showcase-frame {
+      max-width: 1100px;
+      margin: 0 auto;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 32px 90px rgba(0, 0, 0, 0.65);
+      overflow: hidden;
+      transition: transform 320ms var(--ease), border-color 320ms var(--ease), box-shadow 320ms var(--ease);
+    }
+
+    .showcase-frame:hover {
+      transform: scale(1.02);
+      border-color: var(--cyan-border);
+      box-shadow: 0 36px 96px rgba(0, 0, 0, 0.72), 0 0 38px var(--cyan-glow);
+    }
+
+    .frame-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      height: 46px;
+      padding: 0 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(8, 10, 14, 0.65);
+    }
+
+    .frame-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .frame-dots {
+      display: inline-flex;
+      gap: 6px;
+    }
+    .frame-dots i {
+      display: block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(238, 240, 246, 0.18);
+    }
+
+    .frame-title {
+      font-size: 12.5px;
+      color: var(--ink-2);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .demo-badge {
+      flex: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 24px;
+      padding: 0 10px;
+      border-radius: 9999px;
+      border: 1px solid rgba(127, 215, 196, 0.34);
+      background: rgba(127, 215, 196, 0.08);
+      color: var(--cyan);
+      font-size: 11.5px;
+      letter-spacing: 0.04em;
+    }
+
+    /* 演示内部三栏工作台 */
+    .demo-workbench {
+      display: grid;
+      grid-template-columns: 240px minmax(0, 1fr) 260px;
+      min-height: 460px;
+    }
+
+    .demo-col-left {
+      border-right: 1px solid var(--line);
+      background: rgba(10, 12, 17, 0.45);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .demo-col-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 42px;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--line);
+      font-size: 12.5px;
+      color: var(--ink-2);
+      letter-spacing: 0.03em;
+    }
+
+    .demo-tab-btn {
+      display: block;
+      width: 100%;
+      padding: 13px 16px;
+      border: 0;
+      border-bottom: 1px solid rgba(238, 240, 246, 0.06);
+      border-left: 2px solid transparent;
+      background: transparent;
+      color: var(--ink-2);
+      font-family: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: background 160ms var(--ease), color 160ms var(--ease), border-color 160ms var(--ease);
+    }
+
+    .demo-tab-btn:hover {
+      background: rgba(238, 240, 246, 0.04);
+      color: var(--ink);
+    }
+
+    .demo-tab-btn[aria-selected='true'] {
+      background: rgba(157, 184, 255, 0.09);
+      border-left-color: var(--accent);
+      color: var(--ink);
+    }
+
+    .demo-tab-title {
+      display: block;
+      font-size: 13.5px;
+      line-height: 1.45;
+      margin-bottom: 4px;
+    }
+
+    .demo-tab-meta {
+      display: block;
+      font-size: 11.5px;
+      color: var(--ink-3);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .demo-col-center {
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .demo-capture-box {
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .demo-kicker {
+      font-size: 11.5px;
+      letter-spacing: 0.08em;
+      color: var(--ink-3);
+      margin-bottom: 6px;
+    }
+
+    .demo-capture-text {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 400;
+      line-height: 1.55;
+      color: var(--ink);
+    }
+
+    .demo-step-card {
+      padding: 16px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--raise);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .demo-step-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .demo-step-title {
+      font-size: 14.5px;
+      font-weight: 500;
+      color: var(--ink);
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 24px;
+      padding: 0 10px;
+      border-radius: 9999px;
+      font-size: 11.5px;
+      border: 1px solid currentColor;
+      white-space: nowrap;
+    }
+
+    .status-pill::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .pill-done {
+      color: var(--done);
+      background: rgba(168, 201, 119, 0.1);
+      border-color: rgba(168, 201, 119, 0.36);
+    }
+    .pill-active {
+      color: var(--cyan);
+      background: rgba(127, 215, 196, 0.1);
+      border-color: rgba(127, 215, 196, 0.38);
+    }
+    .pill-partial {
+      color: var(--partial);
+      background: rgba(224, 176, 106, 0.1);
+      border-color: rgba(224, 176, 106, 0.36);
+    }
+
+    .demo-result-block {
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: rgba(5, 6, 10, 0.45);
+      border: 1px solid rgba(238, 240, 246, 0.08);
+      font-size: 13.5px;
+      line-height: 1.65;
+      color: var(--ink-2);
+    }
+
+    .demo-cond {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(238, 240, 246, 0.1);
+      font-size: 12px;
+      color: var(--ink-3);
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .demo-flow-hint {
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding-top: 8px;
+      font-size: 12px;
+      color: var(--ink-3);
+    }
+
+    .demo-col-right {
+      border-left: 1px solid var(--line);
+      background: rgba(10, 12, 17, 0.45);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .demo-side-group h4 {
+      margin: 0 0 8px;
+      font-size: 11.5px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      color: var(--ink-3);
+    }
+
+    .demo-side-item {
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(238, 240, 246, 0.08);
+      background: rgba(255, 255, 255, 0.025);
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: var(--ink-2);
+      margin-bottom: 6px;
+    }
+
+    .demo-side-item strong {
+      display: block;
+      color: var(--ink);
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+
+    /* ---------- 场景展示区（图与短文左右交错） ---------- */
+    .scenarios {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px 120px;
+      display: flex;
+      flex-direction: column;
+      gap: 112px;
+    }
+
+    .scenario-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+      gap: 48px;
+      align-items: center;
+    }
+
+    .scenario-row.reverse {
+      grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    }
+    .scenario-row.reverse .scenario-visual {
+      order: 2;
+    }
+    .scenario-row.reverse .scenario-copy {
+      order: 1;
+    }
+
+    .scenario-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .scenario-step {
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      color: var(--cyan);
+    }
+
+    .scenario-title {
+      margin: 0;
+      font-family: var(--serif);
+      font-weight: 300;
+      font-size: clamp(28px, 3vw, 38px);
+      line-height: 1.3;
+      color: var(--ink);
+    }
+
+    .scenario-desc {
+      margin: 0;
+      font-size: 15.5px;
+      line-height: 1.8;
+      color: var(--ink-2);
+    }
+
+    .scenario-visual {
+      position: relative;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: 20px;
+      box-shadow: 0 24px 68px rgba(0, 0, 0, 0.55);
+      transition: transform 320ms var(--ease), border-color 320ms var(--ease), box-shadow 320ms var(--ease);
+    }
+
+    .scenario-visual:hover {
+      transform: scale(1.02);
+      border-color: var(--cyan-border);
+      box-shadow: 0 28px 76px rgba(0, 0, 0, 0.66), 0 0 34px var(--cyan-glow);
+    }
+
+    .vis-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid var(--line);
+      font-size: 12.5px;
+      color: var(--ink-2);
+    }
+
+    .vis-search {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--line-2);
+      background: rgba(5, 6, 10, 0.55);
+      font-size: 13px;
+      color: var(--ink);
+      margin-bottom: 12px;
+    }
+
+    .vis-search mark {
+      background: rgba(157, 184, 255, 0.18);
+      color: var(--accent);
+      border-radius: 4px;
+      padding: 1px 5px;
+    }
+
+    .vis-hit {
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(238, 240, 246, 0.08);
+      background: rgba(255, 255, 255, 0.025);
+      margin-bottom: 10px;
+    }
+    .vis-hit:last-child {
+      margin-bottom: 0;
+    }
+
+    .vis-hit-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+      font-size: 13.5px;
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    .vis-hit-sub {
+      font-size: 12.5px;
+      line-height: 1.6;
+      color: var(--ink-2);
+    }
+
+    .vis-chain {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 11.5px;
+      color: var(--ink-3);
+      flex-wrap: wrap;
+    }
+
+    .vis-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      border: 1px solid rgba(238, 240, 246, 0.16);
+      color: var(--ink-2);
+      font-size: 11px;
+    }
+
+    /* ---------- 结尾邀请 ---------- */
+    .closing {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 36px 24px 128px;
+      text-align: center;
+    }
+
+    .closing-title {
+      margin: 0 0 18px;
+      font-family: var(--serif);
+      font-weight: 200;
+      font-size: clamp(28px, 3.6vw, 48px);
+      line-height: 1.3;
+      color: var(--ink);
+      text-wrap: balance;
+    }
+    .closing-title .line {
+      display: block;
+    }
+
+    .closing-sub {
+      margin: 0 auto 32px;
+      max-width: 30em;
+      font-size: 15.5px;
+      color: var(--ink-2);
+    }
+
+    .footer {
+      position: relative;
+      z-index: 2;
+      padding: 24px;
+      border-top: 1px solid rgba(238, 240, 246, 0.08);
+      text-align: center;
+      font-size: 12px;
+      color: var(--ink-3);
+      letter-spacing: 0.04em;
+    }
+
+    /* ---------- 滚入显现 ---------- */
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity 720ms var(--ease), transform 720ms var(--ease);
+    }
+    .reveal.in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ---------- 手机端单列重排与首屏演示预告 ---------- */
+    @media (max-width: 960px) {
+      .demo-workbench {
+        grid-template-columns: 1fr;
+      }
+      .demo-col-left {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .demo-col-right {
+        border-left: 0;
+        border-top: 1px solid var(--line);
+      }
+      .scenario-row,
+      .scenario-row.reverse {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+      .scenario-row.reverse .scenario-visual {
+        order: 1;
+      }
+      .scenario-row.reverse .scenario-copy {
+        order: 2;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .topbar {
+        padding: 0 16px;
+      }
+      .brand {
+        font-size: 19px;
+      }
+      .brand-en {
+        display: none;
+      }
+      .hero {
+        /* 手机端同样保留底部露出一段演示框上边缘 */
+        min-height: calc(100dvh - 118px);
+        padding: 96px 18px 34px;
+      }
+      .hero-title {
+        font-size: clamp(32px, 9.2vw, 44px);
+        line-height: 1.24;
+      }
+      .hero-lead {
+        margin: 18px auto 26px;
+        font-size: 14.5px;
+      }
+      .demo-section {
+        padding: 0 14px 80px;
+      }
+      .scenarios {
+        padding: 0 14px 84px;
+        gap: 72px;
+      }
+      .demo-col-center {
+        padding: 16px;
+      }
+      .showcase-frame:hover,
+      .scenario-visual:hover {
+        transform: none;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+      .reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+      }
+      .cta-btn,
+      .showcase-frame,
+      .scenario-visual {
+        transition: none;
+      }
+      .showcase-frame:hover,
+      .scenario-visual:hover {
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 固定在视口背后的全屏深空背景 -->
+  <div class="cosmos-stage" aria-hidden="true">
+    <canvas id="cosmos-canvas"></canvas>
+    <div class="cosmos-vignette"></div>
+  </div>
+
+  <!-- 约 64px 半透明黑色导航栏 -->
+  <header class="topbar">
+    <a href="#" class="brand" aria-label="拾念宣传页">
+      <span>拾念</span>
+      <span class="brand-en">SHINIAN</span>
+    </a>
+    <div style="display: inline-flex; align-items: center; gap: 10px;">
+      <a href="#demo" class="cta-btn cta-btn-sm">看看拾念如何使用</a>
+      <a
+        href="/"
+        id="back-to-app"
+        class="cta-btn cta-btn-sm"
+        style="display: none; background: rgba(10, 132, 255, 0.22); border-color: rgba(10, 132, 255, 0.5); color: #eef0f6;"
+      >
+        返回工作台 →
+      </a>
+    </div>
+  </header>
+
+  <main class="page">
+    <!-- 首屏（1440×900 构图基准，底部露出下方演示区上边缘） -->
+    <section class="hero">
+      <div class="hero-inner">
+        <h1 class="hero-title">
+          <span class="line">把试过的结果留住，</span>
+          <span class="line">下次遇到不用重试</span>
+        </h1>
+        <p class="hero-lead">
+          单机单人使用的记录工具：把「试过什么、结果如何、条件是什么」留下来，下次遇到同类问题时能找回来并核对。
+        </p>
+        <div class="hero-actions">
+          <a href="#demo" class="cta-btn">看看拾念如何使用</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 宽幅产品演示区（约 1100px，细描边 + 轻微圆角 + 体验示意） -->
+    <section id="demo" class="demo-section">
+      <div class="showcase-frame" role="region" aria-label="拾念工作台体验示意">
+        <div class="frame-bar">
+          <div class="frame-bar-left">
+            <span class="frame-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="frame-title">拾念工作台 · 念头 → 试一步 → 记录真实结果</span>
+          </div>
+          <span class="demo-badge">体验示意</span>
+        </div>
+
+        <div class="demo-workbench">
+          <div class="demo-col-left" role="tablist" aria-label="切换示例念头">
+            <div class="demo-col-head">
+              <span>记录</span>
+              <span>3 条示例</span>
+            </div>
+            <button type="button" class="demo-tab-btn" role="tab" aria-selected="true" data-case="0">
+              <span class="demo-tab-title">PWM 低占空比调光时台灯闪烁</span>
+              <span class="demo-tab-meta">1 次尝试 · 已记录结果</span>
+            </button>
+            <button type="button" class="demo-tab-btn" role="tab" aria-selected="false" data-case="1">
+              <span class="demo-tab-title">耳机接入扩展坞后夜里底噪明显</span>
+              <span class="demo-tab-meta">1 次尝试 · 进行中</span>
+            </button>
+            <button type="button" class="demo-tab-btn" role="tab" aria-selected="false" data-case="2">
+              <span class="demo-tab-title">咖啡换成浅烘后下午不再心慌</span>
+              <span class="demo-tab-meta">1 次尝试 · 已沉淀经验</span>
+            </button>
+          </div>
+
+          <div class="demo-col-center" id="demo-detail">
+            <!-- 由下方脚本填充交互示例，初屏已同步渲染首条 -->
+            <div class="demo-capture-box">
+              <div class="demo-kicker">念头原文</div>
+              <p class="demo-capture-text">PWM 低占空比调光时台灯闪烁，想避免肉眼可见频闪。</p>
+            </div>
+            <div class="demo-step-card">
+              <div class="demo-step-top">
+                <span class="demo-step-title">试一步：把 PWM 频率从 500 Hz 提到 2 kHz</span>
+                <span class="status-pill pill-done">已记录结果</span>
+              </div>
+              <div class="demo-result-block">
+                <div>500 Hz 下低亮度肉眼可见闪烁；提到 2 kHz 后 20% 亮度无可见闪烁，但暗部亮度调节步进变粗。</div>
+                <div class="demo-cond">
+                  <span>结果由手动填写</span>
+                  <span>条件：亮度 20% / 夜间暗室对照</span>
+                </div>
+              </div>
+            </div>
+            <div class="demo-flow-hint">
+              <span>点击左侧列表可切换不同记录，了解「念头 → 尝试 → 结果」的完整闭环</span>
+              <span>仅作体验示意 · 数据保存在本机</span>
+            </div>
+          </div>
+
+          <aside class="demo-col-right" id="demo-side">
+            <div class="demo-side-group">
+              <h4>所属主题</h4>
+              <div class="demo-side-item">
+                <strong>台灯硬件调光</strong>
+                把同一问题的尝试收在一起，不复制正文
+              </div>
+            </div>
+            <div class="demo-side-group">
+              <h4>关联与经验</h4>
+              <div class="demo-side-item">
+                <strong>沉淀经验：高频调光的取舍</strong>
+                挂在真实尝试结果上，标注适用条件与限制
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+
+    <!-- 真实使用场景：大图与短文左右交错 -->
+    <section class="scenarios" aria-label="拾念核心场景">
+      <article class="scenario-row reveal">
+        <div class="scenario-visual">
+          <div class="vis-head">
+            <span>全局检索与手动关联</span>
+            <span class="demo-badge">体验示意</span>
+          </div>
+          <div class="vis-search">
+            <span>关键词：</span>
+            <mark>调光</mark>
+            <span>（子串匹配 · 含一跳关联）</span>
+          </div>
+          <div class="vis-hit">
+            <div class="vis-hit-top">
+              <span>按旧结论选 2 kHz 试调光</span>
+              <span class="status-pill pill-done">达成</span>
+            </div>
+            <div class="vis-hit-sub">
+              实际结果：肉眼闪烁消失，条件是电源波纹低于 30 mV；同时留档了 500 Hz 失败时的对照条件。
+            </div>
+            <div class="vis-chain">
+              <span class="vis-chip">手动引用：上次 500 Hz 实测</span>
+              <span class="vis-chip">不猜相似度百分比</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="scenario-copy">
+          <span class="scenario-step">场景 01 · 找回与核对</span>
+          <h2 class="scenario-title">遇到同类问题时，直接核对上次的条件与结果</h2>
+          <p class="scenario-desc">
+            不再翻遍聊天记录或重头试一遍。拾念用字面子串检索念头、尝试与结果，并顺着你手动写下的关联与引用，把当时的具体条件原样摆回面前——真实做过才算数，时间久了也不会自动把无结果标成失败。
+          </p>
+        </div>
+      </article>
+
+      <article class="scenario-row reverse reveal">
+        <div class="scenario-visual">
+          <div class="vis-head">
+            <span>问我的记录 · 只读与来源标注</span>
+            <span class="demo-badge">体验示意</span>
+          </div>
+          <div class="vis-hit">
+            <div class="vis-hit-top">
+              <span>问题：我试过的调光方案里哪个在夜间有效？</span>
+              <span class="status-pill pill-active">已选 3 / 8 条</span>
+            </div>
+            <div class="vis-hit-sub" style="margin-top: 8px;">
+              <strong style="color: var(--done); font-weight: 500;">[观察]</strong> 2 kHz 方案在夜间 20% 亮度下未出现肉眼可见闪烁（来源：尝试 #att-02）。<br />
+              <strong style="color: var(--partial); font-weight: 500;">[推断]</strong> 暗部调节发涩可能与定时器位宽有关，记录中尚缺 4 kHz 对照。
+            </div>
+            <div class="vis-chain">
+              <span class="vis-chip">仅发送勾选记录</span>
+              <span class="vis-chip">站内真实来源 ID</span>
+              <span class="vis-chip">证据不足直接说不足</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="scenario-copy">
+          <span class="scenario-step">场景 02 · 只读 AI 梳理</span>
+          <h2 class="scenario-title">让模型只读你勾选的几条记录，不编造也不越界</h2>
+          <p class="scenario-desc">
+            当尝试积累起来后，你可以手动勾选 1 到 8 条记录向模型提问。回答严格区分「记录中的观察」与「模型推断」，每条观点都必须指向本次发送的真实记录；模型不创建尝试、不改状态，是否沉淀为经验由你点击确认。
+          </p>
+        </div>
+      </article>
+    </section>
+
+    <!-- 页面结尾：简短邀请 + 同一个主行动按钮 -->
+    <section class="closing reveal">
+      <h2 class="closing-title">
+        <span class="line">把这一次试错，</span>
+        <span class="line">留给未来的自己。</span>
+      </h2>
+      <p class="closing-sub">
+        单机运行，数据与密钥保存在本机。记下念头、试一步、写下真实结果，让经验真正经得起核对。
+      </p>
+      <a href="#demo" class="cta-btn">看看拾念如何使用</a>
+    </section>
+  </main>
+
+  <footer class="footer">
+    拾念 SHINIAN · 单机单人记录工具 · 记下念头 → 试一步 → 记录真实结果 → 沉淀经验
+  </footer>
+
+  <script>
+    (function () {
+      if (location.pathname === '/promo' || location.pathname === '/landing') {
+        var backBtn = document.getElementById('back-to-app');
+        if (backBtn) backBtn.style.display = 'inline-flex';
+      }
+    })();
+
+    // ---------- 1. 演示区交互切换（纯前端示意数据） ----------
+    (function () {
+      var CASES = [
+        {
+          capture: 'PWM 低占空比调光时台灯闪烁，想避免肉眼可见频闪。',
+          step: '试一步：把 PWM 频率从 500 Hz 提到 2 kHz',
+          pillClass: 'pill-done',
+          pillText: '已记录结果',
+          result: '500 Hz 下低亮度肉眼可见闪烁；提到 2 kHz 后 20% 亮度无可见闪烁，但暗部亮度调节步进变粗。',
+          cond1: '结果由手动填写',
+          cond2: '条件：亮度 20% / 夜间暗室对照',
+          topicTitle: '台灯硬件调光',
+          topicDesc: '把同一问题的尝试收在一起，不复制正文',
+          linkTitle: '沉淀经验：高频调光的取舍',
+          linkDesc: '挂在真实尝试结果上，标注适用条件与限制'
+        },
+        {
+          capture: '耳机接入扩展坞后夜里底噪明显，怀疑是 USB 供电干扰。',
+          step: '试一步：换一根带磁环的屏蔽 USB 线并接独立供电口',
+          pillClass: 'pill-active',
+          pillText: '进行中',
+          result: '尚未填写结果。只有实际试完并手动写下观察时才会落档；不会因为时间过去自动显示为失败。',
+          cond1: '已安排今晚 20:00 测试',
+          cond2: '对照：直连主板后置 USB 口',
+          topicTitle: '桌面音频底噪排查',
+          topicDesc: '固定下一步为当前这条进行中的尝试',
+          linkTitle: '手动关联：声卡接地记录',
+          linkDesc: '只记录你明确写下的联系，不做相似度猜测'
+        },
+        {
+          capture: '咖啡换成浅烘豆后下午不再心慌，记录一下具体冲煮参数。',
+          step: '试一步：浅烘 15g 粉 / 250ml 水 / 92℃ 滤泡',
+          pillClass: 'pill-done',
+          pillText: '已记录结果',
+          result: '下午三点后不再心慌，晚间入睡未受影响；同等喝法下深烘拼配仍有轻微心悸。',
+          cond1: '结果由手动填写',
+          cond2: '条件：上午 9 点前饮用，空腹不饮',
+          topicTitle: '睡眠与精力观察',
+          topicDesc: '从阶段回顾中提取并持续核对条件',
+          linkTitle: '已保存经验（版本 2）',
+          linkDesc: '来源尝试仍可访问，条件与限制已写明'
+        }
+      ];
+
+      var buttons = document.querySelectorAll('.demo-tab-btn');
+      var detail = document.getElementById('demo-detail');
+      var side = document.getElementById('demo-side');
+
+      function renderCase(index) {
+        var c = CASES[index] || CASES[0];
+        buttons.forEach(function (b, i) {
+          b.setAttribute('aria-selected', i === index ? 'true' : 'false');
+        });
+        detail.innerHTML =
+          '<div class="demo-capture-box">' +
+            '<div class="demo-kicker">念头原文</div>' +
+            '<p class="demo-capture-text"></p>' +
+          '</div>' +
+          '<div class="demo-step-card">' +
+            '<div class="demo-step-top">' +
+              '<span class="demo-step-title"></span>' +
+              '<span class="status-pill ' + c.pillClass + '"></span>' +
+            '</div>' +
+            '<div class="demo-result-block">' +
+              '<div class="demo-res-txt"></div>' +
+              '<div class="demo-cond">' +
+                '<span class="c1"></span>' +
+                '<span class="c2"></span>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="demo-flow-hint">' +
+            '<span>点击左侧列表可切换不同记录，了解「念头 → 尝试 → 结果」的完整闭环</span>' +
+            '<span>仅作体验示意 · 数据保存在本机</span>' +
+          '</div>';
+
+        detail.querySelector('.demo-capture-text').textContent = c.capture;
+        detail.querySelector('.demo-step-title').textContent = c.step;
+        detail.querySelector('.status-pill').textContent = c.pillText;
+        detail.querySelector('.demo-res-txt').textContent = c.result;
+        detail.querySelector('.c1').textContent = c.cond1;
+        detail.querySelector('.c2').textContent = c.cond2;
+
+        side.innerHTML =
+          '<div class="demo-side-group">' +
+            '<h4>所属主题</h4>' +
+            '<div class="demo-side-item"><strong class="t1"></strong><span class="d1"></span></div>' +
+          '</div>' +
+          '<div class="demo-side-group">' +
+            '<h4>关联与经验</h4>' +
+            '<div class="demo-side-item"><strong class="t2"></strong><span class="d2"></span></div>' +
+          '</div>';
+        side.querySelector('.t1').textContent = c.topicTitle;
+        side.querySelector('.d1').textContent = c.topicDesc;
+        side.querySelector('.t2').textContent = c.linkTitle;
+        side.querySelector('.d2').textContent = c.linkDesc;
+      }
+
+      buttons.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          renderCase(Number(btn.getAttribute('data-case') || 0));
+        });
+      });
+    })();
+
+    // ---------- 2. 滚动显现 ----------
+    (function () {
+      var els = document.querySelectorAll('.reveal');
+      if (!('IntersectionObserver' in window)) {
+        els.forEach(function (el) { el.classList.add('in'); });
+        return;
+      }
+      var io = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('in');
+              io.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.14 }
+      );
+      els.forEach(function (el) { io.observe(el); });
+    })();
+
+    // ---------- 3. 双场景深空星云背景（每 14 秒切换，1.5 秒交叉淡化） ----------
+    (function () {
+      var canvas = document.getElementById('cosmos-canvas');
+      if (!canvas) return;
+      var ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var w = 0, h = 0, dpr = 1;
+
+      // 生成远近两层少量星点
+      var stars = [];
+      for (var i = 0; i < 92; i++) {
+        var near = i < 24;
+        stars.push({
+          x: Math.random(),
+          y: Math.random(),
+          r: near ? 0.9 + Math.random() * 1.1 : 0.45 + Math.random() * 0.7,
+          alpha: near ? 0.25 + Math.random() * 0.42 : 0.08 + Math.random() * 0.22,
+          phase: Math.random() * Math.PI * 2,
+          speed: 0.25 + Math.random() * 0.45,
+          driftX: (Math.random() - 0.5) * (near ? 0.0025 : 0.0008),
+          driftY: (Math.random() - 0.5) * (near ? 0.0025 : 0.0008),
+          tint: i % 5 === 0 ? '157, 184, 255' : i % 7 === 0 ? '127, 215, 196' : '232, 234, 244'
+        });
+      }
+
+      // 离屏生成柔和云雾贴图（低频率噪声纹理，避免每帧重算像素）
+      function createNebulaBlob(size, r, g, b, seed) {
+        var off = document.createElement('canvas');
+        off.width = size;
+        off.height = size;
+        var octx = off.getContext('2d');
+        var cx = size / 2;
+        var cy = size / 2;
+        for (var k = 0; k < 6; k++) {
+          var ox = cx + Math.sin(seed + k * 1.7) * size * 0.14;
+          var oy = cy + Math.cos(seed * 1.3 + k * 2.1) * size * 0.14;
+          var rad = size * (0.28 + (k % 3) * 0.09);
+          var grd = octx.createRadialGradient(ox, oy, 0, ox, oy, rad);
+          grd.addColorStop(0, 'rgba(' + r + ',' + g + ',' + b + ', 0.22)');
+          grd.addColorStop(0.55, 'rgba(' + r + ',' + g + ',' + b + ', 0.08)');
+          grd.addColorStop(1, 'rgba(' + r + ',' + g + ',' + b + ', 0)');
+          octx.fillStyle = grd;
+          octx.fillRect(0, 0, size, size);
+        }
+        return off;
+      }
+
+      var blobViolet = createNebulaBlob(420, 102, 84, 146, 1.1);
+      var blobSlate = createNebulaBlob(420, 68, 76, 122, 2.7);
+      var blobCyan = createNebulaBlob(420, 74, 124, 128, 4.3);
+
+      function resize() {
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        w = window.innerWidth;
+        h = window.innerHeight;
+        canvas.width = Math.floor(w * dpr);
+        canvas.height = Math.floor(h * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      resize();
+      window.addEventListener('resize', resize);
+
+      // 场景 A：弥散灰紫星云
+      function drawSceneA(t, alpha) {
+        if (alpha <= 0.002) return;
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.globalCompositeOperation = 'screen';
+
+        var base = Math.max(w, h);
+        var s1 = base * 0.78;
+        var x1 = w * 0.46 + Math.sin(t * 0.045) * 34;
+        var y1 = h * 0.42 + Math.cos(t * 0.038) * 26;
+        ctx.drawImage(blobViolet, x1 - s1 / 2, y1 - s1 / 2, s1, s1);
+
+        var s2 = base * 0.66;
+        var x2 = w * 0.58 + Math.cos(t * 0.035 + 1.2) * 38;
+        var y2 = h * 0.52 + Math.sin(t * 0.042 + 0.6) * 28;
+        ctx.drawImage(blobSlate, x2 - s2 / 2, y2 - s2 / 2, s2, s2);
+
+        var s3 = base * 0.5;
+        var x3 = w * 0.36 + Math.sin(t * 0.03 + 2.4) * 24;
+        var y3 = h * 0.56 + Math.cos(t * 0.032 + 1.9) * 20;
+        ctx.drawImage(blobSlate, x3 - s3 / 2, y3 - s3 / 2, s3, s3);
+
+        ctx.restore();
+      }
+
+      // 场景 B：带微弱椭圆光环的深空星云
+      function drawSceneB(t, alpha) {
+        if (alpha <= 0.002) return;
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.globalCompositeOperation = 'screen';
+
+        var base = Math.max(w, h);
+        var s1 = base * 0.72;
+        var x1 = w * 0.52 + Math.cos(t * 0.036) * 28;
+        var y1 = h * 0.45 + Math.sin(t * 0.032) * 22;
+        ctx.drawImage(blobSlate, x1 - s1 / 2, y1 - s1 / 2, s1, s1);
+
+        var s2 = base * 0.52;
+        var x2 = w * 0.44 + Math.sin(t * 0.04 + 1.8) * 26;
+        var y2 = h * 0.44 + Math.cos(t * 0.035) * 18;
+        ctx.drawImage(blobCyan, x2 - s2 / 2, y2 - s2 / 2, s2, s2);
+
+        // 微弱弥散光环
+        ctx.save();
+        ctx.translate(w * 0.5 + Math.sin(t * 0.025) * 14, h * 0.43 + Math.cos(t * 0.022) * 10);
+        ctx.rotate(-0.24 + Math.sin(t * 0.015) * 0.04);
+        ctx.scale(1.38, 0.72);
+        var ringR = Math.min(w, h) * 0.34;
+        var rg = ctx.createRadialGradient(0, 0, ringR * 0.78, 0, 0, ringR * 1.18);
+        rg.addColorStop(0, 'rgba(130, 120, 175, 0)');
+        rg.addColorStop(0.45, 'rgba(138, 128, 186, 0.085)');
+        rg.addColorStop(0.65, 'rgba(127, 215, 196, 0.045)');
+        rg.addColorStop(1, 'rgba(130, 120, 175, 0)');
+        ctx.fillStyle = rg;
+        ctx.beginPath();
+        ctx.arc(0, 0, ringR * 1.2, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        ctx.restore();
+      }
+
+      function drawStars(t) {
+        for (var i = 0; i < stars.length; i++) {
+          var s = stars[i];
+          var px = ((s.x + t * s.driftX * 0.05) % 1 + 1) % 1 * w;
+          var py = ((s.y + t * s.driftY * 0.05) % 1 + 1) % 1 * h;
+          var twinkle = reduceMotion ? 1 : 0.72 + 0.28 * Math.sin(t * s.speed + s.phase);
+          ctx.fillStyle = 'rgba(' + s.tint + ', ' + (s.alpha * twinkle).toFixed(3) + ')';
+          ctx.beginPath();
+          ctx.arc(px, py, s.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      // 每 14 秒切换一次，交叉淡化 1.5 秒
+      var CYCLE = 14.0;
+      var FADE = 1.5;
+
+      function sceneWeights(elapsedSec) {
+        if (reduceMotion) return { a: 1, b: 0 };
+        var idx = Math.floor(elapsedSec / CYCLE);
+        var inCycle = elapsedSec - idx * CYCLE;
+        var toB = idx % 2 === 0;
+        var mix = 0;
+        if (inCycle >= CYCLE - FADE) {
+          var k = (inCycle - (CYCLE - FADE)) / FADE;
+          // smoothstep
+          mix = k * k * (3 - 2 * k);
+        }
+        var bWeight = toB ? mix : 1 - mix;
+        return { a: 1 - bWeight, b: bWeight };
+      }
+
+      var start = performance.now();
+      function frame(now) {
+        var t = (now - start) / 1000;
+        ctx.fillStyle = '#05060a';
+        ctx.fillRect(0, 0, w, h);
+
+        var weights = sceneWeights(t);
+        drawSceneA(t, weights.a);
+        drawSceneB(t, weights.b);
+        drawStars(t);
+
+        if (!reduceMotion) {
+          window.requestAnimationFrame(frame);
+        }
+      }
+
+      window.requestAnimationFrame(frame);
+    })();
+  </script>
+</body>
+</html>

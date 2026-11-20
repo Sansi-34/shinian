@@ -1,7 +1,7 @@
 // V2 导航：桌面 = 左侧图标栏；≤900px = 底部标签栏（原来移动端图标栏直接盖在内容上）。
-// 「更多」菜单也在这里：低频入口 + 主题切换 + 退出登录（V2 页面以前没有退出入口）。
+// 「更多」菜单：低频入口 + AI 模型设置 + 模式切换 + 退出登录；左上角「拾」直达宣传页。
 import { useEffect, useState } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import api from '../../api';
 import { useV2Theme } from '../theme';
 import styles from './Rail.module.css';
@@ -20,16 +20,14 @@ const INSIGHT: RailItem[] = [
   { to: '/review', label: '周期回顾', icon: 'refresh' },
 ];
 
-const SYSTEM: RailItem[] = [{ to: '/settings/ai', label: '设置', icon: 'gear' }];
-
-// 「更多」只放图标栏里没有的入口；移动端标签栏放不下的三项（网络 / 回顾 / 设置）也收进来
+// 「更多」集中收纳低频入口与「AI 模型设置」；移动端保留周期回顾入口
 const MORE: Array<RailItem & { mobileOnly?: boolean }> = [
   { to: '/experiences', label: '经验', icon: 'star' },
   { to: '/schedule', label: '日程', icon: 'clock' },
   { to: '/activity', label: '操作动态', icon: 'pulse' },
   { to: '/research', label: '深度研究', icon: 'search' },
-  ...INSIGHT.map((i) => ({ ...i, mobileOnly: true })),
-  ...SYSTEM.map((i) => ({ ...i, mobileOnly: true })),
+  { to: '/settings/ai', label: 'AI 模型设置', icon: 'gear' },
+  { to: '/review', label: '周期回顾', icon: 'refresh', mobileOnly: true },
 ];
 
 const ICONS = {
@@ -120,9 +118,14 @@ export default function Rail() {
   return (
     <>
       <aside className={styles.rail} aria-label="主导航">
-        <Link to="/" className={styles.brand} aria-label="拾念首页" title="拾念">
+        <div className={styles.trafficLights} aria-hidden="true">
+          <span className={`${styles.dot} ${styles.dotClose}`} />
+          <span className={`${styles.dot} ${styles.dotMin}`} />
+          <span className={`${styles.dot} ${styles.dotMax}`} />
+        </div>
+        <a href="/promo" className={styles.brand} aria-label="拾念宣传页" title="查看拾念宣传页">
           拾
-        </Link>
+        </a>
         <div className={styles.group}>
           {PRIMARY.map((i) => (
             <Item key={i.to} item={i} />
@@ -136,9 +139,16 @@ export default function Rail() {
         </div>
         <div className={styles.spacer} />
         <div className={styles.group}>
-          {SYSTEM.map((i) => (
-            <Item key={i.to} item={i} className={styles.desktopOnly} />
-          ))}
+          <button
+            type="button"
+            className={`${styles.link} ${styles.desktopOnly}`}
+            onClick={() => changeTheme(theme === 'dark' ? 'paper' : 'dark')}
+            aria-label={theme === 'dark' ? '切换到纸张模式' : '切换到暗色模式'}
+            title={theme === 'dark' ? '当前：暗色模式（点按切换纸张模式）' : '当前：纸张模式（点按切换暗色模式）'}
+          >
+            <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
+            <span className={styles.tip}>{theme === 'dark' ? '切到纸张模式' : '切到暗色模式'}</span>
+          </button>
           <button
             type="button"
             className={[
@@ -187,15 +197,6 @@ export default function Rail() {
               </NavLink>
             ))}
             <div className={styles.panelSep} aria-hidden="true" />
-            <button
-              type="button"
-              role="menuitem"
-              className={styles.panelItem}
-              onClick={() => changeTheme(theme === 'dark' ? 'paper' : 'dark')}
-            >
-              <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={16} />
-              {theme === 'dark' ? '切到纸张主题' : '切到暗色主题'}
-            </button>
             <button type="button" role="menuitem" className={styles.panelItem} onClick={() => void logout()}>
               <Icon name="out" size={16} />
               退出登录

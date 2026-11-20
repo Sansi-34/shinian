@@ -1,0 +1,349 @@
+/* ============================================================================
+   拾念 · macOS Dark Vibrancy 风格桥接层（登录页 + 非 V2 二级页面）
+   - 暗色主题下注入与主站一致的 macOS 丝绸壁纸、饱和磨砂玻璃面板与系统蓝控件语言
+   - 纸张主题下完整保留原有暖纸阅读质感
+   ========================================================================== */
+
+/* ---------- 1. 登录页：macOS 毛玻璃桌面欢迎窗 ---------- */
+.login-cosmos-shell {
+  position: relative;
+  min-height: 100dvh;
+  background: #080a0f;
+  color: #f5f5f7;
+  --text-primary: #f5f5f7;
+  --text-secondary: rgba(245, 245, 247, 0.74);
+  --text-helper: rgba(245, 245, 247, 0.54);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+.login-cosmos-shell .login-page {
+  position: relative;
+  z-index: 2;
+  min-height: 100dvh;
+  padding: 36px 18px;
+}
+
+.login-cosmos-shell .login-motto-tag {
+  background: rgba(10, 132, 255, 0.14);
+  border: 1px solid rgba(10, 132, 255, 0.36);
+  color: #64d2ff;
+  border-radius: 9999px;
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
+}
+
+.login-cosmos-shell .login-card {
+  position: relative;
+  background: rgba(24, 27, 36, 0.62);
+  backdrop-filter: blur(34px) saturate(180%);
+  -webkit-backdrop-filter: blur(34px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 16px !important;
+  box-shadow: 0 32px 88px rgba(0, 0, 0, 0.62), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  color: #f5f5f7;
+}
+
+/* 登录窗口左上角 macOS 红黄绿交通灯饰点 */
+.login-cosmos-shell .login-card::before {
+  content: '';
+  position: absolute;
+  top: 16px;
+  left: 18px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ff5f57;
+  box-shadow:
+    17px 0 0 #febc2e,
+    34px 0 0 #28c840;
+  opacity: 0.92;
+  pointer-events: none;
+}
+
+.login-cosmos-shell .login-logo-mark {
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  color: #f5f5f7;
+  border-radius: 12px !important;
+  font-family: 'Noto Serif SC', 'Songti SC', serif;
+  font-weight: 400;
+}
+
+.login-cosmos-shell .login-title {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 26px;
+  letter-spacing: -0.01em;
+  color: #f5f5f7;
+}
+.login-cosmos-shell .login-title span {
+  color: rgba(245, 245, 247, 0.48);
+  font-weight: 400;
+}
+
+.login-cosmos-shell .login-lead,
+.login-cosmos-shell .field-hint {
+  color: rgba(245, 245, 247, 0.66);
+}
+
+.login-cosmos-shell .field-label {
+  color: rgba(245, 245, 247, 0.8);
+}
+
+.login-cosmos-shell .login-intro-note {
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px !important;
+  color: rgba(245, 245, 247, 0.78);
+}
+
+.login-cosmos-shell .login-input {
+  background: rgba(10, 12, 18, 0.56);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 9px !important;
+  color: #f5f5f7;
+}
+.login-cosmos-shell .login-input:focus {
+  background: rgba(10, 12, 18, 0.72);
+  border-color: rgba(10, 132, 255, 0.78);
+  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.28);
+}
+
+.login-cosmos-shell .login-submit {
+  border-radius: 9999px !important;
+  background: linear-gradient(180deg, #1d8eff 0%, #0a84ff 100%) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+  font-weight: 500;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 4px 16px rgba(10, 132, 255, 0.32);
+}
+.login-cosmos-shell .login-submit:hover:not(:disabled) {
+  background: linear-gradient(180deg, #3399ff 0%, #1a8cff 100%) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 6px 22px rgba(10, 132, 255, 0.42) !important;
+}
+
+.login-cosmos-shell .step-pill {
+  background: rgba(24, 27, 36, 0.58);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(245, 245, 247, 0.74);
+  border-radius: 9999px !important;
+}
+
+/* ---------- 2. 非 V2 二级页面在暗色主题下的 macOS 磨砂融合 ---------- */
+.app.legacy-with-rail[data-v2-theme='dark'] {
+  position: relative;
+  min-height: 100dvh;
+  background: #080a0f;
+  color: #f5f5f7;
+  color-scheme: dark;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
+
+  --paper: rgba(24, 27, 36, 0.58);
+  --paper-2: rgba(34, 38, 49, 0.64);
+  --paper-card: rgba(24, 27, 36, 0.62);
+  --paper-muted: rgba(30, 34, 44, 0.56);
+  --bg: transparent;
+  --card: rgba(24, 27, 36, 0.62);
+  --ink: #f5f5f7;
+  --muted: rgba(245, 245, 247, 0.56);
+  --grey-1: rgba(255, 255, 255, 0.06);
+  --grey-2: rgba(255, 255, 255, 0.14);
+  --grey-3: rgba(245, 245, 247, 0.52);
+
+  --text-primary: #f5f5f7;
+  --text-body: rgba(245, 245, 247, 0.88);
+  --text-secondary: rgba(245, 245, 247, 0.74);
+  --text-helper: rgba(245, 245, 247, 0.52);
+  --text-placeholder: rgba(245, 245, 247, 0.42);
+  --text-on-color: #ffffff;
+
+  --line: rgba(255, 255, 255, 0.1);
+  --line-subtle: rgba(255, 255, 255, 0.075);
+  --line-strong: rgba(255, 255, 255, 0.2);
+
+  --accent: #0a84ff;
+  --accent-ink: #ffffff;
+  --accent-bright: #409cff;
+  --accent-deep: #0070e0;
+  --accent-display: #64d2ff;
+  --accent-soft: rgba(10, 132, 255, 0.18);
+  --accent-border: rgba(10, 132, 255, 0.62);
+
+  --ok: #30d158;
+  --ok-soft: rgba(48, 209, 88, 0.14);
+  --warn-bg: rgba(255, 159, 10, 0.14);
+  --warn-ink: #ff9f0a;
+  --danger: #ff6961;
+  --danger-soft: rgba(255, 69, 58, 0.14);
+}
+
+.app.legacy-with-rail[data-v2-theme='dark'] .app-main {
+  position: relative;
+  z-index: 2;
+}
+
+.app.legacy-with-rail[data-v2-theme='dark'] .page-title {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #f5f5f7;
+}
+
+.app.legacy-with-rail[data-v2-theme='dark'] .section,
+.app.legacy-with-rail[data-v2-theme='dark'] .card,
+.app.legacy-with-rail[data-v2-theme='dark'] .stat-card,
+.app.legacy-with-rail[data-v2-theme='dark'] .activity-event,
+.app.legacy-with-rail[data-v2-theme='dark'] .review-range,
+.app.legacy-with-rail[data-v2-theme='dark'] .review-ai-card,
+.app.legacy-with-rail[data-v2-theme='dark'] .review-status-card,
+.app.legacy-with-rail[data-v2-theme='dark'] .review-record,
+.app.legacy-with-rail[data-v2-theme='dark'] .source-card,
+.app.legacy-with-rail[data-v2-theme='dark'] .research-project,
+.app.legacy-with-rail[data-v2-theme='dark'] .modal {
+  background: rgba(24, 27, 36, 0.6) !important;
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border-color: rgba(255, 255, 255, 0.11) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 10px 30px rgba(0, 0, 0, 0.24) !important;
+  border-radius: 12px !important;
+  color: #f5f5f7;
+}
+
+.app.legacy-with-rail[data-v2-theme='dark'] .card:hover,
+.app.legacy-with-rail[data-v2-theme='dark'] .activity-event:hover,
+.app.legacy-with-rail[data-v2-theme='dark'] .review-record:hover {
+  border-color: rgba(10, 132, 255, 0.5) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 0 0 2px rgba(10, 132, 255, 0.2) !important;
+}
+
+.app.legacy-with-rail[data-v2-theme='dark'] input:not([type='checkbox']):not([type='radio']),
+.app.legacy-with-rail[data-v2-theme='dark'] textarea,
+.app.legacy-with-rail[data-v2-theme='dark'] select {
+  background: rgba(10, 12, 18, 0.54) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+  border-radius: 8px !important;
+  color: #f5f5f7 !important;
+}
+
+.app.legacy-with-rail[data-v2-theme='dark'] input:not([type='checkbox']):not([type='radio']):focus,
+.app.legacy-with-rail[data-v2-theme='dark'] textarea:focus,
+.app.legacy-with-rail[data-v2-theme='dark'] select:focus {
+  border-color: rgba(10, 132, 255, 0.78) !important;
+  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.26) !important;
+}
+
+.app.legacy-with-rail[data-v2-theme='dark'] .btn,
+.app.legacy-with-rail[data-v2-theme='dark'] .filter-chip,
+.app.legacy-with-rail[data-v2-theme='dark'] .tab {
+  background: rgba(34, 38, 49, 0.66);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border-radius: 8px !important;
+  color: rgba(245, 245, 247, 0.88);
+}
+
+.app.legacy-with-rail[data-v2-theme='dark'] .btn:hover:not(:disabled),
+.app.legacy-with-rail[data-v2-theme='dark'] .filter-chip:hover {
+  border-color: rgba(10, 132, 255, 0.6);
+  color: #ffffff;
+  background: rgba(44, 49, 64, 0.84);
+}
+
+.app.legacy-with-rail[data-v2-theme='dark'] .btn.primary {
+  border-radius: 9999px !important;
+  background: linear-gradient(180deg, #1d8eff 0%, #0a84ff 100%);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 2px 10px rgba(10, 132, 255, 0.28);
+}
+
+.app.legacy-with-rail[data-v2-theme='dark'] .btn.primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #3399ff 0%, #1a8cff 100%);
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 4px 16px rgba(10, 132, 255, 0.38);
+  color: #ffffff;
+}
+
+.app.legacy-with-rail[data-v2-theme='dark'] .btn.primary:disabled {
+  background: rgba(34, 38, 49, 0.8);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(245, 245, 247, 0.42);
+  box-shadow: none;
+}
+
+.app.legacy-with-rail[data-v2-theme='dark'] .filter-chip.active,
+.app.legacy-with-rail[data-v2-theme='dark'] .tab.active {
+  background: rgba(10, 132, 255, 0.22);
+  border-color: rgba(10, 132, 255, 0.62);
+  color: #ffffff;
+}
+
+.app.legacy-with-rail[data-v2-theme='dark'] .key-block,
+.app.legacy-with-rail[data-v2-theme='dark'] .unsaved-banner,
+.app.legacy-with-rail[data-v2-theme='dark'] .review-result-box,
+.app.legacy-with-rail[data-v2-theme='dark'] .review-source-item,
+.app.legacy-with-rail[data-v2-theme='dark'] .empty-state {
+  background: rgba(24, 27, 36, 0.6) !important;
+  border-color: rgba(255, 255, 255, 0.11) !important;
+  border-radius: 10px !important;
+}
+
+.app.legacy-with-rail[data-v2-theme='dark'] .badge {
+  border-radius: 9999px !important;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(245, 245, 247, 0.86);
+}
+
+.app.legacy-with-rail[data-v2-theme='dark'] .badge.outcome-success,
+.app.legacy-with-rail[data-v2-theme='dark'] .badge.state-done {
+  background: rgba(48, 209, 88, 0.15);
+  color: #30d158;
+}
+.app.legacy-with-rail[data-v2-theme='dark'] .badge.outcome-failure,
+.app.legacy-with-rail[data-v2-theme='dark'] .badge.state-cancelled {
+  background: rgba(255, 69, 58, 0.15);
+  color: #ff6961;
+}
+.app.legacy-with-rail[data-v2-theme='dark'] .badge.outcome-undetermined {
+  background: rgba(255, 159, 10, 0.15);
+  color: #ff9f0a;
+}
+.app.legacy-with-rail[data-v2-theme='dark'] .badge.state-in_progress {
+  background: rgba(100, 210, 255, 0.15);
+  color: #64d2ff;
+}
+
+.app.legacy-with-rail[data-v2-theme='dark'] .activity-badge {
+  border-radius: 9999px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: rgba(245, 245, 247, 0.86) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+}
+.app.legacy-with-rail[data-v2-theme='dark'] .activity-badge.type-result {
+  background: rgba(48, 209, 88, 0.15) !important;
+  color: #30d158 !important;
+  border-color: rgba(48, 209, 88, 0.34) !important;
+}
+.app.legacy-with-rail[data-v2-theme='dark'] .activity-badge.type-ai {
+  background: rgba(10, 132, 255, 0.16) !important;
+  color: #64d2ff !important;
+  border-color: rgba(10, 132, 255, 0.38) !important;
+}
+.app.legacy-with-rail[data-v2-theme='dark'] .form-actions,
+.app.legacy-with-rail[data-v2-theme='dark'] .section-head,
+.app.legacy-with-rail[data-v2-theme='dark'] .activity-day-title {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+.app.legacy-with-rail[data-v2-theme='dark'] .activity-timeline::before,
+.app.legacy-with-rail[data-v2-theme='dark'] .activity-day::before {
+  background: rgba(255, 255, 255, 0.14) !important;
+}
+.app.legacy-with-rail[data-v2-theme='dark'] .activity-dot {
+  border-radius: 50% !important;
+  background: #0a84ff !important;
+}

@@ -1,5 +1,5 @@
 /* ============================================================================
-   拾念 V2 · token 层（暗色优先 + 调色板重映射）
+   拾念 V2 · token 层（深空星云暗色优先 + 纸张重映射）
    - 所有页面只允许使用这里的变量；禁止在组件里写字面色值
    - 两套调色板共用同一份 DOM：[data-v2-theme="dark"（默认）| "paper"]
    - 状态色只保留 5 个语义：active / done / partial / fail / idle
@@ -32,54 +32,65 @@
   --fs-body: 14px;
   --fs-meta: 12px;
 
-  /* 圆角：只有 2 档 */
-  --r-1: 6px;
-  --r-2: 10px;
+  /* 圆角：macOS 圆润微弧 + 胶囊 */
+  --r-1: 8px;
+  --r-2: 12px;
   --r-pill: 9999px;
 
-  --rail: 60px;
-  --status: 40px;
+  --rail: 64px;
+  --status: 38px;
   --tabbar: 56px;
 
-  --font-sans: 'Geist', 'Inter', 'Segoe UI', 'Microsoft YaHei', system-ui, sans-serif;
-  --font-serif: 'Instrument Serif', Georgia, 'Songti SC', 'SimSun', serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro SC', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro SC', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
+  --font-serif: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', Georgia, serif;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --vibrancy: blur(30px) saturate(180%);
+  --glass-shine: inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-/* ---------- 暗色（默认）：D1 石墨 ---------- */
+/* ---------- 暗色（默认）：macOS Dark Vibrancy 毛玻璃 + System Blue ---------- */
 .v2-root,
 .v2-root[data-v2-theme='dark'],
 .v2-chrome,
 .v2-chrome[data-v2-theme='dark'] {
   color-scheme: dark;
-  /* 底不用纯黑：抬到石墨，边界才看得见，彩色状态才不会在屏幕上"发光" */
-  --bg: #0e1013;
-  --panel: #14171c;
-  --raise: #1b1f26;
-  --raise-2: #232a33;
-  --sunk: #0a0c0f;
-  --ink: #e9ecf1;
-  --ink-2: rgba(233, 236, 241, 0.7);
-  --ink-3: rgba(233, 236, 241, 0.56);
-  --line: rgba(233, 236, 241, 0.08);
-  --line-2: rgba(233, 236, 241, 0.2);
-  --hover: rgba(233, 236, 241, 0.045);
-  --accent: #9db8ff;
-  --accent-ink: #0e1013;
-  --accent-soft: rgba(157, 184, 255, 0.12);
-  --shadow-pop: 0 18px 48px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
+  --bg: #080a0f;
+  --panel: rgba(24, 27, 36, 0.58);
+  --raise: rgba(34, 38, 49, 0.62);
+  --raise-2: rgba(32, 36, 46, 0.9);
+  --sunk: rgba(10, 12, 18, 0.5);
+  --ink: #f5f5f7;
+  --ink-2: rgba(245, 245, 247, 0.74);
+  --ink-3: rgba(245, 245, 247, 0.5);
+  --line: rgba(255, 255, 255, 0.095);
+  --line-2: rgba(255, 255, 255, 0.16);
+  --hover: rgba(255, 255, 255, 0.075);
+  --accent: #0a84ff;
+  --accent-ink: #ffffff;
+  --accent-soft: rgba(10, 132, 255, 0.22);
 
-  /* 状态色：D1（饱和度 43–66%，不再和强调色抢注意力） */
-  --st-active: #7fd7c4;
-  --st-active-bg: rgba(127, 215, 196, 0.12);
-  --st-done: #a8c977;
-  --st-done-bg: rgba(168, 201, 119, 0.1);
-  --st-partial: #e0b06a;
-  --st-partial-bg: rgba(224, 176, 106, 0.1);
-  --st-fail: #e08d8d;
-  --st-fail-bg: rgba(224, 141, 141, 0.1);
-  --st-idle: rgba(255, 255, 255, 0.5);
-  --st-idle-bg: transparent;
+  /* macOS 聚焦环与主行动光泽 */
+  --cyan: #5ac8fa;
+  --cyan-border: rgba(10, 132, 255, 0.72);
+  --cyan-glow: rgba(10, 132, 255, 0.26);
+  --cta-bg: linear-gradient(180deg, #1d8eff 0%, #0a84ff 100%);
+  --cta-bg-hover: linear-gradient(180deg, #3399ff 0%, #1a8cff 100%);
+  --cta-ink: #ffffff;
+  --shadow-pop: 0 24px 64px rgba(0, 0, 0, 0.58), 0 0 0 0.5px rgba(255, 255, 255, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+  /* macOS 系统语义状态色 */
+  --st-active: #64d2ff;
+  --st-active-bg: rgba(100, 210, 255, 0.14);
+  --st-done: #30d158;
+  --st-done-bg: rgba(48, 209, 88, 0.14);
+  --st-partial: #ff9f0a;
+  --st-partial-bg: rgba(255, 159, 10, 0.14);
+  --st-fail: #ff6961;
+  --st-fail-bg: rgba(255, 69, 58, 0.14);
+  --st-review: #bf5af2;
+  --st-idle: rgba(245, 245, 247, 0.54);
+  --st-idle-bg: rgba(255, 255, 255, 0.04);
 }
 
 /* ---------- 纸张（暖纸 + 墨；面不用纯白，状态栏用下沉面） ---------- */
@@ -100,6 +111,14 @@
   --accent: #1d4ed8;
   --accent-ink: #f7f5ef;
   --accent-soft: rgba(29, 78, 216, 0.08);
+
+  --cyan: #24564a;
+  --cyan-border: rgba(36, 86, 74, 0.45);
+  --cyan-glow: rgba(36, 86, 74, 0.1);
+  --cta-bg: #1d4ed8;
+  --cta-bg-hover: #1e40af;
+  --cta-ink: #f7f5ef;
+  --glass-shine: inset 0 1px 0 rgba(255, 255, 255, 0.4);
   --shadow-pop: 0 18px 44px rgba(58, 48, 30, 0.16), 0 2px 6px rgba(58, 48, 30, 0.08);
 
   /* 状态色：B 方案的纸张取值（全部 ≥5.1:1，WCAG AA 需 4.5） */
@@ -111,6 +130,7 @@
   --st-partial-bg: rgba(168, 98, 26, 0.11);
   --st-fail: #8a2b19;
   --st-fail-bg: rgba(163, 52, 31, 0.1);
+  --st-review: #6d28d9;
   --st-idle: #645d55;
   --st-idle-bg: transparent;
 }
@@ -121,7 +141,7 @@
   color: var(--ink);
 }
 
-/* 细滚动条：默认的灰白粗条在暗色底上很扎眼 */
+/* 细滚动条 */
 .v2-root,
 .v2-root * {
   scrollbar-width: thin;
@@ -134,7 +154,6 @@
   max-width: none;
 }
 .app.v2-mode {
-  /* 根节点自己绘背景；这里保持透明，避免纸张主题下露出黑边 */
   background: transparent;
   padding: 0;
 }

@@ -1908,11 +1908,11 @@ textarea:not(.v2-root *):not(.v2-chrome *),
 .graph-search-form input {
   --text-helper: var(--text-secondary);
 }
-/* 焦点：用 outline 而不是 inset shadow */
-.capture-input:focus,
-textarea:focus,
-input:focus,
-select:focus {
+/* 焦点：用 outline 而不是 inset shadow（排除 V2，避免在无框组件内画出直角白框） */
+.capture-input:focus:not(.v2-root *):not(.v2-chrome *),
+textarea:focus:not(.v2-root *):not(.v2-chrome *),
+input:focus:not(.v2-root *):not(.v2-chrome *),
+select:focus:not(.v2-root *):not(.v2-chrome *) {
   box-shadow: none !important;
   outline: 2px solid var(--accent-ink);
   outline-offset: -2px;

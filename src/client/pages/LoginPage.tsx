@@ -2,8 +2,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api';
+import CosmosBackdrop from '../v2/ui/CosmosBackdrop';
+import { useV2Theme } from '../v2/theme';
 
 export default function LoginPage({ onLogin }: { onLogin: (username: string) => void }) {
+  const [theme] = useV2Theme();
   const [username, setUsername] = useState('我');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -26,7 +29,9 @@ export default function LoginPage({ onLogin }: { onLogin: (username: string) => 
   }
 
   return (
-    <div className="page login-page">
+    <div className={theme === 'dark' ? 'login-cosmos-shell' : undefined}>
+      <CosmosBackdrop active={theme === 'dark'} />
+      <div className="page login-page">
       <div className="login-card-container">
         <div className="login-motto-tag">把规矩先立住，这样做起来才不烧心。</div>
         <form className="login-card" onSubmit={login}>
@@ -71,6 +76,7 @@ export default function LoginPage({ onLogin }: { onLogin: (username: string) => 
           <div className="step-pill">5. 召唤存档</div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

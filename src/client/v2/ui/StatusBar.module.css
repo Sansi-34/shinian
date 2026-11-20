@@ -7,8 +7,10 @@
   align-items: center;
   gap: var(--sp-3);
   padding: 0 var(--sp-4) 0 calc(var(--rail) + var(--sp-4));
-  /* 下沉面：比画布深半档，不抢视线 */
-  background: var(--sunk);
+  /* macOS 底部工具状态栏 Vibrancy */
+  background: var(--panel);
+  backdrop-filter: var(--vibrancy);
+  -webkit-backdrop-filter: var(--vibrancy);
   border-top: 1px solid var(--line);
   font-size: var(--fs-meta);
   color: var(--ink-2);
@@ -29,7 +31,8 @@
   width: 6px;
   height: 6px;
   border-radius: 9999px;
-  background: var(--ink-3);
+  background: var(--st-done);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--st-done) 45%, transparent);
   flex: none;
 }
 

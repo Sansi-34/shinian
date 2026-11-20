@@ -30,23 +30,25 @@
   border: 1px dashed var(--line-2);
   border-radius: 50%;
   background: var(--raise);
+  box-shadow: 0 0 32px var(--cyan-glow);
 }
 
 .v2-empty-mark::before {
   content: '';
   width: 20px;
   height: 20px;
-  border: 2px solid var(--accent);
+  border: 1.5px solid var(--cyan);
   border-radius: 50%;
-  background: var(--accent-soft);
+  background: var(--st-active-bg);
 }
 
 .v2-empty-title {
   margin: 0;
-  font-size: var(--fs-title);
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  line-height: 1.5;
+  font-family: var(--font-serif);
+  font-size: 24px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
   color: var(--ink);
 }
 
@@ -59,25 +61,27 @@
   overflow-wrap: anywhere;
 }
 
-/* 下一步入口：一个链接按钮，不抢主文案的注意力 */
+/* 下一步入口：圆角胶囊按钮 */
 .v2-empty-cta {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
   min-height: 40px;
   margin-top: var(--sp-3);
-  padding: 0 var(--sp-4);
+  padding: 0 var(--sp-5);
   border: 1px solid var(--line-2);
-  border-radius: var(--r-1);
+  border-radius: var(--r-pill);
   background: var(--raise);
-  color: var(--accent);
+  color: var(--ink);
   font-size: var(--fs-body);
   text-decoration: none;
-  transition: background 120ms ease-out, border-color 120ms ease-out;
+  transition: background 180ms var(--ease-out), border-color 180ms var(--ease-out), box-shadow 200ms var(--ease-out), transform 180ms var(--ease-out);
 }
 .v2-empty-cta:hover {
-  border-color: var(--accent);
-  background: var(--accent-soft);
+  border-color: var(--cyan-border);
+  background: var(--raise-2);
+  box-shadow: 0 0 22px var(--cyan-glow);
+  transform: translateY(-1px);
 }
 .v2-empty-cta:focus-visible {
   outline: 2px solid var(--accent);

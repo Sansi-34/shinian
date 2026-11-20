@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import Rail from './ui/Rail';
 import StatusBar from './ui/StatusBar';
+import CosmosBackdrop from './ui/CosmosBackdrop';
 import { useV2Theme, type V2Theme } from './theme';
 import './tokens.css';
 import styles from './V2Shell.module.css';
@@ -32,6 +33,7 @@ export default function V2Shell({
 
   return (
     <div className="v2-root" data-v2-theme={theme}>
+      <CosmosBackdrop active={theme === 'dark'} />
       <Rail />
 
       <div className={styles.shell}>
