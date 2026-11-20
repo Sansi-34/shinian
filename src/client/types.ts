@@ -143,6 +143,39 @@ export type CreateAttemptInput = {
 
 export type AiTestStatus = 'success' | 'failure';
 
+export type AiModelsResponse = {
+  configured: boolean;
+  enabled: boolean;
+  configName: string | null;
+  baseUrl: string | null;
+  currentModelId: string | null;
+  models: string[];
+  fetched: boolean;
+  note: string | null;
+};
+
+export type AssistDraftAttempt = {
+  step: string;
+  state: 'todo' | 'done';
+  resultText: string | null;
+  outcome: 'success' | 'failure' | 'undetermined' | null;
+};
+
+export type AssistDraft = {
+  captureText: string;
+  attempts: AssistDraftAttempt[];
+  autoOpen?: boolean;
+};
+
+export type AssistCaptureResponse = {
+  reply: string;
+  draft: AssistDraft | null;
+  modelId: string;
+  configName: string;
+  usage: { inputTokens: number; outputTokens: number; totalTokens: number } | null;
+  durationMs: number;
+};
+
 export type AiTestResult = {
   status: AiTestStatus;
   testedAt: number;
@@ -670,6 +703,27 @@ export type ReviewPreviewInput = ReviewRangeInput & {
 export type CreateReviewInput = ReviewPreviewInput & {
   contextToken: string;
   operationId: string;
+};
+
+export type ReviewDailyDay = {
+  date: string;
+  capturesCount: number;
+  attemptsCount: number;
+  aiCount: number;
+  aiTokens: number;
+  aiBreakdown: {
+    generations: number;
+    reviews: number;
+    asks: number;
+    research: number;
+    assist?: number;
+  };
+};
+
+export type ReviewDailyResponse = {
+  range: ReviewRange;
+  today: string;
+  days: ReviewDailyDay[];
 };
 
 export type ReviewRangeResponse = {

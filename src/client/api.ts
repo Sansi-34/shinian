@@ -3,7 +3,9 @@ import type {
   ActivityResponse,
   AiConfig,
   AiGeneration,
+  AiModelsResponse,
   AiSettings,
+  AssistCaptureResponse,
   AiTestResult,
   Attempt,
   AttemptReference,
@@ -24,6 +26,7 @@ import type {
   NextAction,
   NextActionPreview,
   UpdateNextActionInput,
+  ReviewDailyResponse,
   ReviewListItem,
   ReviewPreviewInput,
   ReviewPreviewResponse,
@@ -753,6 +756,102 @@ export const api = {
     return request<AiSettings>('/settings/ai');
   },
 
+  async getAiModels() {
+    return request<AiModelsResponse>('/settings/ai/models');
+  },
+
+  async assistCapture(input: {
+    message: string;
+    history?: Array<{ role: 'user' | 'assistant'; text: string }>;
+  }) {
+    return request<AssistCaptureResponse>('/ai/assist-capture', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  },
+
+  async assistCaptureStream(
+    input: {
+      message: string;
+      history?: Array<{ role: 'user' | 'assistant'; text: string }>;
+    },
+    callbacks: {
+      onStart?: (info: { modelId: string; configName: string }) => void;
+      onDelta?: (delta: string, accumulated: string) => void;
+    },
+    signal?: AbortSignal
+  ): Promise<AssistCaptureResponse> {
+    const res = await fetch(`${API_BASE}/ai/assist-capture/stream`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+      signal,
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new ApiError(res.status, body);
+    }
+    if (!res.body) {
+      throw new ApiError(502, { error: 'empty_stream', message: '服务端未返回响应流。' });
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder('utf-8');
+    let buffer = '';
+    let accumulated = '';
+    let finalResult: AssistCaptureResponse | null = null;
+
+    const handleFrame = (frame: string) => {
+      if (!frame.trim()) return;
+      let eventName = 'message';
+      const dataLines: string[] = [];
+      for (const line of frame.split('\n')) {
+        if (line.startsWith('event:')) eventName = line.slice(6).trim();
+        else if (line.startsWith('data:')) dataLines.push(line.slice(5).trim());
+      }
+      if (dataLines.length === 0) return;
+      let payload: any;
+      try {
+        payload = JSON.parse(dataLines.join('\n'));
+      } catch {
+        return;
+      }
+      if (eventName === 'start') {
+        callbacks.onStart?.({ modelId: payload.modelId ?? '', configName: payload.configName ?? '' });
+      } else if (eventName === 'delta' && typeof payload.text === 'string') {
+        accumulated += payload.text;
+        callbacks.onDelta?.(payload.text, accumulated);
+      } else if (eventName === 'done') {
+        finalResult = payload as AssistCaptureResponse;
+      } else if (eventName === 'error') {
+        throw new ApiError(502, payload);
+      }
+    };
+
+    while (true) {
+      const { value, done } = await reader.read();
+      if (value) {
+        buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, '\n');
+        let splitIdx: number;
+        while ((splitIdx = buffer.indexOf('\n\n')) >= 0) {
+          const frame = buffer.slice(0, splitIdx);
+          buffer = buffer.slice(splitIdx + 2);
+          handleFrame(frame);
+        }
+      }
+      if (done) {
+        buffer += decoder.decode().replace(/\r\n/g, '\n');
+        if (buffer.trim()) handleFrame(buffer);
+        break;
+      }
+    }
+
+    if (!finalResult) {
+      throw new ApiError(502, { error: 'incomplete_stream', message: '流式回复尚未完成即已中断。' });
+    }
+    return finalResult;
+  },
+
   async saveAiSettings(input: SaveAiSettingsInput) {
     return request<AiSettings>('/settings/ai', {
       method: 'PUT',
@@ -1006,6 +1105,16 @@ export const api = {
       preset: input.preset,
     });
     return request<ReviewRangeResponse>(`/review/range?${q.toString()}`);
+  },
+
+  async getReviewDaily(input: ReviewRangeInput) {
+    const q = new URLSearchParams({
+      from: String(input.from),
+      to: String(input.to),
+      timezone: input.timezone,
+      preset: input.preset,
+    });
+    return request<ReviewDailyResponse>(`/review/daily?${q.toString()}`);
   },
 
   async previewReview(input: ReviewPreviewInput) {
