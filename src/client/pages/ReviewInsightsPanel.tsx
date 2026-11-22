@@ -171,7 +171,12 @@ function YearLatticeCard({
         <div className={styles.latticeInner} style={gridTemplate}>
           <div className={styles.weeksGrid} role="grid" aria-label={`${title}近12个月网格`}>
             {weeks.map((week) => (
-              <div key={week.colIndex} className={styles.weekCol} role="row">
+              <div
+                key={week.colIndex}
+                className={styles.weekCol}
+                style={{ '--col': week.colIndex } as CSSProperties}
+                role="row"
+              >
                 {week.cells.map((slot, rowIdx) => {
                   if (!slot) {
                     return (

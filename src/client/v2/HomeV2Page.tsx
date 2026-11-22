@@ -72,7 +72,11 @@ const MODE_LABEL: Record<ChatMode, string> = {
   ask: '问我的记录',
 };
 
-type AssistAttemptPick = AssistDraftAttempt & { checked: boolean };
+type AssistAttemptPick = AssistDraftAttempt & {
+  checked: boolean;
+  opId: string;
+  savedAttemptId?: string;
+};
 
 type AssistTurn = {
   id: string;
@@ -80,16 +84,21 @@ type AssistTurn = {
   userText: string;
   createdAt: number;
   loading: boolean;
+  cancelled: boolean;
+  interrupted: boolean;
   reply: string | null;
   modelId: string | null;
   durationMs: number | null;
   tokens: number | null;
   draftText: string;
+  draftDirty: boolean;
   hasDraft: boolean;
   draftExpanded: boolean;
   draftAttempts: AssistAttemptPick[];
   newAttemptText: string;
   savingDraft: boolean;
+  /** 念头一旦入库即暂存，防止后续某条尝试保存失败重试时重复创建念头 */
+  createdCapture: Capture | null;
   savedCapture: Capture | null;
   savedAttemptsCount: number;
   copied: boolean;
@@ -103,6 +112,7 @@ type CaptureTurn = {
   userText: string;
   createdAt: number;
   capture: Capture | null;
+  retrying: boolean;
   error: string | null;
   attemptDraft: string;
   attemptSaving: boolean;
@@ -166,6 +176,13 @@ export default function HomeV2Page() {
   const modeMenuRef = useRef<HTMLDivElement>(null);
   const assistAbortRef = useRef<AbortController | null>(null);
   const chatSessionRef = useRef(0);
+  const userTouchedModeRef = useRef(false);
+  const defaultModeAppliedRef = useRef(false);
+
+  const selectMode = useCallback((next: ChatMode) => {
+    userTouchedModeRef.current = true;
+    setMode(next);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -191,6 +208,13 @@ export default function HomeV2Page() {
       setAiSettings(aiRes);
       if (aiRes.config?.modelId) {
         setRecentModels(rememberRecentModelId(aiRes.config.modelId));
+      }
+      // 未配置或停用 AI 时，首次默认落到「直记念头」，让无 AI 流程 10 秒内直接记下
+      if (!defaultModeAppliedRef.current && !userTouchedModeRef.current) {
+        defaultModeAppliedRef.current = true;
+        if (!aiRes.configured || !aiRes.config?.enabled) {
+          setMode('capture');
+        }
       }
     } catch {
       /* 静默保底，避免侧栏刷新报错打断主对话 */
@@ -334,11 +358,18 @@ export default function HomeV2Page() {
           ? {
               ...t,
               loading: false,
-              error: t.reply ? null : '已停止生成。',
+              cancelled: true,
+              error: t.reply ? null : '已取消本次生成，你的输入仍保留，可直接重试或放回输入框修改。',
             }
           : t
       )
     );
+  }
+
+  function restoreToInput(text: string, targetMode?: ChatMode) {
+    if (targetMode) selectMode(targetMode);
+    setInput(text);
+    window.setTimeout(() => textareaRef.current?.focus(), 30);
   }
 
   function startNewChat() {
@@ -438,24 +469,39 @@ export default function HomeV2Page() {
 
       if (sessionToken !== chatSessionRef.current) return;
       setTurns((prev) =>
-        prev.map((t) =>
-          t.id === turnId && t.kind === 'assist'
-            ? {
-                ...t,
-                loading: false,
-                error: null,
-                errorCode: null,
-                reply: res.reply,
-                modelId: res.modelId,
-                durationMs: res.durationMs,
-                tokens: res.usage?.totalTokens ?? null,
-                hasDraft: Boolean(res.draft && res.draft.captureText),
-                draftExpanded: Boolean(res.draft && res.draft.captureText && res.draft.autoOpen !== false),
-                draftText: res.draft?.captureText ?? '',
-                draftAttempts: (res.draft?.attempts ?? []).map((a) => ({ ...a, checked: true })),
-              }
-            : t
-        )
+        prev.map((t) => {
+          if (t.id !== turnId || t.kind !== 'assist') return t;
+          const nextHasDraft = Boolean(res.draft && res.draft.captureText);
+          // 保留用户此前已手动编辑过的草案正文与步骤，避免重试时覆写丢失编辑
+          const preserveUserEdit = t.draftDirty && Boolean(t.draftText.trim());
+          return {
+            ...t,
+            loading: false,
+            cancelled: false,
+            interrupted: false,
+            error: null,
+            errorCode: null,
+            reply: res.reply,
+            modelId: res.modelId,
+            durationMs: res.durationMs,
+            tokens: res.usage?.totalTokens ?? null,
+            hasDraft: preserveUserEdit ? true : nextHasDraft,
+            draftExpanded: preserveUserEdit
+              ? true
+              : Boolean(res.draft && res.draft.captureText && res.draft.autoOpen !== false),
+            draftText: preserveUserEdit ? t.draftText : (res.draft?.captureText ?? ''),
+            draftAttempts: preserveUserEdit
+              ? t.draftAttempts
+              : (res.draft?.attempts ?? []).map((a) => ({
+                  step: a.step,
+                  state: 'todo' as const,
+                  resultText: null,
+                  outcome: null,
+                  checked: true,
+                  opId: makeOpId('assist-att'),
+                })),
+          };
+        })
       );
     } catch (e) {
       if (sessionToken !== chatSessionRef.current) return;
@@ -464,13 +510,23 @@ export default function HomeV2Page() {
         setTurns((prev) =>
           prev.map((t) =>
             t.id === turnId && t.kind === 'assist' && t.loading
-              ? { ...t, loading: false, error: t.reply ? null : '已停止生成。' }
+              ? {
+                  ...t,
+                  loading: false,
+                  cancelled: true,
+                  error: t.reply ? null : '已取消本次生成，你的输入仍保留，可直接重试或放回输入框修改。',
+                }
               : t
           )
         );
         return;
       }
       const anyErr = e as { body?: { error?: string } };
+      const code = anyErr?.body?.error ?? null;
+      const codeMeansInterrupted =
+        code === 'incomplete_stream' ||
+        code === 'empty_stream' ||
+        code === 'interrupted';
       const msg = errText(e, '模型调用失败，请检查模型设置后重试。');
       setTurns((prev) =>
         prev.map((t) =>
@@ -478,8 +534,9 @@ export default function HomeV2Page() {
             ? {
                 ...t,
                 loading: false,
+                interrupted: codeMeansInterrupted || Boolean(t.reply && t.reply.trim()),
                 error: msg,
-                errorCode: anyErr?.body?.error ?? null,
+                errorCode: code,
               }
             : t
         )
@@ -512,16 +569,20 @@ export default function HomeV2Page() {
         userText: raw,
         createdAt: Date.now(),
         loading: true,
+        cancelled: false,
+        interrupted: false,
         reply: null,
         modelId: null,
         durationMs: null,
         tokens: null,
         draftText: '',
+        draftDirty: false,
         hasDraft: false,
         draftExpanded: false,
         draftAttempts: [],
         newAttemptText: '',
         savingDraft: false,
+        createdCapture: null,
         savedCapture: null,
         savedAttemptsCount: 0,
         copied: false,
@@ -540,6 +601,7 @@ export default function HomeV2Page() {
         userText: raw,
         createdAt: Date.now(),
         capture: null,
+        retrying: false,
         error: null,
         attemptDraft: '',
         attemptSaving: false,
@@ -551,12 +613,12 @@ export default function HomeV2Page() {
         const res = await api.createCapture(raw);
         setTurns((prev) =>
           prev.map((t) =>
-            t.id === turnId && t.kind === 'capture' ? { ...t, capture: res.capture } : t
+            t.id === turnId && t.kind === 'capture' ? { ...t, capture: res.capture, error: null } : t
           )
         );
         void loadSidebar();
       } catch (e) {
-        const msg = errText(e, '保存念头失败，请重试。');
+        const msg = errText(e, '保存念头失败，原文仍已保留，可重试或放回输入框修改。');
         setTurns((prev) =>
           prev.map((t) => (t.id === turnId && t.kind === 'capture' ? { ...t, error: msg } : t))
         );
@@ -621,6 +683,33 @@ export default function HomeV2Page() {
     }
   }
 
+  async function retryCaptureTurn(turn: CaptureTurn) {
+    if (turn.retrying || turn.capture) return;
+    setTurns((prev) =>
+      prev.map((t) =>
+        t.id === turn.id && t.kind === 'capture' ? { ...t, retrying: true, error: null } : t
+      )
+    );
+    try {
+      const res = await api.createCapture(turn.userText);
+      setTurns((prev) =>
+        prev.map((t) =>
+          t.id === turn.id && t.kind === 'capture'
+            ? { ...t, retrying: false, capture: res.capture, error: null }
+            : t
+        )
+      );
+      void loadSidebar();
+    } catch (e) {
+      const msg = errText(e, '保存念头失败，原文仍已保留，请重试。');
+      setTurns((prev) =>
+        prev.map((t) =>
+          t.id === turn.id && t.kind === 'capture' ? { ...t, retrying: false, error: msg } : t
+        )
+      );
+    }
+  }
+
   async function retryAssistTurn(turn: AssistTurn) {
     if (submitting || turn.loading) return;
     const history = collectAssistHistory(turn.id);
@@ -628,7 +717,7 @@ export default function HomeV2Page() {
     setTurns((prev) =>
       prev.map((t) =>
         t.id === turn.id && t.kind === 'assist'
-          ? { ...t, loading: true, error: null, errorCode: null }
+          ? { ...t, loading: true, cancelled: false, interrupted: false, error: null, errorCode: null }
           : t
       )
     );
@@ -658,10 +747,18 @@ export default function HomeV2Page() {
         if (!step) return t;
         return {
           ...t,
+          draftDirty: true,
           newAttemptText: '',
           draftAttempts: [
             ...t.draftAttempts,
-            { step: step.slice(0, 500), state: 'todo', resultText: null, outcome: null, checked: true },
+            {
+              step: step.slice(0, 500),
+              state: 'todo',
+              resultText: null,
+              outcome: null,
+              checked: true,
+              opId: makeOpId('assist-att'),
+            },
           ],
         };
       })
@@ -699,34 +796,59 @@ export default function HomeV2Page() {
       )
     );
     try {
-      const capRes = await api.createCapture(rawText);
-      const picked = fallbackRawText ? [] : turn.draftAttempts.filter((a) => a.checked);
+      // 幂等防重：若上一次已建好念头但某条尝试失败，直接复用 createdCapture，绝不重复建念头
+      let captureObj = turn.createdCapture;
+      if (!captureObj) {
+        const capRes = await api.createCapture(rawText);
+        captureObj = capRes.capture;
+        setTurns((prev) =>
+          prev.map((t) =>
+            t.id === turn.id && t.kind === 'assist' ? { ...t, createdCapture: captureObj } : t
+          )
+        );
+      }
+
+      const picked = fallbackRawText
+        ? []
+        : turn.draftAttempts.filter((a) => a.checked && a.step.trim().length > 0);
       let addedCount = 0;
+      const savedMap = new Map<string, string>();
       for (const a of picked) {
-        await api.createAttempt(capRes.capture.id, {
-          step: a.step,
-          state: a.state,
-          resultText: a.state === 'done' ? a.resultText : null,
-          outcome: a.state === 'done' ? a.outcome ?? 'undetermined' : null,
-          operationId: makeOpId('assist-att'),
+        if (a.savedAttemptId) {
+          addedCount += 1;
+          continue;
+        }
+        // 严格遵守边界：模型建议的尝试绝不直接写成用户亲自观察到的结果
+        const attRes = await api.createAttempt(captureObj.id, {
+          step: a.step.trim().slice(0, 500),
+          state: 'todo',
+          resultText: null,
+          outcome: null,
+          operationId: a.opId,
         });
+        savedMap.set(a.opId, attRes.attempt.id);
         addedCount += 1;
       }
+
       setTurns((prev) =>
         prev.map((t) =>
           t.id === turn.id && t.kind === 'assist'
             ? {
                 ...t,
                 savingDraft: false,
-                savedCapture: capRes.capture,
+                createdCapture: captureObj,
+                savedCapture: captureObj,
                 savedAttemptsCount: addedCount,
+                draftAttempts: t.draftAttempts.map((item) =>
+                  savedMap.has(item.opId) ? { ...item, savedAttemptId: savedMap.get(item.opId) } : item
+                ),
               }
             : t
         )
       );
       void loadSidebar();
     } catch (e) {
-      const msg = errText(e, '写入记录库失败，请重试。');
+      const msg = errText(e, '写入记录库失败，已保留你编辑的草案内容，重试不会重复创建已保存项。');
       setTurns((prev) =>
         prev.map((t) =>
           t.id === turn.id && t.kind === 'assist' ? { ...t, savingDraft: false, error: msg } : t
@@ -1055,7 +1177,7 @@ export default function HomeV2Page() {
                   role="menuitem"
                   className={`${styles.smallMenuItem}${mode === 'assist' ? ' ' + styles.smallMenuItemActive : ''}`}
                   onClick={() => {
-                    setMode('assist');
+                    selectMode('assist');
                     setModeMenuOpen(false);
                     textareaRef.current?.focus();
                   }}
@@ -1071,7 +1193,7 @@ export default function HomeV2Page() {
                   role="menuitem"
                   className={`${styles.smallMenuItem}${mode === 'capture' ? ' ' + styles.smallMenuItemActive : ''}`}
                   onClick={() => {
-                    setMode('capture');
+                    selectMode('capture');
                     setModeMenuOpen(false);
                     textareaRef.current?.focus();
                   }}
@@ -1087,7 +1209,7 @@ export default function HomeV2Page() {
                   role="menuitem"
                   className={`${styles.smallMenuItem}${mode === 'ask' ? ' ' + styles.smallMenuItemActive : ''}`}
                   onClick={() => {
-                    setMode('ask');
+                    selectMode('ask');
                     setModeMenuOpen(false);
                     textareaRef.current?.focus();
                   }}
@@ -1399,6 +1521,12 @@ export default function HomeV2Page() {
                                 >
                                   重试
                                 </Button>
+                                <Button
+                                  disabled={submitting}
+                                  onClick={() => restoreToInput(turn.userText, 'assist')}
+                                >
+                                  放回输入框修改
+                                </Button>
                                 {!turn.savedCapture ? (
                                   <Button
                                     onClick={() => void saveAssistDraft(turn, turn.userText)}
@@ -1442,6 +1570,14 @@ export default function HomeV2Page() {
                                     停止生成
                                   </button>
                                 </div>
+                              )}
+
+                              {!turn.loading && (turn.cancelled || turn.interrupted) && (
+                                <p className="v2-groupNote" style={{ color: 'var(--st-partial)', margin: '4px 0' }} role="status">
+                                  {turn.cancelled
+                                    ? '已取消生成，以上为已输出的部分内容；你可以重试、放回输入框修改，或按需编辑存为念头。'
+                                    : `流式回复在完成前中断${turn.error ? `（${turn.error}）` : ''}；已保留已输出内容与原文，可重试或手动保存。`}
+                                </p>
                               )}
 
                               {!turn.loading && !turn.draftExpanded && (
@@ -1519,10 +1655,21 @@ export default function HomeV2Page() {
                                         : '重答'}
                                     </button>
                                   )}
+
+                                  {!turn.savedCapture && (turn.cancelled || turn.interrupted) && (
+                                    <button
+                                      type="button"
+                                      className={styles.ghostActionBtn}
+                                      disabled={submitting}
+                                      onClick={() => restoreToInput(turn.userText, 'assist')}
+                                    >
+                                      放回输入框修改
+                                    </button>
+                                  )}
                                 </div>
                               )}
 
-                              {!turn.loading && !turn.draftExpanded && turn.error && (
+                              {!turn.loading && !turn.draftExpanded && turn.error && !turn.interrupted && (
                                 <span style={{ fontSize: 12, color: 'var(--st-fail)' }}>{turn.error}</span>
                               )}
 
@@ -1576,11 +1723,14 @@ export default function HomeV2Page() {
                                       value={turn.draftText}
                                       disabled={Boolean(turn.savedCapture) || turn.savingDraft}
                                       maxLength={4000}
+                                      aria-label="草案念头正文"
                                       onChange={(e) => {
                                         const val = e.target.value;
                                         setTurns((prev) =>
                                           prev.map((t) =>
-                                            t.id === turn.id && t.kind === 'assist' ? { ...t, draftText: val } : t
+                                            t.id === turn.id && t.kind === 'assist'
+                                              ? { ...t, draftText: val, draftDirty: true }
+                                              : t
                                           )
                                         );
                                       }}
@@ -1589,19 +1739,23 @@ export default function HomeV2Page() {
 
                                   {turn.draftAttempts.length > 0 && (
                                     <div className={styles.draftAttemptList}>
-                                      <span className={styles.draftFieldLabel}>提取的尝试与结果（勾选一并存入）</span>
+                                      <span className={styles.draftFieldLabel}>
+                                        建议的尝试步骤（可直接编辑，保存为「待尝试」，结果留待你亲自执行后填写）
+                                      </span>
                                       {turn.draftAttempts.map((att, idx) => (
-                                        <label key={idx} className={styles.draftAttemptItem}>
+                                        <div key={att.opId} className={styles.draftAttemptItem}>
                                           <input
                                             type="checkbox"
                                             checked={att.checked}
                                             disabled={Boolean(turn.savedCapture) || turn.savingDraft}
+                                            aria-label={`勾选第 ${idx + 1} 条建议尝试`}
                                             onChange={() =>
                                               setTurns((prev) =>
                                                 prev.map((t) => {
                                                   if (t.id !== turn.id || t.kind !== 'assist') return t;
                                                   return {
                                                     ...t,
+                                                    draftDirty: true,
                                                     draftAttempts: t.draftAttempts.map((item, k) =>
                                                       k === idx ? { ...item, checked: !item.checked } : item
                                                     ),
@@ -1610,21 +1764,34 @@ export default function HomeV2Page() {
                                               )
                                             }
                                           />
-                                          <span className={styles.draftAttemptMain}>
-                                            <span className={styles.draftAttemptStep}>
-                                              {att.step}
-                                              {' '}
-                                              <span className="v2-hint">
-                                                ({att.state === 'done' ? '已试' : '待试'})
-                                              </span>
-                                            </span>
-                                            {att.resultText && (
-                                              <span className={styles.draftAttemptResult}>
-                                                观察结果：{att.resultText}
-                                              </span>
-                                            )}
-                                          </span>
-                                        </label>
+                                          <div className={styles.draftAttemptMain} style={{ flex: 1 }}>
+                                            <input
+                                              type="text"
+                                              className={styles.inlineInput}
+                                              style={{ width: '100%' }}
+                                              value={att.step}
+                                              maxLength={500}
+                                              disabled={Boolean(turn.savedCapture) || turn.savingDraft}
+                                              aria-label={`编辑第 ${idx + 1} 条建议尝试`}
+                                              onChange={(e) => {
+                                                const val = e.target.value;
+                                                setTurns((prev) =>
+                                                  prev.map((t) => {
+                                                    if (t.id !== turn.id || t.kind !== 'assist') return t;
+                                                    return {
+                                                      ...t,
+                                                      draftDirty: true,
+                                                      draftAttempts: t.draftAttempts.map((item, k) =>
+                                                        k === idx ? { ...item, step: val } : item
+                                                      ),
+                                                    };
+                                                  })
+                                                );
+                                              }}
+                                            />
+                                            <span className="v2-hint">待尝试 · 结果需亲自实测后填写</span>
+                                          </div>
+                                        </div>
                                       ))}
                                     </div>
                                   )}
@@ -1694,9 +1861,23 @@ export default function HomeV2Page() {
                       ) : turn.kind === 'capture' ? (
                         <div className={styles.botCard}>
                           {turn.error ? (
-                            <p className={styles.botLead} style={{ color: 'var(--st-fail)' }}>
-                              {turn.error}
-                            </p>
+                            <>
+                              <p className={styles.botLead} style={{ color: 'var(--st-fail)' }}>
+                                {turn.error}
+                              </p>
+                              <div className="v2-captureActions">
+                                <Button
+                                  variant="primary"
+                                  disabled={turn.retrying}
+                                  onClick={() => void retryCaptureTurn(turn)}
+                                >
+                                  {turn.retrying ? '重试中…' : '重试保存'}
+                                </Button>
+                                <Button onClick={() => restoreToInput(turn.userText, 'capture')}>
+                                  放回输入框修改
+                                </Button>
+                              </div>
+                            </>
                           ) : !turn.capture ? (
                             <p className={styles.botLead}>
                               <Spinner label="正在保存念头…" />

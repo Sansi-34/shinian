@@ -3,15 +3,22 @@
   align-items: center;
   justify-content: center;
   gap: var(--sp-2);
-  min-height: 36px;
-  padding: 0 var(--sp-4);
+  min-height: 34px;
+  padding: 0 14px;
   border-radius: var(--r-1);
   border: 1px solid transparent;
   font-family: inherit;
-  font-size: var(--fs-body);
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 160ms var(--ease-out), border-color 160ms var(--ease-out), color 160ms var(--ease-out), box-shadow 180ms var(--ease-out), transform 140ms var(--ease-out);
+  transition:
+    background 140ms var(--ease-out),
+    border-color 140ms var(--ease-out),
+    color 140ms var(--ease-out),
+    transform 100ms var(--ease-out);
+}
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
 }
 
 /* 禁用态不用"整体半透明"：显式给一块中性面 + 可读的次级文字 */
@@ -20,46 +27,35 @@
   cursor: not-allowed;
 }
 
-/* macOS System Blue 高光按钮 */
+/* 克制纯色高反差主按钮（暗色暖白 / 纸张墨黑，无渐变、无光晕） */
 .primary {
-  padding: 0 var(--sp-5);
-  border-radius: var(--r-pill);
+  padding: 0 16px;
+  border-radius: var(--r-1);
   background: var(--cta-bg);
   color: var(--cta-ink);
-  border-color: rgba(255, 255, 255, 0.16);
-  box-shadow: var(--glass-shine), 0 2px 8px rgba(10, 132, 255, 0.25);
+  border-color: transparent;
 }
 .primary:disabled {
-  background: var(--raise-2);
+  background: var(--sunk);
   color: var(--ink-3);
   border-color: var(--line);
-  box-shadow: none;
 }
 .primary:hover:not(:disabled) {
   background: var(--cta-bg-hover);
-  border-color: rgba(255, 255, 255, 0.28);
-  box-shadow: var(--glass-shine), 0 4px 16px rgba(10, 132, 255, 0.36);
-}
-.primary:active:not(:disabled) {
-  transform: scale(0.985);
 }
 
 .ghost {
   background: var(--raise);
   border-color: var(--line-2);
-  box-shadow: var(--glass-shine);
   color: var(--ink);
 }
 .ghost:hover:not(:disabled) {
   background: var(--hover);
   border-color: var(--cyan-border);
-  box-shadow: 0 0 0 2px var(--cyan-glow);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .btn,
-  .primary:active:not(:disabled) {
-    transform: none;
+  .btn {
     transition: none;
   }
 }

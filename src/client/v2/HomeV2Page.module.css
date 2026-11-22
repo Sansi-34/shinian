@@ -18,23 +18,21 @@
   justify-content: space-between;
   gap: 8px;
   width: 100%;
-  min-height: 36px;
-  padding: 0 12px;
+  min-height: 34px;
+  padding: 0 11px;
   border: 1px solid var(--line-2);
-  border-radius: 10px;
+  border-radius: var(--r-1);
   background: var(--raise);
-  box-shadow: var(--glass-shine);
   color: var(--ink);
   font-family: inherit;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: background 140ms var(--ease-out), border-color 140ms var(--ease-out), box-shadow 140ms var(--ease-out);
+  transition: background 120ms var(--ease-out), border-color 120ms var(--ease-out);
 }
 .newChatBtn:hover {
   background: var(--hover);
   border-color: var(--cyan-border);
-  box-shadow: var(--glass-shine), 0 0 0 2px var(--cyan-glow);
 }
 
 .sideSectionTitle {
@@ -43,6 +41,39 @@
   font-weight: 600;
   letter-spacing: 0.06em;
   color: var(--ink-3);
+}
+
+@keyframes homeFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes msgEnter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes popMenuIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* 居中欢迎初始态：极简 ChatGPT 风格留白构图 */
@@ -57,6 +88,7 @@
   margin: 0 auto;
   padding: 24px 24px 96px;
   gap: 26px;
+  animation: homeFadeUp 320ms var(--ease-spring);
 }
 
 .welcomeTitle {
@@ -87,6 +119,7 @@
   flex-direction: column;
   align-items: flex-end;
   gap: 5px;
+  animation: msgEnter 220ms var(--ease-spring);
 }
 
 .msgModeTag {
@@ -97,15 +130,12 @@
 
 .msgUserBubble {
   max-width: min(82%, 580px);
-  padding: 11px 16px;
-  border-radius: 18px 18px 4px 18px;
-  border: 1px solid color-mix(in srgb, var(--accent) 32%, var(--line-2));
-  background: color-mix(in srgb, var(--accent) 16%, var(--raise));
-  backdrop-filter: var(--vibrancy);
-  -webkit-backdrop-filter: var(--vibrancy);
-  box-shadow: var(--glass-shine);
+  padding: 10px 14px;
+  border-radius: 10px 10px 3px 10px;
+  border: 1px solid var(--line);
+  background: var(--raise);
   color: var(--ink);
-  font-size: 14.5px;
+  font-size: 14px;
   line-height: 1.6;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -115,6 +145,7 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
+  animation: msgEnter 260ms var(--ease-spring);
 }
 
 .botAvatar {
@@ -122,16 +153,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   margin-top: 2px;
-  border-radius: 10px;
+  border-radius: 6px;
   border: 1px solid var(--line-2);
   background: var(--raise);
-  box-shadow: var(--glass-shine);
   font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 14px;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 13px;
   color: var(--ink);
 }
 
@@ -156,12 +187,9 @@
   flex-direction: column;
   gap: 10px;
   padding: 14px 16px;
-  border-radius: 14px;
-  border: 1px solid var(--line-2);
-  background: var(--panel);
-  backdrop-filter: var(--vibrancy);
-  -webkit-backdrop-filter: var(--vibrancy);
-  box-shadow: var(--glass-shine);
+  border-radius: var(--r-2);
+  border: 1px solid var(--line);
+  background: var(--raise);
 }
 
 .botCardHead {
@@ -485,20 +513,17 @@
   flex-direction: column;
   justify-content: space-between;
   gap: 10px;
-  min-height: 102px;
-  padding: 14px 16px 12px;
-  border-radius: 18px;
-  border: 1px solid var(--line);
-  background: color-mix(in srgb, var(--raise-2) 88%, transparent);
-  backdrop-filter: var(--vibrancy);
-  -webkit-backdrop-filter: var(--vibrancy);
-  box-shadow: var(--glass-shine), 0 16px 42px rgba(0, 0, 0, 0.24);
-  transition: border-color 180ms var(--ease-out), box-shadow 180ms var(--ease-out);
+  min-height: 98px;
+  padding: 13px 14px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--line-2);
+  background: var(--raise);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: border-color 120ms var(--ease-out);
 }
 
 .composerCard:focus-within {
-  border-color: var(--line-2);
-  box-shadow: var(--glass-shine), 0 0 0 2px var(--cyan-glow), 0 20px 52px rgba(0, 0, 0, 0.32);
+  border-color: var(--ink-3);
 }
 
 .textarea {
@@ -560,11 +585,15 @@
   background: var(--hover);
   color: var(--ink-2);
   cursor: pointer;
-  transition: background 140ms var(--ease-out), color 140ms var(--ease-out);
+  transition: background 140ms var(--ease-out), color 140ms var(--ease-out), transform 180ms var(--ease-spring);
 }
 .plusCircleBtn:hover {
   background: var(--line-2);
   color: var(--ink);
+  transform: rotate(90deg);
+}
+.plusCircleBtn:active {
+  transform: rotate(90deg) scale(0.92);
 }
 
 .ghostSelectBtn {
@@ -596,19 +625,19 @@
 .smallMenu {
   position: absolute;
   left: 0;
-  bottom: calc(100% + 10px);
+  bottom: calc(100% + 8px);
   z-index: 45;
   min-width: 220px;
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 6px;
-  border-radius: 12px;
+  padding: 5px;
+  border-radius: var(--r-2);
   border: 1px solid var(--line-2);
   background: var(--raise-2);
-  backdrop-filter: var(--vibrancy);
-  -webkit-backdrop-filter: var(--vibrancy);
   box-shadow: var(--shadow-pop);
+  transform-origin: left bottom;
+  animation: popMenuIn 160ms var(--ease-spring);
 }
 
 .smallMenuItem {
@@ -683,19 +712,19 @@
 .modelPopover {
   position: absolute;
   right: 0;
-  bottom: calc(100% + 10px);
+  bottom: calc(100% + 8px);
   z-index: 45;
   width: min(330px, 86vw);
   display: flex;
   flex-direction: column;
   gap: 8px;
   padding: 12px;
-  border-radius: 14px;
+  border-radius: var(--r-2);
   border: 1px solid var(--line-2);
   background: var(--raise-2);
-  backdrop-filter: var(--vibrancy);
-  -webkit-backdrop-filter: var(--vibrancy);
   box-shadow: var(--shadow-pop);
+  transform-origin: right bottom;
+  animation: popMenuIn 160ms var(--ease-spring);
 }
 
 .modelPopHead {
@@ -837,24 +866,46 @@
   width: 32px;
   height: 32px;
   padding: 0;
-  border-radius: 50%;
-  border: 0;
+  border-radius: var(--r-1);
+  border: 1px solid transparent;
   background: var(--cta-bg);
   color: var(--cta-ink);
-  box-shadow: 0 2px 10px rgba(10, 132, 255, 0.32);
   cursor: pointer;
-  transition: transform 140ms var(--ease-out), filter 140ms var(--ease-out), opacity 140ms var(--ease-out);
+  transition:
+    background 140ms var(--ease-out),
+    border-color 140ms var(--ease-out),
+    color 140ms var(--ease-out),
+    transform 120ms var(--ease-spring);
+}
+
+.sendBtn svg {
+  transition: transform 160ms var(--ease-spring);
 }
 
 .sendBtn:hover:not(:disabled) {
-  filter: brightness(1.08);
-  transform: translateY(-1px);
+  background: var(--cta-bg-hover);
+}
+.sendBtn:hover:not(:disabled) svg {
+  transform: translateY(-1.5px);
+}
+.sendBtn:active:not(:disabled) {
+  transform: scale(0.93);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcomeWrap,
+  .msgUserRow,
+  .msgBotRow,
+  .smallMenu,
+  .modelPopover {
+    animation: none;
+  }
 }
 
 .sendBtn:disabled {
-  background: color-mix(in srgb, var(--accent) 26%, var(--raise));
-  color: rgba(255, 255, 255, 0.55);
-  box-shadow: none;
+  background: var(--sunk);
+  border-color: var(--line);
+  color: var(--ink-3);
   cursor: not-allowed;
 }
 

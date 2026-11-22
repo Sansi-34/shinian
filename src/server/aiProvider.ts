@@ -327,8 +327,8 @@ const ASSIST_SYSTEM_PROMPT = [
   '- autoOpen：若用户明显在记录一件事/想法/实验经过，设为 true；若用户主要是提问求助或让 AI 帮忙分析/写作，设为 false。',
   '- captureText：凝练清晰、便于日后回看的一句或一段中文念头（不超过 400 字）。若是问答求助，可总结「想解决的问题与核心方向」。',
   '- attempts（0~3 条）：',
-  '  * 用户明确说过某件已做且观察到结果的事 -> state:"done"，填上 step 与忠实概括的 resultText，outcome 选 success/failure/undetermined；',
-  '  * 针对待解问题或后续建议中具体可执行的一小步 -> state:"todo"，resultText:null，outcome:null。',
+  '  * 只整理具体可执行的小尝试步骤，统一使用 state:"todo"、resultText:null、outcome:null；',
+  '  * 严禁把模型建议或推测写成用户亲自观察到的结果（不要输出 state:"done" 或填写 resultText）。',
   '- 除上述纯 JSON（单行或多行）外，不要在 <shinian_draft> 标签内写注释，也不要把 JSON 语法带进正文。',
 ].join('\n');
 
@@ -386,9 +386,10 @@ function normalizeAssistDraft(rawDraft: z.infer<typeof assistDraftSchema>): Assi
       .slice(0, 3)
       .map((a) => ({
         step: a.step.trim().slice(0, 500),
-        state: a.state,
-        resultText: a.state === 'done' && a.resultText ? a.resultText.trim().slice(0, 4000) : null,
-        outcome: a.state === 'done' ? a.outcome ?? 'undetermined' : null,
+        // 硬守产品边界：模型生成的草案尝试一律作为待执行计划，禁止直接写成用户亲自观察到的结果
+        state: 'todo' as const,
+        resultText: null,
+        outcome: null,
       })),
   };
 }
@@ -568,19 +569,48 @@ export async function streamAssistCaptureWithAi(
       abortSignal: controller.signal,
     });
 
-    for await (const delta of result.textStream) {
+    let streamError: unknown = null;
+    let sawFinish = false;
+    let finishReason: string | null = null;
+
+    for await (const part of result.fullStream) {
       resetIdle();
-      fullRaw += delta;
-      const nextVisible = visibleReplyPrefix(fullRaw);
-      if (nextVisible.length > emittedLength) {
-        const piece = nextVisible.slice(emittedLength);
-        emittedLength = nextVisible.length;
-        onDelta(nextVisible, piece);
+      if (part.type === 'text-delta') {
+        const delta = part.text;
+        fullRaw += delta;
+        const nextVisible = visibleReplyPrefix(fullRaw);
+        if (nextVisible.length > emittedLength) {
+          const piece = nextVisible.slice(emittedLength);
+          emittedLength = nextVisible.length;
+          onDelta(nextVisible, piece);
+        }
+      } else if (part.type === 'error') {
+        streamError = part.error;
+        break;
+      } else if (part.type === 'finish') {
+        sawFinish = true;
+        finishReason = typeof part.finishReason === 'string' ? part.finishReason : null;
       }
+    }
+
+    if (streamError) {
+      throw streamError;
     }
 
     if (!fullRaw.trim()) {
       throw invalidResponse('模型返回了空文本。');
+    }
+
+    const hasUnclosedDraft =
+      fullRaw.includes('<shinian_draft>') && !fullRaw.includes('</shinian_draft>');
+    if (!sawFinish || finishReason === 'error' || hasUnclosedDraft) {
+      throw new AiError(
+        'incomplete_stream',
+        '流式回复在完成前中断。',
+        hasUnclosedDraft
+          ? '草案标签未闭合，模型流式输出疑似中途截断。'
+          : '模型响应流在收到结束信号前意外断开。'
+      );
     }
 
     const totalUsage = await Promise.resolve(result.totalUsage).catch(() => undefined);
@@ -597,6 +627,13 @@ export async function streamAssistCaptureWithAi(
     }
     if (input.signal?.aborted) {
       throw new AiError('cancelled', '已停止生成。', '用户已停止本次生成。');
+    }
+    if (error instanceof AiError) {
+      throw error;
+    }
+    if (fullRaw.trim().length > 0) {
+      const detail = error instanceof Error ? error.message : String(error ?? '连接提前关闭');
+      throw new AiError('incomplete_stream', '流式回复在完成前中断。', `输出中途连接中断：${detail}`);
     }
     throw error;
   } finally {

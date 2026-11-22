@@ -118,11 +118,6 @@ export default function Rail() {
   return (
     <>
       <aside className={styles.rail} aria-label="主导航">
-        <div className={styles.trafficLights} aria-hidden="true">
-          <span className={`${styles.dot} ${styles.dotClose}`} />
-          <span className={`${styles.dot} ${styles.dotMin}`} />
-          <span className={`${styles.dot} ${styles.dotMax}`} />
-        </div>
         <a href="/promo" className={styles.brand} aria-label="拾念宣传页" title="查看拾念宣传页">
           拾
         </a>

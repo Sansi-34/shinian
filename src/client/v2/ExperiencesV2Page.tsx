@@ -88,12 +88,17 @@ export default function ExperiencesV2Page() {
           <div className="v2-empty-mark" aria-hidden="true" />
           <h2 className="v2-empty-title">还没有经验</h2>
           <p className="v2-empty-text">
-            经验 = 一条有真实结果的观察，加上它的条件与限制。目前它从「问记录」里的一条观点整理而来（整理需要先配置 AI 模型）。
+            经验 = 一条有真实结果的观察，加上它的适用条件与限制。你可以在任意一条写好结果的尝试详情里手动点「整理成经验」（无需配置 AI），也可以从「问记录」的带引用观点整理而来。
           </p>
-          <Link className="v2-empty-cta" to="/ask">
-            去「问记录」看看
-            <span className="v2-empty-ctaArrow" aria-hidden="true">→</span>
-          </Link>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+            <Link className="v2-empty-cta" to="/search">
+              去查看记录与尝试
+              <span className="v2-empty-ctaArrow" aria-hidden="true">→</span>
+            </Link>
+            <Link className="v2-ghostLink" to="/ask" style={{ minHeight: 36, marginTop: 'var(--sp-2)' }}>
+              去「问记录」看看
+            </Link>
+          </div>
         </div>
       ) : (
         <Module title="我整理的经验" count={items.length}>

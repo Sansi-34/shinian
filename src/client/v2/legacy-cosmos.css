@@ -1,19 +1,19 @@
 /* ============================================================================
-   拾念 · macOS Dark Vibrancy 风格桥接层（登录页 + 非 V2 二级页面）
-   - 暗色主题下注入与主站一致的 macOS 丝绸壁纸、饱和磨砂玻璃面板与系统蓝控件语言
-   - 纸张主题下完整保留原有暖纸阅读质感
+   拾念 · 登录页与二级页面极简双主题桥接层
+   - 与 V2 保持 100% 一致的纯平碳灰暗色（#111113/#161618/#1C1C1F）与暖宣纸墨色
+   - 零壁纸、零毛玻璃、零假窗口装饰点、零渐变发光按钮
    ========================================================================== */
 
-/* ---------- 1. 登录页：macOS 毛玻璃桌面欢迎窗 ---------- */
+/* ---------- 1. 登录页：克制居中的纯平登录面板 ---------- */
 .login-cosmos-shell {
   position: relative;
   min-height: 100dvh;
-  background: #080a0f;
-  color: #f5f5f7;
-  --text-primary: #f5f5f7;
-  --text-secondary: rgba(245, 245, 247, 0.74);
-  --text-helper: rgba(245, 245, 247, 0.54);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
+  background: #111113;
+  color: #ededef;
+  --text-primary: #ededef;
+  --text-secondary: #a1a1aa;
+  --text-helper: #71717a;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
   overflow-x: hidden;
 }
 
@@ -25,161 +25,138 @@
 }
 
 .login-cosmos-shell .login-motto-tag {
-  background: rgba(10, 132, 255, 0.14);
-  border: 1px solid rgba(10, 132, 255, 0.36);
-  color: #64d2ff;
-  border-radius: 9999px;
-  font-size: 12.5px;
+  background: #1c1c1f;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #a1a1aa;
+  border-radius: 6px;
+  font-size: 12px;
   letter-spacing: 0.02em;
 }
 
 .login-cosmos-shell .login-card {
   position: relative;
-  background: rgba(24, 27, 36, 0.62);
-  backdrop-filter: blur(34px) saturate(180%);
-  -webkit-backdrop-filter: blur(34px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 16px !important;
-  box-shadow: 0 32px 88px rgba(0, 0, 0, 0.62), inset 0 1px 0 rgba(255, 255, 255, 0.14);
-  color: #f5f5f7;
-}
-
-/* 登录窗口左上角 macOS 红黄绿交通灯饰点 */
-.login-cosmos-shell .login-card::before {
-  content: '';
-  position: absolute;
-  top: 16px;
-  left: 18px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #ff5f57;
-  box-shadow:
-    17px 0 0 #febc2e,
-    34px 0 0 #28c840;
-  opacity: 0.92;
-  pointer-events: none;
+  background: #161618;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
+  color: #ededef;
 }
 
 .login-cosmos-shell .login-logo-mark {
-  background: rgba(255, 255, 255, 0.09);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
-  color: #f5f5f7;
-  border-radius: 12px !important;
+  background: #f4f4f5;
+  border: 1px solid transparent;
+  color: #111113;
+  border-radius: 6px !important;
   font-family: 'Noto Serif SC', 'Songti SC', serif;
-  font-weight: 400;
+  font-weight: 600;
 }
 
 .login-cosmos-shell .login-title {
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
   font-weight: 600;
-  font-size: 26px;
-  letter-spacing: -0.01em;
-  color: #f5f5f7;
+  font-size: 24px;
+  letter-spacing: -0.02em;
+  color: #ededef;
 }
 .login-cosmos-shell .login-title span {
-  color: rgba(245, 245, 247, 0.48);
+  color: #71717a;
   font-weight: 400;
 }
 
 .login-cosmos-shell .login-lead,
 .login-cosmos-shell .field-hint {
-  color: rgba(245, 245, 247, 0.66);
+  color: #a1a1aa;
 }
 
 .login-cosmos-shell .field-label {
-  color: rgba(245, 245, 247, 0.8);
+  color: #d4d4d8;
 }
 
 .login-cosmos-shell .login-intro-note {
-  background: rgba(255, 255, 255, 0.055);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px !important;
-  color: rgba(245, 245, 247, 0.78);
+  background: #1c1c1f;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px !important;
+  color: #a1a1aa;
 }
 
 .login-cosmos-shell .login-input {
-  background: rgba(10, 12, 18, 0.56);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 9px !important;
-  color: #f5f5f7;
+  background: #0c0c0e;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px !important;
+  color: #ededef;
 }
 .login-cosmos-shell .login-input:focus {
-  background: rgba(10, 12, 18, 0.72);
-  border-color: rgba(10, 132, 255, 0.78);
-  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.28);
+  background: #0c0c0e;
+  border-color: rgba(255, 255, 255, 0.45);
+  box-shadow: none;
+  outline: none;
 }
 
 .login-cosmos-shell .login-submit {
-  border-radius: 9999px !important;
-  background: linear-gradient(180deg, #1d8eff 0%, #0a84ff 100%) !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
-  color: #ffffff !important;
+  border-radius: 6px !important;
+  background: #f4f4f5 !important;
+  border-color: transparent !important;
+  color: #111113 !important;
   font-weight: 500;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 4px 16px rgba(10, 132, 255, 0.32);
+  box-shadow: none !important;
 }
 .login-cosmos-shell .login-submit:hover:not(:disabled) {
-  background: linear-gradient(180deg, #3399ff 0%, #1a8cff 100%) !important;
-  border-color: rgba(255, 255, 255, 0.3) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 6px 22px rgba(10, 132, 255, 0.42) !important;
+  background: #ffffff !important;
 }
 
 .login-cosmos-shell .step-pill {
-  background: rgba(24, 27, 36, 0.58);
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(245, 245, 247, 0.74);
-  border-radius: 9999px !important;
+  background: #1c1c1f;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #a1a1aa;
+  border-radius: 6px !important;
 }
 
-/* ---------- 2. 非 V2 二级页面在暗色主题下的 macOS 磨砂融合 ---------- */
+/* ---------- 2. 非 V2 二级页面：暗色纯平碳灰主题 ---------- */
 .app.legacy-with-rail[data-v2-theme='dark'] {
   position: relative;
   min-height: 100dvh;
-  background: #080a0f;
-  color: #f5f5f7;
+  background: #111113;
+  color: #ededef;
   color-scheme: dark;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
 
-  --paper: rgba(24, 27, 36, 0.58);
-  --paper-2: rgba(34, 38, 49, 0.64);
-  --paper-card: rgba(24, 27, 36, 0.62);
-  --paper-muted: rgba(30, 34, 44, 0.56);
-  --bg: transparent;
-  --card: rgba(24, 27, 36, 0.62);
-  --ink: #f5f5f7;
-  --muted: rgba(245, 245, 247, 0.56);
-  --grey-1: rgba(255, 255, 255, 0.06);
-  --grey-2: rgba(255, 255, 255, 0.14);
-  --grey-3: rgba(245, 245, 247, 0.52);
+  --paper: #111113;
+  --paper-2: #161618;
+  --paper-card: #161618;
+  --paper-muted: #1c1c1f;
+  --bg: #111113;
+  --card: #161618;
+  --ink: #ededef;
+  --muted: #71717a;
+  --grey-1: #1c1c1f;
+  --grey-2: rgba(255, 255, 255, 0.12);
+  --grey-3: #71717a;
 
-  --text-primary: #f5f5f7;
-  --text-body: rgba(245, 245, 247, 0.88);
-  --text-secondary: rgba(245, 245, 247, 0.74);
-  --text-helper: rgba(245, 245, 247, 0.52);
-  --text-placeholder: rgba(245, 245, 247, 0.42);
-  --text-on-color: #ffffff;
+  --text-primary: #ededef;
+  --text-body: #d4d4d8;
+  --text-secondary: #a8a8b3;
+  --text-helper: #8b8b96;
+  --text-placeholder: #52525b;
+  --text-on-color: #111113;
 
-  --line: rgba(255, 255, 255, 0.1);
-  --line-subtle: rgba(255, 255, 255, 0.075);
-  --line-strong: rgba(255, 255, 255, 0.2);
+  --line: rgba(255, 255, 255, 0.08);
+  --line-subtle: rgba(255, 255, 255, 0.06);
+  --line-strong: rgba(255, 255, 255, 0.14);
 
-  --accent: #0a84ff;
-  --accent-ink: #ffffff;
-  --accent-bright: #409cff;
-  --accent-deep: #0070e0;
-  --accent-display: #64d2ff;
-  --accent-soft: rgba(10, 132, 255, 0.18);
-  --accent-border: rgba(10, 132, 255, 0.62);
+  --accent: #f4f4f5;
+  --accent-ink: #6ea8fe;
+  --accent-bright: #ffffff;
+  --accent-deep: #d4d4d8;
+  --accent-display: #ededef;
+  --accent-soft: rgba(110, 168, 254, 0.12);
+  --accent-border: rgba(110, 168, 254, 0.35);
 
-  --ok: #30d158;
-  --ok-soft: rgba(48, 209, 88, 0.14);
-  --warn-bg: rgba(255, 159, 10, 0.14);
-  --warn-ink: #ff9f0a;
-  --danger: #ff6961;
-  --danger-soft: rgba(255, 69, 58, 0.14);
+  --ok: #4ade80;
+  --ok-soft: rgba(74, 222, 128, 0.1);
+  --warn-bg: rgba(251, 191, 36, 0.1);
+  --warn-ink: #fbbf24;
+  --danger: #f87171;
+  --danger-soft: rgba(248, 113, 113, 0.1);
 }
 
 .app.legacy-with-rail[data-v2-theme='dark'] .app-main {
@@ -188,10 +165,10 @@
 }
 
 .app.legacy-with-rail[data-v2-theme='dark'] .page-title {
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
   font-weight: 600;
-  letter-spacing: -0.01em;
-  color: #f5f5f7;
+  letter-spacing: -0.02em;
+  color: #ededef;
 }
 
 .app.legacy-with-rail[data-v2-theme='dark'] .section,
@@ -204,83 +181,94 @@
 .app.legacy-with-rail[data-v2-theme='dark'] .review-record,
 .app.legacy-with-rail[data-v2-theme='dark'] .source-card,
 .app.legacy-with-rail[data-v2-theme='dark'] .research-project,
+.app.legacy-with-rail[data-v2-theme='dark'] .candidate-card,
+.app.legacy-with-rail[data-v2-theme='dark'] .experiment-card,
+.app.legacy-with-rail[data-v2-theme='dark'] .select-bar,
 .app.legacy-with-rail[data-v2-theme='dark'] .modal {
-  background: rgba(24, 27, 36, 0.6) !important;
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-  border-color: rgba(255, 255, 255, 0.11) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 10px 30px rgba(0, 0, 0, 0.24) !important;
-  border-radius: 12px !important;
-  color: #f5f5f7;
+  background: #161618 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: none !important;
+  border-radius: 8px !important;
+  color: #ededef;
+}
+.app.legacy-with-rail[data-v2-theme='dark'] .candidate-card.selected {
+  background: rgba(110, 168, 254, 0.1) !important;
+  border-color: rgba(110, 168, 254, 0.45) !important;
+}
+.app.legacy-with-rail[data-v2-theme='dark'] .select-bar {
+  background: #1c1c1f !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45) !important;
 }
 
 .app.legacy-with-rail[data-v2-theme='dark'] .card:hover,
 .app.legacy-with-rail[data-v2-theme='dark'] .activity-event:hover,
 .app.legacy-with-rail[data-v2-theme='dark'] .review-record:hover {
-  border-color: rgba(10, 132, 255, 0.5) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 0 0 2px rgba(10, 132, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  box-shadow: none !important;
 }
 
 .app.legacy-with-rail[data-v2-theme='dark'] input:not([type='checkbox']):not([type='radio']),
 .app.legacy-with-rail[data-v2-theme='dark'] textarea,
 .app.legacy-with-rail[data-v2-theme='dark'] select {
-  background: rgba(10, 12, 18, 0.54) !important;
-  border-color: rgba(255, 255, 255, 0.16) !important;
-  border-radius: 8px !important;
-  color: #f5f5f7 !important;
+  background: #0c0c0e !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  border-radius: 6px !important;
+  color: #ededef !important;
 }
 
 .app.legacy-with-rail[data-v2-theme='dark'] input:not([type='checkbox']):not([type='radio']):focus,
 .app.legacy-with-rail[data-v2-theme='dark'] textarea:focus,
 .app.legacy-with-rail[data-v2-theme='dark'] select:focus {
-  border-color: rgba(10, 132, 255, 0.78) !important;
-  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.26) !important;
+  border-color: rgba(255, 255, 255, 0.42) !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 .app.legacy-with-rail[data-v2-theme='dark'] .btn,
 .app.legacy-with-rail[data-v2-theme='dark'] .filter-chip,
 .app.legacy-with-rail[data-v2-theme='dark'] .tab {
-  background: rgba(34, 38, 49, 0.66);
-  border-color: rgba(255, 255, 255, 0.14);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  border-radius: 8px !important;
-  color: rgba(245, 245, 247, 0.88);
+  background: #1c1c1f;
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow: none;
+  border-radius: 6px !important;
+  color: #d4d4d8;
 }
 
 .app.legacy-with-rail[data-v2-theme='dark'] .btn:hover:not(:disabled),
 .app.legacy-with-rail[data-v2-theme='dark'] .filter-chip:hover {
-  border-color: rgba(10, 132, 255, 0.6);
+  border-color: rgba(255, 255, 255, 0.24);
   color: #ffffff;
-  background: rgba(44, 49, 64, 0.84);
+  background: #222226;
 }
 
 .app.legacy-with-rail[data-v2-theme='dark'] .btn.primary {
-  border-radius: 9999px !important;
-  background: linear-gradient(180deg, #1d8eff 0%, #0a84ff 100%);
-  border-color: rgba(255, 255, 255, 0.18);
-  color: #ffffff;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 2px 10px rgba(10, 132, 255, 0.28);
+  border-radius: 6px !important;
+  background: #f4f4f5;
+  border-color: transparent;
+  color: #111113;
+  box-shadow: none;
 }
 
 .app.legacy-with-rail[data-v2-theme='dark'] .btn.primary:hover:not(:disabled) {
-  background: linear-gradient(180deg, #3399ff 0%, #1a8cff 100%);
-  border-color: rgba(255, 255, 255, 0.28);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 4px 16px rgba(10, 132, 255, 0.38);
-  color: #ffffff;
+  background: #ffffff;
+  border-color: transparent;
+  box-shadow: none;
+  color: #111113;
 }
 
 .app.legacy-with-rail[data-v2-theme='dark'] .btn.primary:disabled {
-  background: rgba(34, 38, 49, 0.8);
+  background: #1c1c1f;
   border-color: rgba(255, 255, 255, 0.08);
-  color: rgba(245, 245, 247, 0.42);
+  color: #71717a;
   box-shadow: none;
 }
 
 .app.legacy-with-rail[data-v2-theme='dark'] .filter-chip.active,
 .app.legacy-with-rail[data-v2-theme='dark'] .tab.active {
-  background: rgba(10, 132, 255, 0.22);
-  border-color: rgba(10, 132, 255, 0.62);
-  color: #ffffff;
+  background: #f4f4f5;
+  border-color: transparent;
+  color: #111113;
 }
 
 .app.legacy-with-rail[data-v2-theme='dark'] .key-block,
@@ -288,62 +276,186 @@
 .app.legacy-with-rail[data-v2-theme='dark'] .review-result-box,
 .app.legacy-with-rail[data-v2-theme='dark'] .review-source-item,
 .app.legacy-with-rail[data-v2-theme='dark'] .empty-state {
-  background: rgba(24, 27, 36, 0.6) !important;
-  border-color: rgba(255, 255, 255, 0.11) !important;
-  border-radius: 10px !important;
+  background: #161618 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  border-radius: 8px !important;
 }
 
 .app.legacy-with-rail[data-v2-theme='dark'] .badge {
-  border-radius: 9999px !important;
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(245, 245, 247, 0.86);
+  border-radius: 5px !important;
+  background: rgba(255, 255, 255, 0.07);
+  color: #d4d4d8;
 }
 
 .app.legacy-with-rail[data-v2-theme='dark'] .badge.outcome-success,
 .app.legacy-with-rail[data-v2-theme='dark'] .badge.state-done {
-  background: rgba(48, 209, 88, 0.15);
-  color: #30d158;
+  background: rgba(74, 222, 128, 0.12);
+  color: #4ade80;
 }
 .app.legacy-with-rail[data-v2-theme='dark'] .badge.outcome-failure,
 .app.legacy-with-rail[data-v2-theme='dark'] .badge.state-cancelled {
-  background: rgba(255, 69, 58, 0.15);
-  color: #ff6961;
+  background: rgba(248, 113, 113, 0.12);
+  color: #f87171;
 }
 .app.legacy-with-rail[data-v2-theme='dark'] .badge.outcome-undetermined {
-  background: rgba(255, 159, 10, 0.15);
-  color: #ff9f0a;
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
 }
 .app.legacy-with-rail[data-v2-theme='dark'] .badge.state-in_progress {
-  background: rgba(100, 210, 255, 0.15);
-  color: #64d2ff;
+  background: rgba(125, 211, 252, 0.12);
+  color: #7dd3fc;
 }
 
 .app.legacy-with-rail[data-v2-theme='dark'] .activity-badge {
-  border-radius: 9999px !important;
-  background: rgba(255, 255, 255, 0.08) !important;
-  color: rgba(245, 245, 247, 0.86) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 5px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #d4d4d8 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 .app.legacy-with-rail[data-v2-theme='dark'] .activity-badge.type-result {
-  background: rgba(48, 209, 88, 0.15) !important;
-  color: #30d158 !important;
-  border-color: rgba(48, 209, 88, 0.34) !important;
+  background: rgba(74, 222, 128, 0.12) !important;
+  color: #4ade80 !important;
+  border-color: rgba(74, 222, 128, 0.26) !important;
 }
 .app.legacy-with-rail[data-v2-theme='dark'] .activity-badge.type-ai {
-  background: rgba(10, 132, 255, 0.16) !important;
-  color: #64d2ff !important;
-  border-color: rgba(10, 132, 255, 0.38) !important;
+  background: rgba(110, 168, 254, 0.12) !important;
+  color: #6ea8fe !important;
+  border-color: rgba(110, 168, 254, 0.28) !important;
 }
 .app.legacy-with-rail[data-v2-theme='dark'] .form-actions,
 .app.legacy-with-rail[data-v2-theme='dark'] .section-head,
 .app.legacy-with-rail[data-v2-theme='dark'] .activity-day-title {
-  border-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
 }
 .app.legacy-with-rail[data-v2-theme='dark'] .activity-timeline::before,
 .app.legacy-with-rail[data-v2-theme='dark'] .activity-day::before {
-  background: rgba(255, 255, 255, 0.14) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
 }
 .app.legacy-with-rail[data-v2-theme='dark'] .activity-dot {
   border-radius: 50% !important;
-  background: #0a84ff !important;
+  background: #ededef !important;
+}
+
+/* ---------- 3. 非 V2 二级页面：纸张主题一致性修正 ---------- */
+.app.legacy-with-rail[data-v2-theme='paper'] {
+  min-height: 100dvh;
+  background: #f6f4ef;
+}
+.app.legacy-with-rail[data-v2-theme='paper'] .section,
+.app.legacy-with-rail[data-v2-theme='paper'] .card,
+.app.legacy-with-rail[data-v2-theme='paper'] .stat-card,
+.app.legacy-with-rail[data-v2-theme='paper'] .review-range,
+.app.legacy-with-rail[data-v2-theme='paper'] .review-ai-card,
+.app.legacy-with-rail[data-v2-theme='paper'] .review-status-card,
+.app.legacy-with-rail[data-v2-theme='paper'] .review-record {
+  border-radius: 8px !important;
+  border-color: #e6e2d8;
+}
+.app.legacy-with-rail[data-v2-theme='paper'] .btn.primary {
+  background: #18181b;
+  border-color: transparent;
+  color: #fafafa;
+}
+.app.legacy-with-rail[data-v2-theme='paper'] .btn.primary:hover:not(:disabled) {
+  background: #27272a;
+}
+
+/* ---------- 4. 二级页面（回顾 / 研究 / 经验 / 动态 / 设置）克制微动效 ---------- */
+@keyframes legacyPageFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes legacyPulseSoft {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.62;
+  }
+}
+
+.app.legacy-with-rail .app-main > * {
+  animation: legacyPageFadeUp 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.app.legacy-with-rail .stat-card,
+.app.legacy-with-rail .review-record,
+.app.legacy-with-rail .candidate-card,
+.app.legacy-with-rail .experiment-card,
+.app.legacy-with-rail .source-card,
+.app.legacy-with-rail .activity-event,
+.app.legacy-with-rail .research-project {
+  transition:
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 150ms ease-out,
+    background-color 150ms ease-out;
+}
+
+.app.legacy-with-rail .stat-card:hover,
+.app.legacy-with-rail .review-record:hover,
+.app.legacy-with-rail .candidate-card:hover,
+.app.legacy-with-rail .experiment-card:hover,
+.app.legacy-with-rail .activity-event:hover {
+  transform: translateY(-1.5px);
+}
+
+.app.legacy-with-rail .btn,
+.app.legacy-with-rail .filter-chip,
+.app.legacy-with-rail .source-chip,
+.app.legacy-with-rail .candidate-select,
+.app.legacy-with-rail .tab {
+  transition:
+    background-color 140ms ease-out,
+    border-color 140ms ease-out,
+    color 140ms ease-out,
+    transform 100ms ease-out;
+}
+
+.app.legacy-with-rail .btn:active:not(:disabled),
+.app.legacy-with-rail .filter-chip:active:not(:disabled),
+.app.legacy-with-rail .source-chip:active:not(:disabled),
+.app.legacy-with-rail .candidate-select:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.app.legacy-with-rail .badge.research-status.searching,
+.app.legacy-with-rail .badge.research-status.fetching,
+.app.legacy-with-rail .badge.research-status.generating,
+.app.legacy-with-rail .research-step.active {
+  animation: legacyPulseSoft 2s ease-in-out infinite;
+}
+
+.app.legacy-with-rail .source-excerpt {
+  animation: legacyPageFadeUp 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app.legacy-with-rail .app-main > *,
+  .app.legacy-with-rail .badge.research-status.searching,
+  .app.legacy-with-rail .badge.research-status.fetching,
+  .app.legacy-with-rail .badge.research-status.generating,
+  .app.legacy-with-rail .research-step.active,
+  .app.legacy-with-rail .source-excerpt {
+    animation: none;
+  }
+  .app.legacy-with-rail .stat-card,
+  .app.legacy-with-rail .review-record,
+  .app.legacy-with-rail .candidate-card,
+  .app.legacy-with-rail .experiment-card,
+  .app.legacy-with-rail .source-card,
+  .app.legacy-with-rail .activity-event,
+  .app.legacy-with-rail .research-project,
+  .app.legacy-with-rail .btn,
+  .app.legacy-with-rail .filter-chip,
+  .app.legacy-with-rail .source-chip,
+  .app.legacy-with-rail .candidate-select {
+    transition: none;
+  }
 }

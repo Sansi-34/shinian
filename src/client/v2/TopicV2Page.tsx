@@ -5,6 +5,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import api from '../api';
 import type { Topic, TopicAttempt, TopicCandidate, TopicDeletePreview, TopicMember } from '../types';
+import { topicAwareHref, topicUrl, type TopicNavContext } from '../components/topicNav';
+import TopicExportPanel from '../components/TopicExportPanel';
 import { todayDateKey, useDisplayTimezone } from '../scheduleTime';
 import { dayLabel } from './format';
 import V2Shell from './V2Shell';
@@ -51,7 +53,14 @@ export default function TopicV2Page() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [exportNotice, setExportNotice] = useState<string | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+
+  const currentTopicNav: TopicNavContext = useMemo(
+    () => ({ fromTopic: true, topicId, returnTo: topicUrl(topicId) }),
+    [topicId]
+  );
 
   const [editing, setEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
@@ -98,8 +107,12 @@ export default function TopicV2Page() {
 
   const members: TopicMember[] = topic?.members ?? [];
   const openAttempts = useMemo(() => attempts.filter((a) => a.state === 'todo' || a.state === 'in_progress'), [attempts]);
-  const doneAttempts = useMemo(() => attempts.filter((a) => a.state === 'done'), [attempts]);
-  const selectableAttempts = useMemo(() => attempts.filter((a) => a.state !== 'cancelled'), [attempts]);
+  const doneAttempts = useMemo(() => attempts.filter((a) => Boolean(a.resultText?.trim()) || a.state === 'done'), [attempts]);
+  // 契约规定：「下次继续」只能固定已有的未完成尝试（todo / in_progress）
+  const selectableAttempts = useMemo(
+    () => attempts.filter((a) => a.state === 'todo' || a.state === 'in_progress'),
+    [attempts]
+  );
 
   async function saveMeta() {
     if (!topic || busy) return;
@@ -258,7 +271,15 @@ export default function TopicV2Page() {
           {!loading && members.length === 0 && <p className="v2-state">还没有记录。用右栏「收一条记录」把围绕这个问题的记录放进来。</p>}
           {members.map((m, i) => (
             <div key={m.captureId} className="v2-leftRow" style={{ '--i': i } as React.CSSProperties}>
-              <Link className="v2-leftItem" to={m.type === 'experience' && m.experienceId ? '/experience/' + m.experienceId : '/capture/' + m.captureId}>
+              <Link
+                className="v2-leftItem"
+                to={topicAwareHref(
+                  m.type === 'experience' && m.experienceId
+                    ? '/experience/' + m.experienceId
+                    : '/capture/' + m.captureId,
+                  currentTopicNav
+                )}
+              >
                 <span className="v2-leftTitle">{m.title}</span>
                 <span className="v2-leftMeta">
                   {m.type === 'experience' ? '经验' : '念头'}
@@ -291,6 +312,18 @@ export default function TopicV2Page() {
                 }}
               >
                 <span>固定下次继续</span>
+              </button>
+              <button
+                type="button"
+                className="v2-sideAction"
+                onClick={() => {
+                  setExportNotice(null);
+                  setExportOpen(true);
+                }}
+                disabled={!topic}
+                data-testid="topic-export-open"
+              >
+                <span>导出 Markdown（ZIP）</span>
               </button>
               <button type="button" className="v2-sideAction" onClick={() => void toggleArchive()} disabled={busy}>
                 <span>{topic?.archivedAt ? '恢复主题' : '归档主题'}</span>
@@ -336,10 +369,24 @@ export default function TopicV2Page() {
                 {topic.exploringQuestion && <p className="v2-captureSub">在探索：{topic.exploringQuestion}</p>}
                 <div className="v2-captureActions">
                   <Button onClick={() => setEditing(true)}>改标题 / 问题</Button>
-                  <Link className="v2-ghostLink" to={'/ask?q=' + encodeURIComponent(topic.exploringQuestion || topic.name)}>
+                  <Link
+                    className="v2-ghostLink"
+                    data-testid="topic-ask-link"
+                    to={topicAwareHref(
+                      `/ask?topic=${encodeURIComponent(topic.id)}&q=${encodeURIComponent(
+                        topic.exploringQuestion || topic.name
+                      )}`,
+                      currentTopicNav
+                    )}
+                  >
                     就这个主题提问 →
                   </Link>
                 </div>
+                {exportNotice && (
+                  <p className="v2-state" style={{ paddingLeft: 0, color: 'var(--st-done)' }} role="status">
+                    {exportNotice}
+                  </p>
+                )}
               </>
             ) : (
               <>
@@ -401,9 +448,9 @@ export default function TopicV2Page() {
               <Row
                 index={0}
                 time="固定"
-                to={'/attempt/' + next.id}
+                to={topicAwareHref('/attempt/' + next.id, currentTopicNav)}
                 title={next.step}
-                sub={next.resultText ? next.resultText.slice(0, 56) : '还没有记录结果'}
+                sub={next.resultText ? next.resultText.slice(0, 56) : '结果待记录'}
                 side={<Pill kind={attemptStatus(next).kind}>{attemptStatus(next).label}</Pill>}
               />
             )}
@@ -426,7 +473,7 @@ export default function TopicV2Page() {
                 key={a.id}
                 index={i}
                 time={dayLabel(a.updatedAt, tz, todayDateKey(tz))}
-                to={'/attempt/' + a.id}
+                to={topicAwareHref('/attempt/' + a.id, currentTopicNav)}
                 title={a.step}
                 sub={a.captureText ? '来自「' + a.captureText.slice(0, 18) + '」' : undefined}
                 side={<Pill kind={attemptStatus(a).kind}>{attemptStatus(a).label}</Pill>}
@@ -441,7 +488,7 @@ export default function TopicV2Page() {
                 key={a.id}
                 index={i}
                 time={a.observedAt ? dayLabel(a.observedAt, tz, todayDateKey(tz)) : '—'}
-                to={'/attempt/' + a.id}
+                to={topicAwareHref('/attempt/' + a.id, currentTopicNav)}
                 title={a.resultText || a.step}
                 sub={'尝试：' + a.step.slice(0, 36)}
                 side={<Pill kind={attemptStatus(a).kind}>{attemptStatus(a).label}</Pill>}
@@ -550,6 +597,15 @@ export default function TopicV2Page() {
           <li>这些成员的尝试 {deletePreview?.attemptCount ?? '…'} 次</li>
         </ul>
       </Modal>
+
+      {exportOpen && topic && (
+        <TopicExportPanel
+          topicId={topic.id}
+          topicName={topic.name}
+          onClose={() => setExportOpen(false)}
+          onDownloaded={(msg) => setExportNotice(msg)}
+        />
+      )}
     </V2Shell>
   );
 }

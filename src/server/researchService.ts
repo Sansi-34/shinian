@@ -18,6 +18,7 @@ import {
 import { callModel } from './aiProvider';
 import {
   GithubApiError,
+  cleanRepoDescription,
   createGithubMeter,
   getRepository,
   parseRepoReference,
@@ -428,7 +429,10 @@ export function publicResearchOf(row: ResearchRun): ResearchPublic {
     updatedAt: row.updatedAt,
     finishedAt: row.finishedAt,
     limits: limitsPublic(),
-    candidates: stored?.items ?? [],
+    candidates: (stored?.items ?? []).map((item) => ({
+      ...item,
+      description: cleanRepoDescription(item.description),
+    })),
     candidateFailures: stored?.failures ?? [],
     candidatesFetchedAt: stored?.fetchedAt ?? null,
     candidatesTotal: stored?.total ?? null,

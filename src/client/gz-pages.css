@@ -236,8 +236,10 @@
 .activity-stats,
 .graph-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--sp-6) var(--sp-7); }
 .stat-card {
-  border-top: var(--rule-strong);
-  padding-top: var(--sp-4);
+  background: var(--paper-card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px 18px;
   min-width: 0;
 }
 .stat-card .stat-label,
@@ -1798,7 +1800,7 @@
 }
 
 /* ============================================================================
-   瑞士风强制收敛：把历史遗留的圆角 / 阴影 / 旧色一次性收干净
+   全站二级页面圆角与阴影统一（与 V2 极简桌面语言对齐：6px 控件 / 8px 卡片 / 零多余投影）
    ========================================================================= */
 .gz-shape-fix,
 button:not(.v2-root *):not(.v2-chrome *),
@@ -1807,10 +1809,6 @@ select:not(.v2-root *):not(.v2-chrome *),
 textarea:not(.v2-root *):not(.v2-chrome *),
 .btn:not(.v2-root *):not(.v2-chrome *),
 .tab,
-.badge,
-.card,
-.section,
-.modal:not(.v2-root *):not(.v2-chrome *),
 .chip:not(.v2-root *):not(.v2-chrome *),
 .filter-chip,
 .graph-chip,
@@ -1824,14 +1822,24 @@ textarea:not(.v2-root *):not(.v2-chrome *),
 .graph-focus-bar button,
 .graph-reuse-tabs button,
 .graph-depth-toggle button,
-.ask-example,
+.ask-example {
+  border-radius: 6px !important;
+}
+.card,
+.section,
+.modal:not(.v2-root *):not(.v2-chrome *),
 .stat-card,
-.gz-stat,
+.gz-stat {
+  border-radius: 8px !important;
+}
+.badge {
+  border-radius: 5px !important;
+}
 .evidence-legend .dot,
 .graph-readout-legend i,
 .activity-dot,
 .live-dot {
-  border-radius: 0 !important;
+  border-radius: 50% !important;
 }
 .btn,
 .card,
@@ -2303,7 +2311,7 @@ select:focus:not(.v2-root *):not(.v2-chrome *) {
 /* ---- 非 V2 二级页面接入 V2 统一图标栏 ---- */
 .app.legacy-with-rail {
   max-width: none;
-  margin: 0 0 0 var(--rail, 60px);
+  margin: 0 0 0 var(--rail, 56px);
   padding: 0;
 }
 .app.legacy-with-rail .app-main {

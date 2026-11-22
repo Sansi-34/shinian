@@ -18,15 +18,22 @@
   border-top: 1px solid var(--line);
   color: inherit;
   text-decoration: none;
-  transition: background 120ms var(--ease-out);
-  animation: rowIn 260ms var(--ease-out) backwards;
-  animation-delay: calc(var(--i, 0) * 30ms);
+  transition: background 140ms var(--ease-out);
+  animation: rowIn 260ms var(--ease-spring) backwards;
+  animation-delay: calc(min(var(--i, 0), 12) * 28ms);
 }
 .row:first-child {
   border-top: 0;
 }
 .row:hover {
   background: var(--hover);
+}
+.row:hover .side {
+  transform: translateX(3px);
+  color: var(--ink-2);
+}
+.row:active {
+  background: color-mix(in srgb, var(--hover) 140%, transparent);
 }
 .row:focus-visible {
   outline: 2px solid var(--accent);
@@ -75,6 +82,7 @@
   font-size: var(--fs-meta);
   color: var(--ink-3);
   white-space: nowrap;
+  transition: transform 160ms var(--ease-spring), color 140ms var(--ease-out);
 }
 
 @media (max-width: 900px) {

@@ -114,25 +114,23 @@
   flex: none;
   height: 34px;
   padding: 0 12px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 9px;
+  border: 1px solid transparent;
+  border-radius: var(--r-1);
   background: var(--cta-bg);
-  box-shadow: var(--glass-shine);
   color: var(--cta-ink);
   font-family: inherit;
   font-size: 12.5px;
   font-weight: 500;
   cursor: pointer;
-  transition: filter 140ms var(--ease-out), transform 120ms var(--ease-out);
+  transition: background 120ms var(--ease-out);
 }
 .searchSubmit:hover:not(:disabled) {
-  filter: brightness(1.08);
-}
-.searchSubmit:active:not(:disabled) {
-  transform: scale(0.97);
+  background: var(--cta-bg-hover);
 }
 .searchSubmit:disabled {
-  opacity: 0.55;
+  background: var(--sunk);
+  color: var(--ink-3);
+  border-color: var(--line);
   cursor: not-allowed;
 }
 
@@ -222,7 +220,7 @@
   opacity: 0.55;
 }
 
-/* 克制统一的极简滑动开关（全部采用统一系统色调，不花哨） */
+/* 克制统一的极简滑动开关（中性墨/白，绝不喧宾夺主） */
 .switchTrack {
   position: relative;
   flex: none;
@@ -230,7 +228,7 @@
   height: 15px;
   border-radius: 9999px;
   background: color-mix(in srgb, var(--ink) 16%, transparent);
-  transition: background 160ms var(--ease-out);
+  transition: background 140ms var(--ease-out);
 }
 
 .switchThumb {
@@ -240,13 +238,12 @@
   width: 11px;
   height: 11px;
   border-radius: 50%;
-  background: #ffffff;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28);
-  transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
+  background: var(--bg);
+  transition: transform 140ms var(--ease-out);
 }
 
 .srInput:checked ~ .switchTrack {
-  background: var(--accent);
+  background: var(--ink);
 }
 
 .srInput:checked ~ .switchTrack .switchThumb {
@@ -324,4 +321,280 @@
 .linkItemZero {
   color: var(--ink-3);
   opacity: 0.72;
+}
+
+/* 顶部局部聚焦与返回上下文栏 */
+.focusBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.focusMain {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  min-width: 0;
+}
+
+.returnLink {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--accent);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.returnLink:hover {
+  text-decoration: underline;
+}
+
+.focusLabel {
+  font-size: 12.5px;
+  color: var(--ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 420px;
+}
+.focusLabel strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.focusActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+/* =========================================================================
+   知识图谱画布 · 动态视差粒子流光层 + 悬浮交互 HUD 控制岛 + 节点速览气泡
+   ========================================================================= */
+
+.fxCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.cyStage {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+.cyStage[data-cursor='pointer'] {
+  cursor: grab;
+}
+
+.cyStage[data-cursor='grabbing'] {
+  cursor: grabbing;
+}
+
+/* 左上角悬浮节点速览胶囊卡 */
+.hoverCard {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 5;
+  max-width: min(380px, calc(100% - 24px));
+  padding: 10px 13px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--hover-color, var(--accent)) 38%, var(--line-2));
+  background: color-mix(in srgb, var(--raise-2) 86%, transparent);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  box-shadow:
+    0 10px 28px -8px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+  pointer-events: none;
+  animation: graphCardIn 160ms var(--ease-out) both;
+}
+
+@keyframes graphCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.hoverCardHead {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 4px;
+}
+
+.hoverTypeTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--hover-color, var(--accent));
+  background: color-mix(in srgb, var(--hover-color, var(--accent)) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--hover-color, var(--accent)) 32%, transparent);
+}
+
+.hoverMeta {
+  font-size: 11px;
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.hoverTitle {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.hoverHint {
+  margin: 5px 0 0;
+  font-size: 11px;
+  color: var(--ink-3);
+}
+
+/* 右下角悬浮 HUD 交互控制岛 */
+.canvasHud {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 6px;
+  border-radius: 10px;
+  border: 1px solid var(--line-2);
+  background: color-mix(in srgb, var(--raise-2) 86%, transparent);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.5);
+}
+
+.hudBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 28px;
+  min-width: 28px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink-2);
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background 140ms var(--ease-out),
+    color 140ms var(--ease-out),
+    border-color 140ms var(--ease-out),
+    transform 120ms var(--ease-spring, ease-out);
+}
+
+.hudBtn:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.hudBtn:active {
+  transform: scale(0.94);
+}
+
+.hudBtnActive {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 34%, transparent);
+}
+
+.hudPulseDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--st-done, #30d158);
+  box-shadow: 0 0 8px var(--st-done, #30d158);
+  animation: hudDotPulse 2s ease-in-out infinite;
+}
+
+.hudPulseDotOff {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink-3);
+  opacity: 0.5;
+}
+
+@keyframes hudDotPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.95;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.55;
+  }
+}
+
+.hudSep {
+  width: 1px;
+  height: 16px;
+  margin: 0 2px;
+  background: var(--line-2);
+}
+
+/* 左下角轻量交互状态提示胶囊 */
+.canvasHintPill {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--raise) 78%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font-size: 11px;
+  color: var(--ink-3);
+  pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  .canvasHintPill {
+    display: none;
+  }
+  .hoverCard {
+    max-width: calc(100% - 20px);
+    padding: 8px 10px;
+  }
 }

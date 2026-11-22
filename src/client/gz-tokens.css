@@ -123,40 +123,40 @@
   --img-pos: center center;
 }
 
-/* ---- 克莱因蓝（默认） ---- */
+/* ---- 默认暖纸墨色（与 V2 纸张主题统一，克制单强调色） ---- */
 :root,
 [data-theme='ikb'] {
-  --paper: #fbf9f5;
-  --paper-2: #f3efe8;
+  --paper: #f6f4ef;
+  --paper-2: #efece5;
   --paper-card: #ffffff;
-  --paper-muted: #f6f3eb;
+  --paper-muted: #f3f0e8;
   --ink: #18181b;
   --muted: #64748b;
-  --grey-1: #f3efe8;
-  --grey-2: #e2dfd8;
+  --grey-1: #efece5;
+  --grey-2: #e6e2d8;
   --grey-3: #71717a;
-  --accent: #002fa7;
-  --accent-on: #ffffff;
-  --accent-ink: #002fa7;
-  --accent-bright: #2563eb;
-  --accent-deep: #001d6b;
-  --accent-display: #002fa7;
+  --accent: #18181b;
+  --accent-on: #fafafa;
+  --accent-ink: #2c5282;
+  --accent-bright: #27272a;
+  --accent-deep: #09090b;
+  --accent-display: #18181b;
   --accent-ink-inverse: #93c5fd;
-  --accent-soft: #eef2ff;
-  --accent-border: #c7d2fe;
+  --accent-soft: rgba(44, 82, 130, 0.08);
+  --accent-border: rgba(44, 82, 130, 0.28);
   --text-primary: #18181b;
   --text-body: #27272a;
-  --text-secondary: #475569;
-  --text-helper: #64748b;
-  --text-placeholder: #94a3b8;
-  --text-on-color: #ffffff;
-  --line-strong: #cbd5e1;
-  --line: #e2e0d8;
+  --text-secondary: #4a4a52;
+  --text-helper: #71717a;
+  --text-placeholder: #9ca3af;
+  --text-on-color: #fafafa;
+  --line-strong: #d4cfc3;
+  --line: #e6e2d8;
   --line-subtle: #edeae3;
   --ink-rgb: 24, 24, 27;
-  --paper-rgb: 251, 249, 245;
-  --accent-rgb: 0, 47, 167;
-  --accent-on-rgb: 255, 255, 255;
+  --paper-rgb: 246, 244, 239;
+  --accent-rgb: 24, 24, 27;
+  --accent-on-rgb: 250, 250, 250;
   color-scheme: light;
 }
 

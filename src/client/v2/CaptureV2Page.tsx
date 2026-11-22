@@ -1,10 +1,11 @@
 // 拾念 V2 · 念头详情
-// 在 V2 内闭环：编辑正文、归档/恢复、自己写一步、加入/移出主题、关联记录、删除念头。
-// AI 帮我试一步 / 参考旧经验 / 研究一下 / 整理成经验 这类多步流程仍在旧页，右栏保留入口。
+// 完整闭环：编辑正文、归档/恢复、自己写一步（含复用旧结果引用）、加入/移出主题、关联记录、外部研究（GitHub）、删除念头。
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import api from '../api';
 import type { Attempt, Capture, CaptureLinkCandidate, CaptureLinkItem, CaptureTopic, DeletePreview, Topic } from '../types';
+import { readTopicNav, safeTopicReturnTo, topicAwareHref } from '../components/topicNav';
+import ResearchStarter from '../components/ResearchStarter';
 import { todayDateKey, useDisplayTimezone } from '../scheduleTime';
 import { dayLabel } from './format';
 import V2Shell from './V2Shell';
@@ -30,6 +31,7 @@ function errText(e: unknown, fallback: string) {
 
 function status(a: Attempt): { kind: StatusKind; label: string } {
   if (a.state === 'done') {
+    if (!a.resultText?.trim()) return { kind: 'partial', label: '结果待记录' };
     if (a.outcome === 'success') return { kind: 'done', label: '已记录结果' };
     if (a.outcome === 'failure') return { kind: 'fail', label: '未达成' };
     return { kind: 'partial', label: '结果待判断' };
@@ -41,11 +43,19 @@ function status(a: Attempt): { kind: StatusKind; label: string } {
 
 const newOpId = () => 'v2-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
 
-type ModalKind = 'topic' | 'link' | 'delete' | null;
+type ModalKind = 'topic' | 'link' | 'delete' | 'research' | null;
 
 export default function CaptureV2Page() {
   const { captureId = '' } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const topicNav = useMemo(() => readTopicNav(searchParams), [searchParams]);
+  const returnTo = useMemo(
+    () => safeTopicReturnTo(searchParams.get('returnTo')) ?? topicNav.returnTo,
+    [searchParams, topicNav.returnTo]
+  );
+  const reuseAttemptId = (searchParams.get('experience') ?? '').trim();
+  const autoOpenResearch = searchParams.get('research') === '1';
   const [tz] = useDisplayTimezone();
 
   const [capture, setCapture] = useState<Capture | null>(null);
@@ -96,17 +106,17 @@ export default function CaptureV2Page() {
 
   useEffect(() => {
     setEditing(false);
-    setWriting(false);
+    setWriting(Boolean(reuseAttemptId));
     setStepDraft('');
-    setModal(null);
+    setModal(autoOpenResearch ? 'research' : null);
     setActionError(null);
     setModalError(null);
     setDeletePreview(null);
     void load();
-  }, [load]);
+  }, [load, reuseAttemptId, autoOpenResearch]);
 
   const openItems = useMemo(() => attempts.filter((a) => a.state === 'todo' || a.state === 'in_progress'), [attempts]);
-  const done = useMemo(() => attempts.filter((a) => a.state === 'done'), [attempts]);
+  const done = useMemo(() => attempts.filter((a) => Boolean(a.resultText?.trim()) || a.state === 'done'), [attempts]);
 
   async function saveText() {
     if (!capture || busy) return;
@@ -149,7 +159,16 @@ export default function CaptureV2Page() {
     setBusy(true);
     setActionError(null);
     try {
-      await api.createAttempt(capture.id, { step, state: 'todo', operationId: newOpId() });
+      const created = await api.createAttempt(capture.id, { step, state: 'todo', operationId: newOpId() });
+      if (reuseAttemptId && reuseAttemptId !== created.attempt.id) {
+        await api
+          .createReference(created.attempt.id, {
+            toId: reuseAttemptId,
+            note: '复用旧尝试结果再试一步',
+            operationId: newOpId(),
+          })
+          .catch(() => {});
+      }
       setStepDraft('');
       setWriting(false);
       await load();
@@ -327,6 +346,28 @@ export default function CaptureV2Page() {
               <button type="button" className="v2-sideAction" onClick={() => void openLinkModal()}>
                 <span>+ 关联一条念头</span>
               </button>
+              <button
+                type="button"
+                className="v2-sideAction"
+                onClick={() => setModal('research')}
+                disabled={!capture}
+                data-testid="capture-start-research"
+              >
+                <span>研究一下（GitHub）→</span>
+              </button>
+              {capture && (
+                <Link
+                  className="v2-sideAction"
+                  to={topicAwareHref(
+                    `/graph?node=capture:${capture.id}&depth=1&returnTo=${encodeURIComponent(
+                      `/capture/${capture.id}`
+                    )}`,
+                    topicNav
+                  )}
+                >
+                  <span>在知识网络中查看 →</span>
+                </Link>
+              )}
             </div>
           </div>
         </>
@@ -346,6 +387,14 @@ export default function CaptureV2Page() {
 
       {capture && (
         <>
+          {returnTo && (
+            <div className="v2-returnBar">
+              <Link to={returnTo} className="v2-returnLink">
+                ← {topicNav.fromTopic ? '返回主题' : '返回刚才阅读的位置'}
+              </Link>
+            </div>
+          )}
+
           <div className="v2-captureHead">
             {!editing ? (
               <>
@@ -403,10 +452,16 @@ export default function CaptureV2Page() {
             {!writing && (
               <div className="v2-ghosts" style={{ borderBottom: 0 }}>
                 <GhostChip onClick={() => setWriting(true)}>自己写一步</GhostChip>
+                <GhostChip onClick={() => setModal('research')}>研究一下（GitHub）</GhostChip>
               </div>
             )}
             {writing && (
               <div className="v2-writer">
+                {reuseAttemptId && (
+                  <p className="v2-groupNote">
+                    将自动关联所选的旧尝试结果，创建后可在尝试详情里核对引用来源。
+                  </p>
+                )}
                 <textarea
                   className="v2-editor"
                   maxLength={500}
@@ -441,23 +496,23 @@ export default function CaptureV2Page() {
                   key={a.id}
                   index={i}
                   time={dayLabel(a.updatedAt, tz, todayDateKey(tz))}
-                  to={'/attempt/' + a.id}
+                  to={topicAwareHref('/attempt/' + a.id, topicNav)}
                   title={a.step}
-                  sub={a.resultText ? a.resultText.slice(0, 60) : a.actionDescription || '还没有记录结果'}
+                  sub={a.resultText ? a.resultText.slice(0, 60) : a.actionDescription || '结果待记录'}
                   side={<Pill kind={st.kind}>{st.label}</Pill>}
                 />
               );
             })}
           </Module>
 
-          <Module title="有结果的尝试" count={done.length} defaultOpen={false}>
+          <Module title="有结果的尝试" count={done.length} defaultOpen={done.length > 0}>
             {done.length === 0 && <p className="v2-state">还没有记录结果的尝试。结果只能手动填，不会因为时间过去自动变成失败。</p>}
             {done.map((a, i) => (
               <Row
                 key={a.id}
                 index={i}
                 time={a.observedAt ? dayLabel(a.observedAt, tz, todayDateKey(tz)) : '—'}
-                to={'/attempt/' + a.id}
+                to={topicAwareHref('/attempt/' + a.id, topicNav)}
                 title={a.resultText || a.step}
                 sub={'尝试：' + a.step.slice(0, 40)}
                 side={<Pill kind={status(a).kind}>{status(a).label}</Pill>}
@@ -554,6 +609,19 @@ export default function CaptureV2Page() {
           </p>
         )}
       </Modal>
+
+      {modal === 'research' && capture && (
+        <Modal open title="研究一下（GitHub 公开资料）" onClose={() => setModal(null)} width={680}>
+          <ResearchStarter
+            capture={capture}
+            onClose={() => setModal(null)}
+            onStarted={(researchId) => {
+              setModal(null);
+              navigate('/research/' + researchId);
+            }}
+          />
+        </Modal>
+      )}
     </V2Shell>
   );
 }

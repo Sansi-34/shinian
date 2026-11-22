@@ -1,10 +1,21 @@
-// 拾念 V2 · 尝试详情（记结果是这个产品最高频的动作）
-// 内联：改状态、记录结果（结果文本 / 评价 / 发生时间）；引用与日程只读展示；
-// 删除、经验采用、AI 相关仍在旧页。
+// 拾念 V2 · 尝试详情（记结果、整理成经验、查看采用经验版本、手动引用旧结果与排日程）
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import api from '../api';
-import type { Attempt, AttemptDeletePreview, Capture, ScheduleBlock } from '../types';
+import type {
+  Attempt,
+  AttemptDeletePreview,
+  Capture,
+  ExperienceAttemptRef,
+  ExperienceDraft,
+  ExperiencePublic,
+  ReferenceFrom,
+  ReferenceTo,
+  ScheduleBlock,
+  SearchAttemptHit,
+} from '../types';
+import { readTopicNav, safeTopicReturnTo, topicAwareHref } from '../components/topicNav';
+import ExperienceEditor from '../components/ExperienceEditor';
 import { formatScheduleTimeRange, sortSchedules, timeInTimezone, todayDateKey, useDisplayTimezone } from '../scheduleTime';
 import { dayTimeLabel, fromLocalInputValue, toLocalInputValue } from './format';
 import V2Shell from './V2Shell';
@@ -45,6 +56,7 @@ const OUTCOMES: Array<{ value: 'success' | 'failure' | 'undetermined'; label: st
 
 function statusOf(a: Attempt): { kind: StatusKind; label: string } {
   if (a.state === 'done') {
+    if (!a.resultText?.trim()) return { kind: 'partial', label: '结果待记录' };
     if (a.outcome === 'success') return { kind: 'done', label: '已记录结果' };
     if (a.outcome === 'failure') return { kind: 'fail', label: '未达成' };
     return { kind: 'partial', label: '结果待判断' };
@@ -75,12 +87,21 @@ function draftOf(a: Attempt, timezone: string): Draft {
 export default function AttemptV2Page() {
   const { attemptId = '' } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const topicNav = useMemo(() => readTopicNav(searchParams), [searchParams]);
+  const returnTo = useMemo(
+    () => safeTopicReturnTo(searchParams.get('returnTo')) ?? topicNav.returnTo,
+    [searchParams, topicNav.returnTo]
+  );
   const [timezone] = useDisplayTimezone();
 
   const [attempt, setAttempt] = useState<Attempt | null>(null);
   const [capture, setCapture] = useState<Capture | null>(null);
+  const [experienceRef, setExperienceRef] = useState<ExperienceAttemptRef | null>(null);
   const [schedules, setSchedules] = useState<ScheduleBlock[]>([]);
-  const [refCounts, setRefCounts] = useState({ from: 0, to: 0 });
+  const [fromRefs, setFromRefs] = useState<ReferenceFrom[]>([]);
+  const [toRefs, setToRefs] = useState<ReferenceTo[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -91,6 +112,7 @@ export default function AttemptV2Page() {
   const [observedAt, setObservedAt] = useState('');
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [versionConflict, setVersionConflict] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [scheduleConflict, setScheduleConflict] = useState<ScheduleBlock[] | null>(null);
   const [scheduleModal, setScheduleModal] = useState(false);
@@ -107,6 +129,16 @@ export default function AttemptV2Page() {
   const [schedOverlap, setSchedOverlap] = useState<{ token: string; ids: string[] } | null>(null);
   const [deleteModal, setDeleteModal] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
+  // 整理成经验（无 AI 也可直接走通）
+  const [expDraftLoading, setExpDraftLoading] = useState(false);
+  const [expDraft, setExpDraft] = useState<ExperienceDraft | null>(null);
+  const [createdExperience, setCreatedExperience] = useState<ExperiencePublic | null>(null);
+  // 手动引用旧尝试结果
+  const [refModal, setRefModal] = useState(false);
+  const [refQuery, setRefQuery] = useState('');
+  const [refNote, setRefNote] = useState('');
+  const [refCandidates, setRefCandidates] = useState<SearchAttemptHit[]>([]);
+  const [refSearching, setRefSearching] = useState(false);
   // 产品模型允许「已完成但未填结果」（导出里会明确标注），所以这里只是二次确认，不是硬拦
   const [doneWithoutResult, setDoneWithoutResult] = useState(false);
   // 同一弹窗会话复用同一个 operationId：服务端冲突 token 把它算进签名，换 id 会永远对不上
@@ -124,18 +156,21 @@ export default function AttemptV2Page() {
       const res = await api.getAttempt(attemptId);
       setAttempt(res.attempt);
       setCapture(res.capture ?? null);
+      setExperienceRef(res.experienceRef ?? null);
       setResult(res.attempt.resultText ?? '');
       setOutcome((res.attempt.outcome as 'success' | 'failure' | 'undetermined') ?? 'undetermined');
       setState(res.attempt.state);
       setObservedAt(toLocalInputValue(res.attempt.observedAt, timezone));
+      setVersionConflict(false);
       // 表单值和快照同时从同一个响应写入，保证「刚载入」必然是不脏的
       setSnapshot(draftOf(res.attempt, timezone));
       const [sch, refs] = await Promise.all([
         api.listAttemptSchedules(attemptId).catch(() => ({ schedules: [] as ScheduleBlock[], serverNow: Date.now() })),
-        api.listReferences(attemptId).catch(() => ({ fromRefs: [], toRefs: [] })),
+        api.listReferences(attemptId).catch(() => ({ fromRefs: [] as ReferenceFrom[], toRefs: [] as ReferenceTo[] })),
       ]);
       setSchedules(sortSchedules(sch.schedules ?? []));
-      setRefCounts({ from: refs.fromRefs?.length ?? 0, to: refs.toRefs?.length ?? 0 });
+      setFromRefs(refs.fromRefs ?? []);
+      setToRefs(refs.toRefs ?? []);
     } catch (e) {
       setError(errText(e, '尝试加载失败，请重试。'));
     } finally {
@@ -146,6 +181,7 @@ export default function AttemptV2Page() {
   useEffect(() => {
     setBusy(false);
     setActionError(null);
+    setVersionConflict(false);
     setSavedAt(null);
     setScheduleConflict(null);
     setScheduleModal(false);
@@ -153,11 +189,92 @@ export default function AttemptV2Page() {
     setSchedNote('');
     setSchedOverlap(null);
     setDeleteModal(false);
+    setRefModal(false);
+    setExpDraft(null);
+    setCreatedExperience(null);
     setModalError(null);
     setDoneWithoutResult(false);
     setSnapshot(null);
     void load();
   }, [load]);
+
+  // 锚点跳转（例如从下一步行动页点「去记录结果」跳到 #result-section）
+  useEffect(() => {
+    if (!loading && location.hash === '#result-section') {
+      document.getElementById('result-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [loading, location.hash]);
+
+  async function openExperienceDraft() {
+    if (!attempt || expDraftLoading) return;
+    setExpDraftLoading(true);
+    setActionError(null);
+    try {
+      const res = await api.getAttemptExperienceDraft(attempt.id);
+      setExpDraft(res.draft);
+    } catch (e) {
+      setActionError(errText(e, '暂时不能整理成经验，请确认已保存结果。'));
+    } finally {
+      setExpDraftLoading(false);
+    }
+  }
+
+  async function searchRefCandidates(q: string) {
+    setRefQuery(q);
+    setModalError(null);
+    const term = q.trim();
+    if (!term) {
+      setRefCandidates([]);
+      return;
+    }
+    setRefSearching(true);
+    try {
+      const res = await api.search(term);
+      setRefCandidates(
+        (res.attempts ?? []).filter((a) => a.id !== attemptId && Boolean(a.resultText?.trim()))
+      );
+    } catch (e) {
+      setModalError(errText(e, '检索旧结果失败，请重试。'));
+    } finally {
+      setRefSearching(false);
+    }
+  }
+
+  async function addReference(toId: string) {
+    if (!attempt || busy) return;
+    setBusy(true);
+    setModalError(null);
+    try {
+      await api.createReference(attempt.id, {
+        toId,
+        note: refNote.trim() || undefined,
+        operationId: 'v2ref-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+      });
+      setRefModal(false);
+      setRefQuery('');
+      setRefNote('');
+      setRefCandidates([]);
+      await load();
+    } catch (e) {
+      setModalError(errText(e, '添加引用失败，请重试。'));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function removeReference(refId: string) {
+    if (busy) return;
+    setBusy(true);
+    setActionError(null);
+    try {
+      await api.deleteReference(refId);
+      await load();
+    } catch (e) {
+      setActionError(errText(e, '解除引用失败，请重试。'));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function save(futureScheduleAction?: 'keep' | 'cancel') {
     if (!attempt || busy) return;
@@ -197,9 +314,12 @@ export default function AttemptV2Page() {
         // 服务端要求先决定：保留还是取消未来安排。不重载页面，保住用户已输入的结果。
         setScheduleConflict(anyErr.body.futureSchedules ?? []);
         setActionError(null);
+      } else if (anyErr?.status === 409) {
+        // 版本冲突时绝不覆盖用户草稿：保留输入并提示手动载入最新版
+        setVersionConflict(true);
+        setActionError('内容已在其他地方被修改，你刚刚输入的内容仍保留在输入框中。请先复制或点「载入最新版本」后再保存。');
       } else {
-        setActionError(errText(e, '保存失败，请重试。'));
-        if (anyErr?.status === 409) await load();
+        setActionError(errText(e, '保存失败，你输入的内容仍然保留，请重试。'));
       }
     } finally {
       setBusy(false);
@@ -336,23 +456,100 @@ export default function AttemptV2Page() {
           <div>
             <h3 className="v2-groupTitle">所属念头</h3>
             {capture ? (
-              <Link to={'/capture/' + capture.id} className="v2-groupItem">
-                {capture.rawText.slice(0, 20)}
+              <Link to={topicAwareHref('/capture/' + capture.id, topicNav)} className="v2-groupItem">
+                {capture.rawText.slice(0, 22)}
                 <span>→</span>
               </Link>
             ) : (
               <p className="v2-groupNote">没有关联念头。</p>
             )}
           </div>
+
+          {experienceRef && (
+            <div data-testid="attempt-experience-ref">
+              <h3 className="v2-groupTitle">采用的经验</h3>
+              {experienceRef.deleted || !experienceRef.exists ? (
+                <p className="v2-groupNote">
+                  采用自「{experienceRef.adoptedTitle}」（第 {experienceRef.adoptedVersion} 版，原经验已删除）。
+                </p>
+              ) : (
+                <>
+                  <Link
+                    to={topicAwareHref('/experience/' + experienceRef.experienceId, topicNav)}
+                    className="v2-groupItem"
+                    title={experienceRef.adoptedTitle}
+                  >
+                    {experienceRef.adoptedTitle}
+                    <span>→</span>
+                  </Link>
+                  <p className="v2-groupNote">
+                    本次采用第 {experienceRef.adoptedVersion} 版
+                    {experienceRef.changed && experienceRef.currentVersion != null
+                      ? `（该经验已修订至第 ${experienceRef.currentVersion} 版）`
+                      : '（与当前版本一致）'}
+                    {experienceRef.archived ? ' · 已归档' : ''}
+                  </p>
+                </>
+              )}
+            </div>
+          )}
+
           <div>
             <h3 className="v2-groupTitle">引用关系</h3>
             <div className="v2-groupItem">
-              引用了记录
-              <span>{refCounts.to}</span>
+              引用了旧结果
+              <span>{fromRefs.length}</span>
             </div>
+            {fromRefs.map((ref) => (
+              <div key={ref.id} className="v2-groupItem" style={{ alignItems: 'flex-start' }}>
+                {ref.source ? (
+                  <Link to={topicAwareHref('/attempt/' + ref.source.id, topicNav)} title={ref.source.step}>
+                    {ref.source.step}
+                    {ref.source.updatedSinceSnapshot ? ' · 来源已更新' : ''}
+                  </Link>
+                ) : (
+                  <span className="v2-groupNote">（来源已删除）</span>
+                )}
+                <button
+                  type="button"
+                  className="v2-miniBtn"
+                  onClick={() => void removeReference(ref.id)}
+                  disabled={busy}
+                >
+                  解除
+                </button>
+              </div>
+            ))}
             <div className="v2-groupItem">
-              被引用
-              <span>{refCounts.from}</span>
+              被后续尝试引用
+              <span>{toRefs.length}</span>
+            </div>
+            {toRefs.map((ref) => (
+              <div key={ref.id} className="v2-groupItem">
+                {ref.referencing ? (
+                  <Link to={topicAwareHref('/attempt/' + ref.referencing.id, topicNav)} title={ref.referencing.step}>
+                    {ref.referencing.step}
+                  </Link>
+                ) : (
+                  <span className="v2-groupNote">（引用方已不在）</span>
+                )}
+                <span>→</span>
+              </div>
+            ))}
+            <div className="v2-sideActions">
+              <button
+                type="button"
+                className="v2-sideAction"
+                onClick={() => {
+                  setRefModal(true);
+                  setModalError(null);
+                  setRefQuery('');
+                  setRefNote('');
+                  setRefCandidates([]);
+                }}
+              >
+                <span>+ 引用一条旧结果</span>
+              </button>
             </div>
           </div>
           <div>
@@ -421,10 +618,28 @@ export default function AttemptV2Page() {
 
       {attempt && (
         <>
+          {returnTo && (
+            <div className="v2-returnBar">
+              <Link to={returnTo} className="v2-returnLink">
+                ← {topicNav.fromTopic ? '返回主题' : '返回刚才阅读的位置'}
+              </Link>
+            </div>
+          )}
+
           <div className="v2-captureHead">
             <p className="v2-captureText">{attempt.step}</p>
             <div className="v2-captureActions">
               <Pill kind={st.kind}>{st.label}</Pill>
+              {attempt.resultText?.trim() && (
+                <Button
+                  variant="primary"
+                  onClick={() => void openExperienceDraft()}
+                  disabled={expDraftLoading || busy}
+                  data-testid="attempt-to-experience"
+                >
+                  {expDraftLoading ? '准备中…' : '整理成经验'}
+                </Button>
+              )}
               {attempt.resultText && <CopyButton text={attempt.resultText} label="复制结果" />}
               {attempt.actionDescription && <span className="v2-hint">{attempt.actionDescription}</span>}
               {attempt.estimatedMinutes ? <span className="v2-hint">预计 {attempt.estimatedMinutes} 分钟</span> : null}
@@ -442,32 +657,58 @@ export default function AttemptV2Page() {
                 删除…
               </Button>
             </div>
-            {actionError && <p className="v2-state" style={{ color: 'var(--st-fail)' }}>{actionError}</p>}
-            {scheduleConflict && (
-              <div className="v2-conflict" role="status">
-                <p className="v2-conflictTitle">
-                  这个尝试还有 {scheduleConflict.length} 条未来安排，要先决定它们的去留才能标记完成：
-                </p>
-                <ul className="v2-conflictList">
-                  {scheduleConflict.map((s) => (
-                    <li key={s.id}>{formatScheduleTimeRange(s, timezone)}</li>
-                  ))}
-                </ul>
-                <div className="v2-captureActions">
-                  <Button variant="primary" onClick={() => void save('cancel')} disabled={busy}>
-                    取消这些安排并保存
-                  </Button>
-                  <Button onClick={() => void save('keep')} disabled={busy}>
-                    保留安排并保存
-                  </Button>
-                  <Button onClick={() => setScheduleConflict(null)} disabled={busy}>
-                    先不保存
-                  </Button>
-                </div>
+            {experienceRef && (
+              <div className="v2-expRefBanner" data-testid="attempt-experience-version">
+                <span>
+                  采用经验：
+                  {experienceRef.exists && !experienceRef.deleted ? (
+                    <Link
+                      to={topicAwareHref('/experience/' + experienceRef.experienceId, topicNav)}
+                      style={{ color: 'var(--accent)', fontWeight: 500, textDecoration: 'none' }}
+                    >
+                      {experienceRef.adoptedTitle}
+                    </Link>
+                  ) : (
+                    <strong>{experienceRef.adoptedTitle}</strong>
+                  )}
+                  {' · '}
+                  <strong>采用时为第 {experienceRef.adoptedVersion} 版</strong>
+                  {experienceRef.changed && experienceRef.currentVersion != null
+                    ? `（现已修订至第 ${experienceRef.currentVersion} 版）`
+                    : ''}
+                  {experienceRef.deleted ? '（原经验已删除）' : ''}
+                </span>
+                {experienceRef.adoptedUnderstanding && (
+                  <p className="v2-groupNote" style={{ marginTop: 4 }}>
+                    当时采用的理解快照：{experienceRef.adoptedUnderstanding}
+                  </p>
+                )}
               </div>
+            )}
+            {createdExperience && (
+              <p className="v2-state" style={{ paddingLeft: 0, color: 'var(--st-done)' }} role="status">
+                已整理为经验「{createdExperience.title}」
+                <Link
+                  to={topicAwareHref('/experience/' + createdExperience.id, topicNav)}
+                  className="v2-linkBtn"
+                >
+                  打开经验详情 →
+                </Link>
+              </p>
+            )}
+            {actionError && !scheduleConflict && (
+              <p className="v2-state" style={{ color: 'var(--st-fail)', paddingLeft: 0 }}>
+                {actionError}
+                {versionConflict && (
+                  <button type="button" className="v2-linkBtn" onClick={() => void load()}>
+                    载入最新版本
+                  </button>
+                )}
+              </p>
             )}
           </div>
 
+          <div id="result-section">
           <Module title="记录结果" count={attempt.resultText ? 1 : 0}>
             <div className="v2-form">
               <label className="v2-field">
@@ -520,6 +761,30 @@ export default function AttemptV2Page() {
                 )}
               </div>
 
+              {scheduleConflict && (
+                <div className="v2-conflict" role="alert" data-testid="attempt-future-schedules">
+                  <p className="v2-conflictTitle">
+                    这个尝试还有 {scheduleConflict.length} 条未来安排，要先决定它们的去留才能标记完成：
+                  </p>
+                  <ul className="v2-conflictList">
+                    {scheduleConflict.map((s) => (
+                      <li key={s.id}>{formatScheduleTimeRange(s, timezone)}</li>
+                    ))}
+                  </ul>
+                  <div className="v2-captureActions">
+                    <Button variant="primary" onClick={() => void save('cancel')} disabled={busy}>
+                      取消这些安排并保存
+                    </Button>
+                    <Button onClick={() => void save('keep')} disabled={busy}>
+                      保留安排并保存
+                    </Button>
+                    <Button onClick={() => setScheduleConflict(null)} disabled={busy}>
+                      先不保存
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               <div className="v2-field">
                 <div className="v2-captureActions">
                   <Button
@@ -540,6 +805,30 @@ export default function AttemptV2Page() {
               </div>
             </div>
           </Module>
+          </div>
+
+          {fromRefs.length > 0 && (
+            <Module title="引用的旧结果" count={fromRefs.length}>
+              {fromRefs.map((ref, i) => (
+                <Row
+                  key={ref.id}
+                  index={i}
+                  time={ref.source?.updatedSinceSnapshot ? '已更新' : '引用'}
+                  to={ref.source ? topicAwareHref('/attempt/' + ref.source.id, topicNav) : '#'}
+                  title={ref.source?.step ?? '（原尝试已删除）'}
+                  sub={
+                    [
+                      ref.snapshotResultText ? `引用时结果：${ref.snapshotResultText.slice(0, 70)}` : null,
+                      ref.note ? `复用说明：${ref.note}` : null,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ') || '打开查看原文'
+                  }
+                  side={<span className="v2-hint" aria-hidden="true">→</span>}
+                />
+              ))}
+            </Module>
+          )}
 
           {/* 这个模块里只有「它属于哪个念头」这一条链接，不列其它尝试：
               标题不能写成「其他尝试 N」，也不给 count（硬编码 0 会让人以为一条都没有） */}
@@ -548,7 +837,7 @@ export default function AttemptV2Page() {
               <Row
                 index={0}
                 time="念头"
-                to={'/capture/' + capture.id}
+                to={topicAwareHref('/capture/' + capture.id, topicNav)}
                 title={capture.rawText}
                 sub="打开念头详情，看这个念头下的全部尝试"
                 side={
@@ -674,6 +963,70 @@ export default function AttemptV2Page() {
           </p>
         )}
       </Modal>
+
+      <Modal
+        open={refModal}
+        title="引用一条旧尝试的结果"
+        onClose={() => setRefModal(false)}
+        width={560}
+      >
+        <input
+          className="v2-input"
+          style={{ maxWidth: 'none', width: '100%' }}
+          value={refQuery}
+          onChange={(e) => void searchRefCandidates(e.target.value)}
+          placeholder="输入关键词搜之前有结果的尝试（如：快门、调光）"
+          aria-label="搜索旧结果"
+        />
+        <input
+          className="v2-input"
+          style={{ maxWidth: 'none', width: '100%' }}
+          value={refNote}
+          onChange={(e) => setRefNote(e.target.value)}
+          placeholder="复用说明（可选，例如：换成自然光复测）"
+          aria-label="复用说明"
+          maxLength={300}
+        />
+        {modalError && (
+          <p className="v2-groupNote" style={{ color: 'var(--st-fail)' }}>
+            {modalError}
+          </p>
+        )}
+        {refSearching && <Spinner label="搜索中…" />}
+        {!refSearching && refQuery.trim() && refCandidates.length === 0 && (
+          <p className="v2-groupNote">没有找到带结果的匹配尝试，换个关键词试试。</p>
+        )}
+        {refCandidates.map((cand) => {
+          const already = fromRefs.some((r) => r.toAttemptId === cand.id);
+          return (
+            <div key={cand.id} className="v2-candRow">
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <div className="v2-candText">{cand.step}</div>
+                {cand.resultText && (
+                  <p className="v2-groupNote" style={{ marginTop: 2 }}>
+                    结果：{cand.resultText.slice(0, 80)}
+                  </p>
+                )}
+              </div>
+              <Button onClick={() => void addReference(cand.id)} disabled={busy || already}>
+                {already ? '已引用' : '引用'}
+              </Button>
+            </div>
+          );
+        })}
+      </Modal>
+
+      {expDraft && (
+        <ExperienceEditor
+          mode="create"
+          draft={expDraft}
+          onCancel={() => setExpDraft(null)}
+          onSaved={(savedExp) => {
+            setExpDraft(null);
+            setCreatedExperience(savedExp);
+          }}
+        />
+      )}
     </V2Shell>
   );
 }

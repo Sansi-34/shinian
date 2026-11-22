@@ -6,41 +6,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--sp-2);
-  padding: 12px 0 var(--sp-4);
+  gap: var(--sp-1);
+  padding: 12px 0 var(--sp-3);
   background: var(--panel);
-  backdrop-filter: var(--vibrancy);
-  -webkit-backdrop-filter: var(--vibrancy);
   border-right: 1px solid var(--line);
-}
-
-/* macOS 窗口红黄绿三色交通灯 */
-.trafficLights {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  height: 16px;
-  margin-bottom: 4px;
-}
-
-.dot {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.28);
-}
-
-.dotClose {
-  background: #ff5f57;
-}
-
-.dotMin {
-  background: #febc2e;
-}
-
-.dotMax {
-  background: #28c840;
 }
 
 /* 在 V2 布局下底部让出状态栏高度，防止两者重叠压住图标栏按钮 */
@@ -52,25 +21,27 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  margin-bottom: var(--sp-2);
-  border-radius: 10px;
-  border: 1px solid var(--line);
-  background: var(--raise);
-  box-shadow: var(--glass-shine);
+  width: 32px;
+  height: 32px;
+  margin-bottom: var(--sp-3);
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: var(--cta-bg);
   font-family: var(--font-serif);
-  font-style: italic;
-  font-size: 18px;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 15px;
   line-height: 1;
-  color: var(--ink);
+  color: var(--cta-ink);
   text-decoration: none;
-  transition: background 140ms var(--ease-out), color 140ms var(--ease-out), border-color 140ms var(--ease-out), transform 140ms var(--ease-out);
+  transition: opacity 140ms var(--ease-out), transform 180ms var(--ease-spring);
 }
 .brand:hover {
-  background: var(--hover);
-  border-color: var(--line-2);
-  color: var(--accent);
+  opacity: 0.92;
+  transform: scale(1.05);
+}
+.brand:active {
+  transform: scale(0.95);
 }
 .brand:focus-visible {
   outline: 2px solid var(--accent);
@@ -81,13 +52,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--sp-2);
+  gap: 4px;
 }
 
 .sep {
-  width: 16px;
+  width: 20px;
   height: 1px;
-  background: var(--line-2);
+  background: var(--line);
   margin: var(--sp-2) 0;
 }
 
@@ -100,9 +71,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--r-2);
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-1);
   color: var(--ink-3);
   background: transparent;
   border: 0;
@@ -110,9 +81,18 @@
   cursor: pointer;
   transition: background 140ms var(--ease-out), color 140ms var(--ease-out);
 }
+.link svg {
+  transition: transform 180ms var(--ease-spring);
+}
 .link:hover {
   background: var(--hover);
   color: var(--ink);
+}
+.link:hover svg {
+  transform: translateY(-1px) scale(1.06);
+}
+.link:active svg {
+  transform: scale(0.92);
 }
 .link:focus-visible {
   outline: 2px solid var(--accent);
@@ -121,13 +101,19 @@
 
 .active,
 .activeDesktop {
-  color: var(--accent);
-  background: var(--accent-soft);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 32%, transparent);
+  color: var(--ink);
+  background: var(--hover);
 }
 .active::before,
 .activeDesktop::before {
-  display: none;
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 9px;
+  bottom: 9px;
+  width: 2px;
+  border-radius: 0 2px 2px 0;
+  background: var(--ink);
 }
 
 .activeMobile {
@@ -150,9 +136,21 @@
   box-shadow: var(--shadow-pop);
   pointer-events: none;
 }
+@keyframes tipSlide {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 .link:hover .tip,
 .link:focus-visible .tip {
   display: block;
+  animation: tipSlide 140ms var(--ease-spring);
 }
 
 .tabLabel {
@@ -195,12 +193,10 @@
   min-width: 192px;
   padding: 6px;
   border: 1px solid var(--line-2);
-  border-radius: 12px;
+  border-radius: var(--r-2);
   background: var(--raise-2);
-  backdrop-filter: var(--vibrancy);
-  -webkit-backdrop-filter: var(--vibrancy);
   box-shadow: var(--shadow-pop);
-  animation: panelIn 160ms var(--ease-out);
+  animation: panelIn 140ms var(--ease-out);
 }
 :global(.v2-root) .panel {
   bottom: calc(var(--status) + var(--sp-2));
@@ -241,8 +237,8 @@
   outline-offset: -2px;
 }
 .panelItemActive {
-  background: var(--accent-soft);
-  color: var(--accent);
+  background: var(--hover);
+  color: var(--ink);
   font-weight: 500;
 }
 
@@ -271,9 +267,13 @@
     border-top: 1px solid var(--line);
   }
 
-  .trafficLights,
   .brand,
   .spacer {
+    display: none;
+  }
+
+  .active::before,
+  .activeDesktop::before {
     display: none;
   }
 

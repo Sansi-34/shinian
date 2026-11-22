@@ -19,6 +19,57 @@ import {
 
 const ACTIVE: Array<ResearchPublic['status']> = ['searching', 'fetching', 'generating'];
 
+const COMMON_CJK_SET = new Set(
+  '的一是在不了有和人这中大为上个国我以要他时来用们生到作地于出就分对成会可主发年动同工也能下过子说产种面而方后多定行学法所民得经十三之进着等部度家电力里如水化高自二理起小物现实加量都两体机当使点从业本去把性好应开它合还因由其些然前外天政四日那社义事平形相全表间样与关各重新线内数正心反你明看原又么利比或但质气第向道命此变条只没结解问意建月公无系军很情者最立代想已通并提直题党程展五果料象员革位入常文总次品式活设及管特件长求老头基资边流路级少图山统接知较将组见计别她手角期根论运农指几九区强放决西被干做必战先回则任取据处队南给色光门即保治北造百规热领七海口东导器压志世金增争济阶油思术极交受联什认六共权收证改清己美再采转更单风切打白教速花带安场身车例真务具万每目至达走积示议声报斗完类八离华名确才科张信马节话米整空元况今集温传土许步群广石记需段研界拉林律叫且究观越织装影算低持音众书布复容儿须际商非验连断深难近矿千周委素技备半办青省列习响约支般史感劳便团往酸历市克何除消构府称太准精值号率族维划选标写存候毛亲快效斯院查江型眼王按格养易置派层片始却专状育厂京识适属圆包火住调满县局照参红细引听该铁价严龙飞库码软件开发项目框架工具支持系统数据模型智能算法控制识别导航语言处理文本图像视频网络文件下载开源免费教程列表收藏接口模块组件页面前端后端测试部署配置运行环境硬件设计构建生成提取检测查询转换电机避障循迹小车机器人仿真驱动传感器串口蓝牙无线通信协议'.split(
+    ''
+  )
+);
+
+function isRareCjkRun(run: string): boolean {
+  if (run.length < 12) return false;
+  let common = 0;
+  for (let i = 0; i < run.length; i += 1) {
+    if (COMMON_CJK_SET.has(run[i]!)) common += 1;
+  }
+  return common / run.length < 0.16;
+}
+
+function sanitizeCandidateDescription(raw: string | null | undefined): {
+  text: string;
+  cleanedGibberish: boolean;
+} {
+  if (!raw || !raw.trim()) {
+    return { text: '（没有仓库描述）', cleanedGibberish: false };
+  }
+  let cleanedGibberish = false;
+  let text = raw.replace(
+    /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\uE000-\uF8FF\uFFFD\u200B-\u200F\uFEFF]+/g,
+    () => {
+      cleanedGibberish = true;
+      return ' ';
+    }
+  );
+  text = text.replace(/==+\s*[\u3400-\u9FFF]{8,}\s*==+/g, () => {
+    cleanedGibberish = true;
+    return ' ';
+  });
+  text = text.replace(/[\u3400-\u9FFF]{12,}/g, (match) => {
+    if (isRareCjkRun(match)) {
+      cleanedGibberish = true;
+      return ' ';
+    }
+    return match;
+  });
+  text = text.replace(/={2,}/g, ' ').replace(/\s{2,}/g, ' ').trim();
+  if (!text) {
+    return {
+      text: '（已自动过滤该仓库描述中的异常乱码字符）',
+      cleanedGibberish: true,
+    };
+  }
+  return { text, cleanedGibberish };
+}
+
 function githubDate(value: string | null | undefined): string {
   if (!value) return '未知';
   const time = Date.parse(value);
@@ -155,8 +206,10 @@ export default function ResearchPage() {
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<string[]>([]);
   const [expandedSources, setExpandedSources] = useState<Record<string, boolean>>({});
+  const [expandedDescs, setExpandedDescs] = useState<Record<string, boolean>>({});
   const [busy, setBusy] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [pollWarning, setPollWarning] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [adopt, setAdopt] = useState<{
@@ -171,11 +224,11 @@ export default function ResearchPage() {
   const mountedRef = useRef(true);
   const pollRef = useRef<number | null>(null);
 
-  async function load(silent = false) {
+  async function load(silent = false): Promise<{ ok: true; research: ResearchPublic } | { ok: false; notFound: boolean }> {
     if (!silent) setLoading(true);
     try {
       const res = await api.getResearch(researchId);
-      if (!mountedRef.current) return;
+      if (!mountedRef.current) return { ok: false, notFound: false };
       setRun(res.research);
       setAiEnabled(res.ai.enabled);
       setHasGithubToken(res.github.hasToken);
@@ -186,15 +239,22 @@ export default function ResearchPage() {
         return res.research.selectedCandidateIds;
       });
       setError(null);
+      setPollWarning(null);
+      return { ok: true, research: res.research };
     } catch (e) {
-      if (!mountedRef.current) return;
-      if (e instanceof ApiError && e.status === 404) {
+      if (!mountedRef.current) return { ok: false, notFound: false };
+      const notFound = e instanceof ApiError && e.status === 404;
+      if (notFound) {
         setError('这次研究不存在，可能已被删除。');
+      } else if (silent) {
+        // 后台轮询临时失败不销毁当前进度，展示温和提示并自动重试
+        setPollWarning(errText(e, '暂时无法同步研究进度，正在自动重试…'));
       } else {
         setError(errText(e, '无法读取这次研究。'));
       }
+      return { ok: false, notFound };
     } finally {
-      if (mountedRef.current) setLoading(false);
+      if (mountedRef.current && !silent) setLoading(false);
     }
   }
 
@@ -208,18 +268,39 @@ export default function ResearchPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [researchId]);
 
+  const isPollingStatus = Boolean(run && ACTIVE.includes(run.status));
+
   useEffect(() => {
-    if (!run) return;
-    if (pollRef.current) window.clearTimeout(pollRef.current);
-    if (!ACTIVE.includes(run.status)) return;
-    pollRef.current = window.setTimeout(() => {
-      void load(true);
-    }, 1300);
-    return () => {
+    if (!isPollingStatus) return;
+    let cancelled = false;
+
+    const schedule = (delayMs: number) => {
+      if (cancelled) return;
       if (pollRef.current) window.clearTimeout(pollRef.current);
+      pollRef.current = window.setTimeout(async () => {
+        if (cancelled) return;
+        const outcome = await load(true);
+        if (cancelled) return;
+        if (outcome.ok) {
+          if (ACTIVE.includes(outcome.research.status)) {
+            schedule(1300);
+          }
+        } else if (!outcome.notFound) {
+          schedule(2500);
+        }
+      }, delayMs);
+    };
+
+    schedule(1300);
+    return () => {
+      cancelled = true;
+      if (pollRef.current) {
+        window.clearTimeout(pollRef.current);
+        pollRef.current = null;
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [run?.status, run?.updatedAt, researchId]);
+  }, [isPollingStatus, researchId]);
 
   async function withBusy(key: string, fn: () => Promise<void>) {
     setBusy(key);
@@ -471,12 +552,16 @@ export default function ResearchPage() {
             <section className="section research-stage">
               <div className="loading-row">
                 <span className="spinner" aria-hidden="true" />
-                <div>
+                <div style={{ flex: 1 }}>
                   <h4>正在向 GitHub 检索</h4>
                   <p className="hint">
                     {run.search.display} · 最多返回 {run.limits.maxCandidates} 个候选
                   </p>
+                  {pollWarning && <p className="hint warn">{pollWarning}</p>}
                 </div>
+                <button type="button" className="btn small" onClick={() => void load(true)}>
+                  刷新进度
+                </button>
               </div>
             </section>
           )}
@@ -485,7 +570,7 @@ export default function ResearchPage() {
             <section className="section research-stage">
               <div className="loading-row">
                 <span className="spinner" aria-hidden="true" />
-                <div>
+                <div style={{ flex: 1 }}>
                   <h4>
                     {run.status === 'fetching'
                       ? '正在读取所选仓库的 README、许可证与发布信息'
@@ -494,7 +579,11 @@ export default function ResearchPage() {
                   <p className="hint">
                     已获取 {run.sources.length} 份资料；失败项会保留，并可在结束后重试。
                   </p>
+                  {pollWarning && <p className="hint warn">{pollWarning}</p>}
                 </div>
+                <button type="button" className="btn small" onClick={() => void load(true)}>
+                  刷新进度
+                </button>
               </div>
             </section>
           )}
@@ -521,34 +610,65 @@ export default function ResearchPage() {
               ) : (
                 <>
                   <div className="candidate-list">
-                    {run.candidates.map((candidate) => {
+                    {run.candidates.map((candidate, idx) => {
                       const checked = selected.includes(candidate.id);
                       const disabled = !checked && selected.length >= run.limits.maxSelected;
+                      const { text: cleanDesc, cleanedGibberish } = sanitizeCandidateDescription(candidate.description);
+                      const isLongDesc = cleanDesc.length > 165;
+                      const descExpanded = Boolean(expandedDescs[candidate.id]);
+                      const shownDesc =
+                        isLongDesc && !descExpanded ? `${cleanDesc.slice(0, 160)}…` : cleanDesc;
                       return (
                         <article
                           key={candidate.id}
                           className={`candidate-card${checked ? ' selected' : ''}${disabled ? ' disabled' : ''}`}
                         >
-                          <button
-                            type="button"
-                            className="candidate-select"
-                            onClick={() => toggleSelect(candidate.id)}
-                            disabled={disabled}
-                            aria-pressed={checked}
-                          >
-                            <span className="candidate-check">{checked ? '✓' : '+'}</span>
-                            <span>
-                              {checked ? '已选择' : '选择比较'}
-                            </span>
-                          </button>
-                          <h4>
-                            <a href={candidate.htmlUrl} target="_blank" rel="noreferrer noopener">
-                              {candidate.fullName}
-                            </a>
-                            {candidate.archived && <span className="badge warn">已归档</span>}
-                            {candidate.fork && <span className="badge subtle">Fork</span>}
-                          </h4>
-                          <p className="candidate-desc">{candidate.description || '（没有仓库描述）'}</p>
+                          <div className="candidate-card-head">
+                            <h4 className="candidate-title">
+                              <span className="candidate-rank">#{idx + 1}</span>
+                              <a href={candidate.htmlUrl} target="_blank" rel="noreferrer noopener">
+                                {candidate.fullName}
+                              </a>
+                              {candidate.archived && <span className="badge warn">已归档</span>}
+                              {candidate.fork && <span className="badge subtle">Fork</span>}
+                              {cleanedGibberish && (
+                                <span className="badge subtle" title="原仓库描述含有生僻字乱码块，已自动清洗">
+                                  已过滤乱码
+                                </span>
+                              )}
+                            </h4>
+                            <button
+                              type="button"
+                              className="candidate-select"
+                              onClick={() => toggleSelect(candidate.id)}
+                              disabled={disabled}
+                              aria-pressed={checked}
+                            >
+                              <span className="candidate-check">{checked ? '✓' : '+'}</span>
+                              <span>
+                                {checked ? '已选择' : '选择比较'}
+                              </span>
+                            </button>
+                          </div>
+                          <div className="candidate-desc-wrap">
+                            <p className={`candidate-desc${descExpanded ? ' is-expanded' : ''}`}>
+                              {shownDesc}
+                            </p>
+                            {isLongDesc && (
+                              <button
+                                type="button"
+                                className="candidate-desc-toggle"
+                                onClick={() =>
+                                  setExpandedDescs((prev) => ({
+                                    ...prev,
+                                    [candidate.id]: !prev[candidate.id],
+                                  }))
+                                }
+                              >
+                                {descExpanded ? '收起长描述' : `展开全部（${cleanDesc.length} 字）`}
+                              </button>
+                            )}
+                          </div>
                           <dl className="candidate-facts">
                             <div>
                               <dt>主要语言</dt>
@@ -560,7 +680,7 @@ export default function ResearchPage() {
                             </div>
                             <div>
                               <dt>Star（背景）</dt>
-                              <dd>{candidate.stars ?? '未知'}</dd>
+                              <dd>{candidate.stars !== null ? candidate.stars.toLocaleString() : '未知'}</dd>
                             </div>
                             <div>
                               <dt>最近推送</dt>

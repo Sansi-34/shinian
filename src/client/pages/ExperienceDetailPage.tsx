@@ -277,7 +277,12 @@ export default function ExperienceDetailPage() {
             </button>
             <Link
               className="btn small"
-              to={topicAwareHref(`/graph?node=experience:${experience.id}&depth=1`, topicNav)}
+              to={topicAwareHref(
+                `/graph?node=experience:${experience.id}&depth=1&returnTo=${encodeURIComponent(
+                  `/experience/${experience.id}`
+                )}`,
+                topicNav
+              )}
             >
               局部图
             </Link>
@@ -390,7 +395,15 @@ export default function ExperienceDetailPage() {
               <div className="experience-source-meta">
                 {source.observedAt && <span>结果时间：{formatTime(source.observedAt)}</span>}
                 {!source.deleted && (
-                  <Link className="inline-link" to={`/graph?focus=${source.type}:${source.id}`}>
+                  <Link
+                    className="inline-link"
+                    to={topicAwareHref(
+                      `/graph?focus=${source.type}:${source.id}&returnTo=${encodeURIComponent(
+                        `/experience/${experience.id}`
+                      )}`,
+                      topicNav
+                    )}
+                  >
                     在局部图中查看 →
                   </Link>
                 )}

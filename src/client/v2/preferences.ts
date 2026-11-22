@@ -1,15 +1,15 @@
 // 拾念 · 个人界面偏好（持久化在 localStorage，供设置页与周期回顾日程表共用）
 import { useEffect, useState } from 'react';
 
-export const DEFAULT_CALENDAR_COLOR = '#0a84ff';
+export const DEFAULT_CALENDAR_COLOR = '#2c5282';
 
 export const CALENDAR_COLOR_PRESETS = [
-  { name: '系统蓝（默认）', value: '#0a84ff' },
-  { name: '冰晶青', value: '#5ac8fa' },
-  { name: '翡翠绿', value: '#30d158' },
-  { name: '琥珀金', value: '#ff9f0a' },
-  { name: '星云紫', value: '#bf5af2' },
-  { name: '珊瑚红', value: '#ff375f' },
+  { name: '石板蓝（默认）', value: '#2c5282' },
+  { name: '松烟青', value: '#2f6f5e' },
+  { name: '墨灰', value: '#3f3f46' },
+  { name: '赭石金', value: '#b45309' },
+  { name: '靛紫', value: '#5b3a8a' },
+  { name: '绛红', value: '#992b24' },
 ] as const;
 
 const COLOR_KEY = 'shinian.calendar-color';

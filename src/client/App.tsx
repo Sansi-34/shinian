@@ -89,10 +89,14 @@ function Shell() {
     location.pathname.startsWith('/attempt/');
   const isLogin = location.pathname === '/login';
   const showLegacyRail = !v2Mode && !isLogin;
+  const isWideLegacy =
+    location.pathname.startsWith('/research/') ||
+    location.pathname === '/review' ||
+    location.pathname.startsWith('/review/');
 
   return (
     <div
-      className={`app${v2Mode ? ' v2-mode' : ''}${showLegacyRail ? ' legacy-with-rail' : ''}${isLogin ? ' no-shell' : ''}`}
+      className={`app${v2Mode ? ' v2-mode' : ''}${showLegacyRail ? ' legacy-with-rail' : ''}${isWideLegacy ? ' wide' : ''}${isLogin ? ' no-shell' : ''}`}
       data-v2-theme={showLegacyRail ? v2Theme : undefined}
     >
       {showLegacyRail && (

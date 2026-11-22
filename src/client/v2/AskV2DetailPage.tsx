@@ -1,9 +1,10 @@
 // 拾念 V2 · 单次问答详情（/ask/:queryId）
 // 只读视图：问题、状态、答案、依据记录；生成中的自动轮询并可取消；左栏保留历史列表便于切换。
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import api from '../api';
 import type { AskListItem, AskPublic } from '../types';
+import { readTopicNav, safeTopicReturnTo, topicAwareHref } from '../components/topicNav';
 import { todayDateKey, useDisplayTimezone } from '../scheduleTime';
 import { dayLabel, dayTimeLabel } from './format';
 import V2Shell from './V2Shell';
@@ -24,6 +25,12 @@ const STATUS: Record<string, { kind: StatusKind; label: string }> = {
 
 export default function AskV2DetailPage() {
   const { queryId = '' } = useParams();
+  const [searchParams] = useSearchParams();
+  const topicNav = useMemo(() => readTopicNav(searchParams), [searchParams]);
+  const returnTo = useMemo(
+    () => safeTopicReturnTo(searchParams.get('returnTo')) ?? topicNav.returnTo,
+    [searchParams, topicNav.returnTo]
+  );
   const [tz] = useDisplayTimezone();
   const [query, setQuery] = useState<AskPublic | null>(null);
   const [recent, setRecent] = useState<AskListItem[] | null>(null);
@@ -110,7 +117,7 @@ export default function AskV2DetailPage() {
           {(recent ?? []).map((r, i) => (
             <Link
               key={r.id}
-              to={'/ask/' + r.id}
+              to={topicAwareHref('/ask/' + r.id, topicNav)}
               className="v2-leftItem"
               aria-current={r.id === queryId ? 'page' : undefined}
               style={{ '--i': i } as React.CSSProperties}
@@ -160,6 +167,14 @@ export default function AskV2DetailPage() {
 
       {query && (
         <>
+          {returnTo && (
+            <div className="v2-returnBar">
+              <Link to={returnTo} className="v2-returnLink">
+                ← {topicNav.fromTopic ? '返回主题' : '返回刚才阅读的位置'}
+              </Link>
+            </div>
+          )}
+
           <div className="v2-captureHead">
             <p className="v2-captureText">{query.question}</p>
             <div className="v2-captureActions">
@@ -183,7 +198,7 @@ export default function AskV2DetailPage() {
             )}
             {query.status === 'cancelled' && <p className="v2-state">这次生成已取消，没有保存答案。</p>}
             {query.status === 'interrupted' && <p className="v2-state">生成被中断（可能是服务重启）。可以回问记录页重新问一次。</p>}
-            {query.answer && <AskAnswerView query={query} />}
+            {query.answer && <AskAnswerView query={query} topicNav={topicNav} />}
           </Module>
         </>
       )}

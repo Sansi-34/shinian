@@ -1,10 +1,7 @@
 /* ============================================================================
    V2 · 列表页空态（经验 / 日程 / 深度研究共用）
-   - 只放「空态」这一件事：一个图形标记 + 一句主文案 + 一句说明 + 一个下一步入口
-   - 空态块在内容区垂直居中：中间栏是 flex 列，空态用 flex:1 吃掉剩余高度，
-     这样不会出现「顶部一行 12px 灰字 + 下面一整屏黑」的塌陷感
-   - 只在列表为空时渲染（有数据时这段 DOM 不存在，列表布局不受影响）
-   - 颜色/间距/字号/圆角全部走 tokens，不写字面色值
+   - 克制编辑风格：纯平极简标识 + 清晰标题 + 简短说明 + 实色矩形主按钮
+   - 告别虚线圆圈、霓虹发光阴影与胶囊上浮模板
    ========================================================================== */
 
 .v2-empty {
@@ -14,122 +11,84 @@
   align-items: center;
   justify-content: center;
   gap: var(--sp-3);
-  /* 没有 flex 容器兜底时也不会塌成一条 */
-  min-height: min(64vh, 560px);
+  min-height: min(62vh, 520px);
   padding: var(--sp-6) var(--sp-5);
   text-align: center;
 }
 
-/* 图形标记：虚线圆圈里一个强调色小点（纯 CSS，不引图标库） */
+/* 极简方格文稿标识：实线细框，无虚线、无光晕 */
 .v2-empty-mark {
+  position: relative;
   display: grid;
   place-items: center;
-  width: 72px;
-  height: 72px;
-  margin-bottom: var(--sp-2);
-  border: 1px dashed var(--line-2);
-  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  margin-bottom: var(--sp-1);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-2);
   background: var(--raise);
-  box-shadow: 0 0 32px var(--cyan-glow);
 }
 
 .v2-empty-mark::before {
   content: '';
-  width: 20px;
-  height: 20px;
-  border: 1.5px solid var(--cyan);
-  border-radius: 50%;
-  background: var(--st-active-bg);
+  width: 14px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--ink-3);
+  box-shadow: 0 -4px 0 var(--ink-3), 0 4px 0 var(--line-2);
 }
 
 .v2-empty-title {
   margin: 0;
-  font-family: var(--font-serif);
-  font-size: 24px;
-  font-weight: 300;
-  letter-spacing: 0.04em;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   line-height: 1.4;
   color: var(--ink);
 }
 
 .v2-empty-text {
   margin: 0;
-  max-width: 44ch;
-  font-size: var(--fs-body);
-  line-height: 1.7;
+  max-width: 42ch;
+  font-size: 13.5px;
+  line-height: 1.65;
   color: var(--ink-2);
   overflow-wrap: anywhere;
 }
 
-/* 下一步入口：圆角胶囊按钮 */
+/* 下一步入口：标准实色矩形按钮（与全站 Button.primary 统一） */
 .v2-empty-cta {
   display: inline-flex;
   align-items: center;
   gap: var(--sp-2);
-  min-height: 40px;
-  margin-top: var(--sp-3);
-  padding: 0 var(--sp-5);
-  border: 1px solid var(--line-2);
-  border-radius: var(--r-pill);
-  background: var(--raise);
-  color: var(--ink);
-  font-size: var(--fs-body);
+  min-height: 36px;
+  margin-top: var(--sp-2);
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-radius: var(--r-1);
+  background: var(--cta-bg);
+  color: var(--cta-ink);
+  font-size: 13px;
+  font-weight: 500;
   text-decoration: none;
-  transition: background 180ms var(--ease-out), border-color 180ms var(--ease-out), box-shadow 200ms var(--ease-out), transform 180ms var(--ease-out);
+  transition: background 120ms var(--ease-out);
 }
 .v2-empty-cta:hover {
-  border-color: var(--cyan-border);
-  background: var(--raise-2);
-  box-shadow: 0 0 22px var(--cyan-glow);
-  transform: translateY(-1px);
+  background: var(--cta-bg-hover);
 }
 .v2-empty-cta:focus-visible {
   outline: 2px solid var(--accent);
-  outline-offset: 1px;
+  outline-offset: 2px;
 }
 .v2-empty-ctaArrow {
   color: inherit;
+  opacity: 0.75;
 }
 
-/* 轻入场：告诉用户「这里是状态，不是没加载出来」 */
-.v2-empty > * {
-  animation: v2-emptyIn 300ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
-}
-.v2-empty > *:nth-child(2) {
-  animation-delay: 40ms;
-}
-.v2-empty > *:nth-child(3) {
-  animation-delay: 80ms;
-}
-.v2-empty > *:nth-child(4) {
-  animation-delay: 120ms;
-}
-
-@keyframes v2-emptyIn {
-  from {
-    opacity: 0;
-    translate: 0 6px;
-  }
-  to {
-    opacity: 1;
-    translate: 0 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .v2-empty > * {
-    animation: none;
-  }
-}
-
-/* 窄屏：留白收一点，仍然垂直居中 */
 @media (max-width: 900px) {
   .v2-empty {
-    min-height: min(56vh, 480px);
+    min-height: min(56vh, 440px);
     padding: var(--sp-5) var(--sp-4);
-  }
-  .v2-empty-mark {
-    width: 64px;
-    height: 64px;
   }
 }

@@ -30,6 +30,7 @@ export type AiErrorCode =
   | 'local_not_allowed'
   | 'cancelled'
   | 'interrupted'
+  | 'incomplete_stream'
   | 'ai_not_configured'
   | 'ai_disabled'
   | 'generation_in_progress'
@@ -49,6 +50,7 @@ const ERROR_MESSAGES: Record<AiErrorCode, string> = {
   local_not_allowed: '本机地址未获允许',
   cancelled: '已取消',
   interrupted: '服务重启中断',
+  incomplete_stream: '流式回复中断',
   ai_not_configured: '未配置',
   ai_disabled: '已停用',
   generation_in_progress: '正在生成',

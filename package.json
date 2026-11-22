@@ -28,6 +28,7 @@
     "test:e2e:review": "node scripts/e2e_review.mjs",
     "test:e2e:ask": "node scripts/e2e_ask_acceptance.mjs",
     "test:e2e:graph": "node scripts/e2e_graph.mjs",
+    "test:e2e:v2": "node scripts/e2e_v2_flows.mjs",
     "test:export": "python scripts/test_export.py",
     "test:export:topic": "python scripts/test_topic_export.py",
     "test:e2e:topic": "node scripts/e2e_topic_export.mjs",

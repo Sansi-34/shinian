@@ -10,17 +10,15 @@
   font-weight: 500;
 }
 
-/* 左栏行：macOS Source List 内嵌圆角选中卡片 */
+/* 左栏行：克制中性选中态，无蓝框外晕 */
 .v2-leftItem {
   display: block;
   margin: 2px var(--sp-2);
-  padding: 10px var(--sp-3);
+  padding: 9px var(--sp-3);
   border-radius: var(--r-1);
   color: inherit;
   text-decoration: none;
-  transition: background 120ms var(--ease-out), box-shadow 120ms var(--ease-out);
-  animation: v2-leftIn 260ms var(--ease-out) backwards;
-  animation-delay: calc(var(--i, 0) * 25ms);
+  transition: background 120ms var(--ease-out);
 }
 .v2-leftItem:hover {
   background: var(--hover);
@@ -30,8 +28,8 @@
   outline-offset: -2px;
 }
 .v2-leftItem[aria-current='page'] {
-  background: var(--accent-soft);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 32%, transparent);
+  background: var(--hover);
+  box-shadow: inset 2px 0 0 var(--ink);
 }
 .v2-leftTitle {
   display: -webkit-box;
@@ -121,25 +119,23 @@ a.v2-groupItem:hover {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  min-height: 36px;
+  min-height: 34px;
   padding: 0 var(--sp-3);
   border: 1px solid var(--line);
   border-radius: var(--r-1);
   background: var(--raise);
-  box-shadow: var(--glass-shine);
   color: var(--ink-2);
   font-family: inherit;
   font-size: var(--fs-meta);
   text-align: left;
   text-decoration: none;
   cursor: pointer;
-  transition: background 120ms var(--ease-out), border-color 120ms var(--ease-out), color 120ms var(--ease-out), box-shadow 140ms var(--ease-out);
+  transition: background 120ms var(--ease-out), border-color 120ms var(--ease-out), color 120ms var(--ease-out);
 }
 .v2-sideAction:hover:not(:disabled) {
   background: var(--hover);
-  border-color: var(--cyan-border);
+  border-color: var(--line-2);
   color: var(--ink);
-  box-shadow: var(--glass-shine), 0 0 0 2px var(--cyan-glow);
 }
 .v2-sideAction:disabled {
   opacity: 0.5;
@@ -178,37 +174,34 @@ a.v2-groupItem:hover {
   opacity: 0.85;
 }
 
-/* 首页快速记录框：macOS 工具栏玻璃质感 + System Focus Ring */
+/* 顶部快速记录框：纯平贴边工具条，统一 6px 圆角 */
 .v2-compose {
   display: flex;
   align-items: center;
-  gap: var(--sp-3);
+  gap: var(--sp-2);
   padding: 12px var(--sp-4);
   border-bottom: 1px solid var(--line);
   background: var(--panel);
-  backdrop-filter: var(--vibrancy);
-  -webkit-backdrop-filter: var(--vibrancy);
 }
 .v2-compose input {
   flex: 1;
   min-width: 0;
-  min-height: 40px;
-  padding: 0 var(--sp-4);
+  min-height: 36px;
+  padding: 0 var(--sp-3);
   border: 1px solid var(--line-2);
-  border-radius: var(--r-pill);
-  background: var(--sunk);
+  border-radius: var(--r-1);
+  background: var(--raise);
   color: var(--ink);
   font-family: inherit;
   font-size: var(--fs-body);
-  transition: border-color 180ms var(--ease-out), box-shadow 200ms var(--ease-out);
+  transition: border-color 120ms var(--ease-out);
 }
 .v2-compose input::placeholder {
   color: var(--ink-3);
 }
 .v2-compose input:focus-visible {
   outline: none;
-  border-color: var(--cyan-border);
-  box-shadow: 0 0 0 3px var(--cyan-glow);
+  border-color: var(--ink);
 }
 
 /* 顶部工具条（搜索框 / 分段筛选） */
@@ -551,13 +544,10 @@ a.v2-groupItem:hover {
   border: 1px solid var(--line);
   border-radius: var(--r-2);
   background: var(--raise);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  transition: border-color 180ms var(--ease-out), box-shadow 200ms var(--ease-out);
+  transition: border-color 120ms var(--ease-out);
 }
 .v2-askPoint:hover {
-  border-color: var(--cyan-border);
-  box-shadow: 0 0 18px var(--cyan-glow);
+  border-color: var(--line-2);
 }
 .v2-askPointText {
   margin: 0;
@@ -590,16 +580,13 @@ a.v2-groupItem:hover {
 .v2-graphWrap {
   position: relative;
   flex: 0 0 auto;
-  height: clamp(420px, calc(100dvh - 150px), 740px);
-  margin: var(--sp-3) var(--sp-4);
+  height: clamp(440px, calc(100dvh - 128px), 760px);
+  margin: var(--sp-3);
   border: 1px solid var(--line);
-  border-radius: 14px;
-  background: color-mix(in srgb, var(--sunk) 78%, transparent);
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  box-shadow: var(--glass-shine), 0 12px 36px rgba(0, 0, 0, 0.24);
+  border-radius: var(--r-2);
+  background: var(--panel);
   overflow: hidden;
-  transition: border-color 220ms var(--ease-out), box-shadow 220ms var(--ease-out);
+  transition: border-color 140ms var(--ease-out);
 }
 .v2-graphWrap:hover {
   border-color: var(--line-2);
@@ -623,5 +610,176 @@ a.v2-groupItem:hover {
   .v2-graphWrap {
     height: min(58vh, 460px);
     margin: var(--sp-2);
+  }
+  .v2-form,
+  .v2-writer {
+    padding-bottom: calc(var(--tabbar) + 28px);
+  }
+  .v2-form input,
+  .v2-form textarea,
+  .v2-writer textarea,
+  .v2-captureActions {
+    scroll-margin-bottom: 120px;
+  }
+}
+
+/* 返回上下文横条（从主题/经验/图谱进入原文时保持原阅读位置） */
+.v2-returnBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  padding: 9px var(--sp-4);
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+}
+.v2-returnLink {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--accent);
+  text-decoration: none;
+}
+.v2-returnLink:hover {
+  text-decoration: underline;
+}
+
+/* 尝试详情：采用经验的版本提示条 */
+.v2-expRefBanner {
+  margin-top: var(--sp-3);
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-1);
+  background: var(--panel);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink-2);
+}
+
+/* 问答观点来源 chip 与依据记录卡片 */
+.v2-sourceChip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--line-2);
+  border-radius: 5px;
+  background: var(--panel);
+  color: var(--accent);
+  font-size: 12px;
+  text-decoration: none;
+  transition: background 120ms var(--ease-out), border-color 120ms var(--ease-out);
+}
+.v2-sourceChip:hover {
+  background: var(--hover);
+  border-color: var(--ink-3);
+}
+.v2-sourceChip.is-deleted,
+.v2-sourceChip.is-missing {
+  color: var(--ink-3);
+  background: var(--sunk);
+  border-color: var(--line);
+}
+
+.v2-askSourceList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.v2-askSourceCard {
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-2);
+  background: var(--raise);
+}
+.v2-askSourceHead {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.v2-askSourceTitle {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.v2-askSourceActions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* 挂入 V2 内部的共享弹层（ExperienceEditor / TopicExportPanel / ResearchStarter）在暗色与移动端下保持清晰与保存钮可达 */
+.v2-root .modal-backdrop,
+.v2-root .topic-export-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  background: rgba(0, 0, 0, 0.52);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.v2-root .modal-backdrop .modal,
+.v2-root .topic-export-panel {
+  width: min(640px, 100%);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  background: var(--raise-2);
+  color: var(--ink);
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  padding: 18px 20px;
+  box-shadow: var(--shadow-pop);
+}
+.v2-root .modal-backdrop .modal input:not([type='checkbox']):not([type='radio']),
+.v2-root .modal-backdrop .modal textarea,
+.v2-root .modal-backdrop .modal select {
+  background: var(--bg);
+  color: var(--ink);
+  border: 1px solid var(--line-2);
+  border-radius: 7px;
+  padding: 8px 11px;
+}
+.v2-root .modal-backdrop .modal .btn,
+.v2-root .topic-export-panel .btn {
+  background: var(--raise);
+  color: var(--ink);
+  border: 1px solid var(--line-2);
+  border-radius: 7px;
+}
+.v2-root .modal-backdrop .modal .btn.primary,
+.v2-root .topic-export-panel .btn.primary {
+  background: var(--cta-bg);
+  color: var(--cta-ink);
+  border-color: transparent;
+}
+.v2-root .modal-backdrop .modal .form-actions,
+.v2-root .modal-backdrop .modal .row-actions,
+.v2-root .topic-export-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  background: var(--raise-2);
+  padding-top: 10px;
+  padding-bottom: max(4px, env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+}
+@media (max-width: 900px) {
+  .v2-root .modal-backdrop,
+  .v2-root .topic-export-backdrop {
+    align-items: flex-end;
+    padding: 0;
+  }
+  .v2-root .modal-backdrop .modal,
+  .v2-root .topic-export-panel {
+    width: 100%;
+    max-height: 88dvh;
+    border-radius: 12px 12px 0 0;
+    padding: 16px 14px calc(14px + env(safe-area-inset-bottom));
   }
 }

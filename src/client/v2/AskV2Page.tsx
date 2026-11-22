@@ -1,10 +1,12 @@
-// 拾念 V2 · 问记录（Ask）
-// 流程：提问 → 找相关记录 → 勾选要作为依据的记录 → 预览覆盖度 → 发送 → 轮询状态 → 看答案。
+// 拾念 V2 · 问记录（Ask，支持全库问答与主题范围内问答）
+// 流程：提问 → 找相关记录（支持关键词扩展）→ 勾选要作为依据的记录 → 预览覆盖度 → 发送 → 轮询状态 → 看答案。
 // 规则照旧：答案只能引用你选中的记录；证据不足会直接说不足；观点必须标依据类型（观察/推断）。
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import api from '../api';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import api, { ApiError } from '../api';
 import type { AskCandidate, AskPublic, AskSearchResponse, AskListItem, AskPreviewResponse } from '../types';
+import { readTopicNav, topicAwareHref, topicUrl, type TopicNavContext } from '../components/topicNav';
+import KeywordExpansionPanel from '../components/KeywordExpansionPanel';
 import { todayDateKey, useDisplayTimezone } from '../scheduleTime';
 import { dayLabel, dayTimeLabel, fromLocalInputValue } from './format';
 import V2Shell from './V2Shell';
@@ -45,16 +47,55 @@ export default function AskV2Page() {
   const [params] = useSearchParams();
   const [tz] = useDisplayTimezone();
 
+  // 主题内问答上下文：兼容 ?topic=<id> 与 ?from=topic&topicId=<id>
+  const topicId = (params.get('topic') || params.get('topicId') || '').trim() || null;
+  const rawTopicNav = useMemo(() => readTopicNav(params), [params]);
+  const topicNav: TopicNavContext = useMemo(
+    () =>
+      topicId
+        ? {
+            fromTopic: true,
+            topicId,
+            returnTo: rawTopicNav.returnTo ?? topicUrl(topicId),
+          }
+        : rawTopicNav,
+    [topicId, rawTopicNav]
+  );
+
   // 提问
   const qParam = params.get('q') ?? '';
   const [question, setQuestion] = useState(qParam);
   const [keywords, setKeywords] = useState('');
+  const [expandedKeywords, setExpandedKeywords] = useState<string[]>([]);
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
+  const [topicName, setTopicName] = useState<string | null>(null);
+  const [topicScopeHash, setTopicScopeHash] = useState<string | null>(null);
+  const [contextChangedNotice, setContextChangedNotice] = useState<string | null>(null);
 
   useEffect(() => {
     if (qParam) setQuestion(qParam);
   }, [qParam]);
+
+  useEffect(() => {
+    if (!topicId) {
+      setTopicName(null);
+      setTopicScopeHash(null);
+      return;
+    }
+    let alive = true;
+    api
+      .getTopic(topicId)
+      .then((res) => {
+        if (alive) setTopicName(res.topic.name);
+      })
+      .catch(() => {
+        if (alive) setTopicName(null);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [topicId]);
 
   // 检索结果
   const [search, setSearch] = useState<AskSearchResponse | null>(null);
@@ -117,24 +158,54 @@ export default function AskV2Page() {
     return { from, to };
   };
 
-  async function runSearch() {
+  async function runSearch(overrideExpanded?: string[]) {
     if (searching) return;
     const q = question.trim();
     if (!q) {
       setError('先写一个你想问的问题。');
       return;
     }
+    const useExpanded = overrideExpanded ?? expandedKeywords;
     setSearching(true);
     setError(null);
     setNotice(null);
+    setContextChangedNotice(null);
     setPreview(null);
     try {
       const { from, to } = rangeOf();
-      const res = await api.searchAskCandidates({ question: q, keywords: keywords.trim(), from, to, limit: 40 });
+      let res: AskSearchResponse;
+      if (topicId) {
+        const topicRes = await api.listTopicAskCandidates(topicId, {
+          question: q,
+          keywords: keywords.trim(),
+          from,
+          to,
+          limit: 40,
+          expandedKeywords: useExpanded,
+        });
+        setTopicName(topicRes.scope?.topicName || topicRes.topic?.name || topicName);
+        setTopicScopeHash(topicRes.scope?.scopeHash || null);
+        res = topicRes;
+      } else {
+        res = await api.searchAskCandidates({
+          question: q,
+          keywords: keywords.trim(),
+          from,
+          to,
+          limit: 40,
+          expandedKeywords: useExpanded,
+        });
+      }
       setSearch(res);
       // 默认选中前 8 条（服务端上限），让用户自行取消
       setSelected(new Set((res.candidates ?? []).slice(0, MAX_PICK).map((c) => c.sourceKey)));
-      if ((res.candidates ?? []).length === 0) setNotice('没有匹配到记录。可以换关键词，或放宽时间范围。');
+      if ((res.candidates ?? []).length === 0) {
+        setNotice(
+          topicId
+            ? '这个主题内没有匹配到记录。可以换关键词、展开检索词建议，或先向主题加入相关记录。'
+            : '没有匹配到记录。可以换关键词，或放宽时间范围。'
+        );
+      }
     } catch (e) {
       setError(errText(e, '检索失败，请重试。'));
     } finally {
@@ -174,6 +245,7 @@ export default function AskV2Page() {
     }
     setPreviewLoading(true);
     setError(null);
+    setContextChangedNotice(null);
     try {
       const { from, to } = rangeOf();
       const res = await api.previewAsk({
@@ -182,6 +254,7 @@ export default function AskV2Page() {
         from,
         to,
         sourceKeys: Array.from(selected),
+        ...(topicId ? { topicId } : {}),
       });
       setPreview(res);
       if (!res.coverage.withinLimit) {
@@ -198,6 +271,7 @@ export default function AskV2Page() {
     if (!preview || creating) return;
     setCreating(true);
     setError(null);
+    setContextChangedNotice(null);
     try {
       const { from, to } = rangeOf();
       const res = await api.createAskQuery({
@@ -206,6 +280,7 @@ export default function AskV2Page() {
         from,
         to,
         sourceKeys: Array.from(selected),
+        ...(topicId ? { topicId } : {}),
         contextToken: preview.contextToken,
         operationId: newOpId(),
       });
@@ -213,7 +288,20 @@ export default function AskV2Page() {
       setNotice(null);
       void loadRecent();
     } catch (e) {
-      setError(errText(e, '发送失败，请重试。'));
+      if (
+        e instanceof ApiError &&
+        e.status === 409 &&
+        (e.body?.error === 'context_changed' || e.body?.error === 'topic_scope_changed')
+      ) {
+        // 预览后来源发生修改/删除或主题范围变更：清掉失效预览，保留问题和勾选，引导重新预览确认
+        setPreview(null);
+        setContextChangedNotice(
+          e.body?.message ||
+            '预览之后，部分选中的来源记录被修改或删除了（本次未发送）。请重新预览核对最新内容后再发送。'
+        );
+      } else {
+        setError(errText(e, '发送失败，请重试。'));
+      }
     } finally {
       setCreating(false);
     }
@@ -259,7 +347,7 @@ export default function AskV2Page() {
               type="button"
               className="v2-leftItem v2-leftBtn"
               style={{ '--i': i } as React.CSSProperties}
-              onClick={() => navigate('/ask/' + r.id)}
+              onClick={() => navigate(topicAwareHref('/ask/' + r.id, topicNav))}
             >
               <span className="v2-leftTitle">{r.question}</span>
               <span className="v2-leftMeta">
@@ -298,6 +386,15 @@ export default function AskV2Page() {
     >
       {!query && (
         <>
+          {topicId && (
+            <div className="v2-returnBar" data-testid="ask-topic-banner">
+              <Link to={topicNav.returnTo ?? topicUrl(topicId)} className="v2-returnLink">
+                ← 返回主题{topicName ? `「${topicName}」` : ''}
+              </Link>
+              <span className="v2-hint">仅检索并允许引用本主题内的念头、经验与尝试</span>
+            </div>
+          )}
+
           <div className="v2-captureHead">
             <div className="v2-form" style={{ width: '100%' }}>
               <div className="v2-field">
@@ -352,7 +449,35 @@ export default function AskV2Page() {
                 )}
                 {searching && <Spinner label="检索中" />}
               </div>
+              <KeywordExpansionPanel
+                question={question}
+                keywords={keywords}
+                topicId={topicId}
+                scopeHash={topicScopeHash}
+                expandedKeywords={expandedKeywords}
+                onApply={(terms) => {
+                  setExpandedKeywords(terms);
+                  void runSearch(terms);
+                }}
+                onClear={() => {
+                  setExpandedKeywords([]);
+                  if (search) void runSearch([]);
+                }}
+              />
             </div>
+            {contextChangedNotice && (
+              <div className="v2-conflict" role="alert" data-testid="ask-context-changed" style={{ marginTop: 10 }}>
+                <p className="v2-conflictTitle">{contextChangedNotice}</p>
+                <div className="v2-captureActions">
+                  <Button variant="primary" onClick={() => void loadPreview()} disabled={previewLoading || selected.size === 0}>
+                    {previewLoading ? '刷新中…' : '重新预览最新依据'}
+                  </Button>
+                  <Button onClick={() => void runSearch()} disabled={searching}>
+                    重新检索候选
+                  </Button>
+                </div>
+              </div>
+            )}
             {error && (
               <p className="v2-state" style={{ color: 'var(--st-fail)' }}>
                 {error}
@@ -465,6 +590,13 @@ export default function AskV2Page() {
 
       {query && (
         <div className="v2-captureHead">
+          {topicId && (
+            <div className="v2-returnBar" style={{ margin: '-16px -16px 12px', padding: '8px 16px' }}>
+              <Link to={topicNav.returnTo ?? topicUrl(topicId)} className="v2-returnLink">
+                ← 返回主题{topicName ? `「${topicName}」` : ''}
+              </Link>
+            </div>
+          )}
           <p className="v2-captureText">{query.question}</p>
           <div className="v2-captureActions">
             <Pill kind={st?.kind ?? 'idle'}>{st?.label}</Pill>
@@ -494,7 +626,7 @@ export default function AskV2Page() {
               {query.status === 'cancelled' && <p className="v2-state">这次生成已取消，没有保存答案。</p>}
               {query.status === 'interrupted' && <p className="v2-state">生成被中断（可能是服务重启）。可以重新问一次。</p>}
 
-              {query.answer && <AskAnswerView query={query} />}
+              {query.answer && <AskAnswerView query={query} topicNav={topicNav} />}
             </div>
           )}
         </div>
