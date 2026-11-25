@@ -25,12 +25,14 @@
 .row:first-child {
   border-top: 0;
 }
-.row:hover {
-  background: var(--hover);
-}
-.row:hover .side {
-  transform: translateX(3px);
-  color: var(--ink-2);
+@media (hover: hover) and (pointer: fine) {
+  .row:hover {
+    background: var(--hover);
+  }
+  .row:hover .side {
+    transform: translateX(3px);
+    color: var(--ink-2);
+  }
 }
 .row:active {
   background: color-mix(in srgb, var(--hover) 140%, transparent);

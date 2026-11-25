@@ -1083,6 +1083,10 @@ export default function GraphV2Page() {
     <V2Shell
       leftTitle="筛选"
       leftCount={visibleCount}
+      mobileLeftLabel="筛选与搜索"
+      mobileTopRight={
+        <Button onClick={() => cyRef.current?.fit(undefined, 40)}>适应窗口</Button>
+      }
       left={
         <>
           <div className={styles.filterBlock}>
@@ -1524,12 +1528,56 @@ export default function GraphV2Page() {
                 }}
                 title="聚焦到当前选中节点及其邻域"
               >
-                ◎ 聚焦邻域
+                ◎ 邻域
               </button>
             </>
           )}
         </div>
       </div>
+      {selected && (
+        <div className={styles.mobileNodeBar} data-testid="graph-mobile-node-bar">
+          <div className={styles.mobileNodeHead}>
+            <span
+              className={styles.mobileNodeBadge}
+              style={{ '--node-color': TYPE_CSS_COLOR[selected.type] } as CSSProperties}
+            >
+              <NodeShapeIcon type={selected.type} />
+              {TYPE_LABEL[selected.type]}
+            </span>
+            <span className={styles.mobileNodeTitle}>{selected.label}</span>
+            <button
+              type="button"
+              className={styles.mobileNodeDismiss}
+              aria-label="取消选中节点"
+              onClick={() => {
+                const cy = cyRef.current;
+                cy?.elements().unselect();
+                cy?.elements().removeClass('dim activeEdge hover');
+                selectedIdRef.current = null;
+                setSelected(null);
+              }}
+            >
+              ✕
+            </button>
+          </div>
+          <div className={styles.mobileNodeActions}>
+            {selected.href && (
+              <Button
+                variant="primary"
+                onClick={() => openNodeRecord(selected)}
+                data-testid="graph-mobile-open-record"
+              >
+                打开这条记录
+              </Button>
+            )}
+            {focusNodeId !== selected.id ? (
+              <Button onClick={() => updateFocusParams(selected.id, 1)}>看局部图</Button>
+            ) : (
+              <Button onClick={() => updateFocusParams(null)}>切回全局图</Button>
+            )}
+          </div>
+        </div>
+      )}
       {!loading && !error && (data?.nodes.length ?? 0) > 0 && (
         <Module title="图的读法" defaultOpen={false}>
           <p className="v2-state">节点大小表示连线多少；形状表示类型（念头圆、尝试方、经验菱形、研究六边形、回顾三角、日程方块）。</p>

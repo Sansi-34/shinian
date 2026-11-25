@@ -1,10 +1,17 @@
 .seg {
   position: relative;
   display: inline-flex;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
   padding: 2px;
   border: 1px solid var(--line);
   border-radius: var(--r-1);
   background: var(--sunk);
+}
+.seg::-webkit-scrollbar {
+  display: none;
 }
 
 .indicator {
@@ -28,6 +35,7 @@
 .item {
   position: relative;
   z-index: 1;
+  flex: 0 0 auto;
   min-height: 30px;
   padding: 0 var(--sp-3);
   border: 0;
@@ -40,8 +48,15 @@
   cursor: pointer;
   transition: color 160ms ease-out;
 }
-.item:hover {
-  color: var(--ink);
+@media (hover: hover) and (pointer: fine) {
+  .item:hover {
+    color: var(--ink);
+  }
+}
+@media (max-width: 900px) {
+  .item {
+    min-height: 34px;
+  }
 }
 .item[aria-pressed='true'] {
   color: var(--ink);

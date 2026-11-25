@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>拾念 SHINIAN · 快速试用与功能导览</title>
+  <meta name="description" content="拾念 SHINIAN 使用教程：10 秒记一个念头，拆出一步小尝试，如实记录结果，再整理成可追溯版本的经验。6 步走完一次闭环。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200;300;400&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      /* Qoder 设计工作台（Nudge）可调参数 */
+      --site-bg: #05060a;
+      --site-fg: #eef0f6;
+      --site-surface: rgba(14, 16, 22, 0.78);
+      --site-muted: rgba(238, 240, 246, 0.72);
+      --site-accent: #60a5fa;
+      --site-on-accent: #0b1220;
+      --site-border: rgba(238, 240, 246, 0.11);
+      --site-font: 'Noto Sans SC', 'Inter', 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;
+      --site-radius: 14px;
+      --site-space: 1;
+      --site-type: 1;
+      --site-motion: 1;
+
+      --bg: var(--site-bg);
+      --fg: var(--site-fg);
+      --muted: var(--site-muted);
+      --surface: var(--site-surface);
+      --border: var(--site-border);
+      --accent: var(--site-accent);
+      --serif: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', 'NSimSun', 'SimSun', Georgia, serif;
+      --sans: var(--site-font);
+      --mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+      --quick: calc(180ms * var(--site-motion, 1));
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--sans);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      line-height: 1.75;
+      background:
+        radial-gradient(ellipse 90% 60% at 50% -10%, rgba(59, 130, 246, 0.16), transparent 60%),
+        radial-gradient(ellipse 60% 40% at 85% 20%, rgba(129, 140, 248, 0.08), transparent 60%),
+        var(--bg);
+      color: var(--fg);
+    }
+
+    a { color: var(--accent); text-underline-offset: 3px; }
+
+    ::selection { background: rgba(96, 165, 250, 0.28); color: var(--fg); }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px calc(24px * var(--site-space, 1));
+      border-bottom: 1px solid var(--border);
+      background: rgba(5, 6, 10, 0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 8px;
+      color: var(--fg);
+      text-decoration: none;
+      font-family: var(--serif);
+      font-size: calc(20px * var(--site-type, 1));
+      letter-spacing: 0.06em;
+    }
+
+    .brand small {
+      font-family: var(--sans);
+      font-size: 10px;
+      letter-spacing: 0.34em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .topbar nav { display: inline-flex; align-items: center; gap: 6px; }
+
+    .topbar nav a {
+      padding: 8px 14px;
+      border-radius: 9999px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13.5px;
+      transition: color var(--quick) var(--ease), background var(--quick) var(--ease);
+    }
+
+    .topbar nav a:hover { color: var(--fg); background: rgba(255, 255, 255, 0.06); }
+
+    .topbar nav a.primary {
+      color: #0b1220;
+      background: #eef0f6;
+      font-weight: 500;
+    }
+
+    .topbar nav a.primary:hover { background: #ffffff; color: #0b1220; }
+
+    .page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: calc(64px * var(--site-space, 1)) calc(24px * var(--site-space, 1)) calc(96px * var(--site-space, 1));
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 11px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .eyebrow::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 12px var(--accent);
+    }
+
+    h1 {
+      margin: 18px 0 14px;
+      font-family: var(--serif);
+      font-weight: 300;
+      font-size: clamp(calc(30px * var(--site-type, 1)), 5vw, calc(52px * var(--site-type, 1)));
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+    }
+
+    .lead {
+      margin: 0;
+      max-width: 46em;
+      font-size: calc(16px * var(--site-type, 1));
+      color: var(--muted);
+    }
+
+    .callout {
+      margin: 32px 0 8px;
+      padding: calc(18px * var(--site-space, 1)) calc(22px * var(--site-space, 1));
+      border: 1px solid rgba(96, 165, 250, 0.32);
+      border-radius: var(--site-radius);
+      background: rgba(37, 99, 235, 0.1);
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .callout strong { color: var(--fg); font-weight: 500; }
+
+    h2 {
+      margin: calc(64px * var(--site-space, 1)) 0 8px;
+      font-family: var(--serif);
+      font-weight: 300;
+      font-size: calc(26px * var(--site-type, 1));
+      letter-spacing: 0.01em;
+    }
+
+    .section-note { margin: 0 0 24px; color: var(--muted); font-size: 14.5px; }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: calc(10px * var(--site-space, 1));
+      margin: 28px 0 12px;
+    }
+
+    .flow-step {
+      position: relative;
+      padding: calc(16px * var(--site-space, 1)) calc(14px * var(--site-space, 1));
+      border: 1px solid var(--border);
+      border-radius: var(--site-radius);
+      background: var(--surface);
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: var(--muted);
+    }
+
+    .flow-step b { display: block; margin-bottom: 6px; color: var(--fg); font-weight: 500; }
+    .flow-step span { display: block; font-family: var(--mono); font-size: 11px; color: var(--accent); margin-bottom: 8px; }
+    .flow-step::after {
+      content: '→';
+      position: absolute;
+      right: -12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(238, 240, 246, 0.35);
+      font-size: 13px;
+    }
+    .flow-step:last-child::after { content: none; }
+
+    .steps { display: grid; gap: calc(18px * var(--site-space, 1)); margin-top: 28px; }
+
+    .step {
+      padding: calc(24px * var(--site-space, 1));
+      border: 1px solid var(--border);
+      border-radius: var(--site-radius);
+      background: var(--surface);
+      transition: border-color var(--quick) var(--ease), transform var(--quick) var(--ease);
+    }
+
+    .step:hover { border-color: rgba(96, 165, 250, 0.35); transform: translateY(-2px); }
+
+    .step-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; }
+
+    .step-no {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+    }
+
+    .step h3 { margin: 0; font-size: calc(17px * var(--site-type, 1)); font-weight: 500; }
+
+    .step ol, .step ul { margin: 10px 0 0; padding-left: 1.35em; }
+    .step li { margin: 6px 0; font-size: 14.5px; color: var(--muted); }
+    .step li strong { color: var(--fg); font-weight: 500; }
+
+    .quote {
+      margin: 12px 0;
+      padding: calc(12px * var(--site-space, 1)) calc(16px * var(--site-space, 1));
+      border-left: 2px solid var(--accent);
+      border-radius: 0 var(--site-radius) var(--site-radius) 0;
+      background: rgba(255, 255, 255, 0.035);
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--fg);
+    }
+
+    .tip {
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--muted);
+      padding-left: 14px;
+      border-left: 1px solid var(--border);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: calc(16px * var(--site-space, 1));
+      margin-top: 24px;
+    }
+
+    .card {
+      padding: calc(22px * var(--site-space, 1));
+      border: 1px solid var(--border);
+      border-radius: var(--site-radius);
+      background: var(--surface);
+    }
+
+    .card h3 { margin: 0 0 8px; font-size: calc(16px * var(--site-type, 1)); font-weight: 500; }
+    .card p { margin: 0; font-size: 14px; color: var(--muted); }
+    .card p + p { margin-top: 8px; }
+
+    .chip {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      border: 1px solid var(--border);
+      font-size: 11.5px;
+      color: var(--muted);
+    }
+
+    .chip.on { border-color: rgba(96, 165, 250, 0.4); color: var(--accent); }
+
+    details {
+      border: 1px solid var(--border);
+      border-radius: var(--site-radius);
+      background: var(--surface);
+      padding: calc(14px * var(--site-space, 1)) calc(20px * var(--site-space, 1));
+      margin-top: 12px;
+    }
+
+    details summary {
+      cursor: pointer;
+      font-size: 14.5px;
+      font-weight: 500;
+      list-style: none;
+    }
+
+    details summary::-webkit-details-marker { display: none; }
+
+    details summary::after { content: '+'; float: right; color: var(--muted); }
+    details[open] summary::after { content: '−'; }
+
+    details p { margin: 12px 0 0; font-size: 14px; color: var(--muted); }
+
+    .closing {
+      margin-top: calc(64px * var(--site-space, 1));
+      padding: calc(40px * var(--site-space, 1));
+      border: 1px solid var(--border);
+      border-radius: var(--site-radius);
+      background: var(--surface);
+      text-align: center;
+    }
+
+    .closing h2 { margin: 0 0 10px; }
+
+    .closing p { margin: 0 auto 22px; max-width: 34em; color: var(--muted); font-size: 14.5px; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 0 26px;
+      border-radius: 9999px;
+      background: #eef0f6;
+      color: #0b1220;
+      font-size: 14.5px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: transform var(--quick) var(--ease), background var(--quick) var(--ease);
+    }
+
+    .btn:hover { transform: translateY(-1px); background: #ffffff; }
+
+    .btn.ghost {
+      margin-left: 10px;
+      background: transparent;
+      color: var(--fg);
+      border: 1px solid rgba(238, 240, 246, 0.24);
+    }
+
+    footer {
+      padding: 28px calc(24px * var(--site-space, 1)) 48px;
+      text-align: center;
+      font-size: 12.5px;
+      color: rgba(238, 240, 246, 0.42);
+    }
+
+    @media (max-width: 900px) {
+      .flow { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .flow-step::after { content: none; }
+    }
+
+    @media (max-width: 620px) {
+      .page { padding-top: 40px; }
+      .topbar { padding: 10px 16px; }
+      .topbar nav a:not(.primary) { display: none; }
+      .flow { grid-template-columns: 1fr; }
+      .closing { padding: 28px 20px; }
+      .btn.ghost { margin: 10px 0 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+      html { scroll-behavior: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/promo.html">拾念 <small>SHINIAN</small></a>
+    <nav aria-label="页面导航">
+      <a href="/promo.html">宣传页</a>
+      <a href="#advanced">进阶功能</a>
+      <a href="/" class="primary">打开拾念 →</a>
+    </nav>
+  </header>
+
+  <main class="page">
+    <span class="eyebrow">Guide · 快速试用</span>
+    <h1>从第一个念头，<br />到可复用的经验</h1>
+    <p class="lead">
+      拾念是一款中文的个人经验与试错记录工具，同时适配电脑网页版与手机网页版。它围绕三个时刻设计：
+      只有十秒时随手记一句；现在有空时拆出一步小尝试并如实填结果；过一阵子回来查「当时试了什么、结果如何」，
+      再把验证过的理解沉淀成带版本的经验。
+    </p>
+
+    <div class="callout">
+      <strong>你正在使用线上体验版。</strong>
+      这个版本无需注册与配置，记下的念头、尝试、经验、主题与日程会真实保存在<strong>你当前浏览器的本地存储</strong>里，
+      不会上传到服务器；换设备或清除浏览器数据后不会自动同步。AI 辅助、GitHub 调研与 ZIP 导出需要在本地版接入后使用。
+    </div>
+
+    <h2>5 分钟走完一次闭环</h2>
+    <p class="section-note">下面用「室内拍猫总是糊」的真实场景，走完 6 步。全程不需要配置任何模型。</p>
+
+    <div class="flow" aria-label="闭环流程">
+      <div class="flow-step"><span>01</span><b>直记念头</b>十秒写下困扰，不填标题</div>
+      <div class="flow-step"><span>02</span><b>发起尝试</b>拆出一个能立刻做的小动作</div>
+      <div class="flow-step"><span>03</span><b>记录结果</b>只填你亲眼看到的现象</div>
+      <div class="flow-step"><span>04</span><b>整理经验</b>写下当前理解与适用边界</div>
+      <div class="flow-step"><span>05</span><b>参考再试</b>带着经验做第二次尝试</div>
+      <div class="flow-step"><span>06</span><b>修订经验</b>版本升级，旧尝试仍留快照</div>
+    </div>
+
+    <div class="steps">
+      <section class="step">
+        <div class="step-head"><span class="step-no">STEP 01</span><h3>10 秒直记一条念头</h3></div>
+        <ol>
+          <li>打开首页（<a href="/">拾念首页</a>）。</li>
+          <li>确认输入框左下角处于 <strong>「直记念头」</strong> 模式。</li>
+          <li>输入一句话，例如：</li>
+        </ol>
+        <div class="quote">为什么我在室内拍猫总是糊？</div>
+        <ol start="4">
+          <li>点击右侧 <strong>发送</strong>。念头立即出现在「最近念头」里，不需要标题和分类。</li>
+        </ol>
+      </section>
+
+      <section class="step">
+        <div class="step-head"><span class="step-no">STEP 02</span><h3>从念头发起第一次尝试</h3></div>
+        <ol>
+          <li>点击刚记下的念头，进入念头详情。</li>
+          <li>在「开始一步」里点击 <strong>「自己写一步」</strong>，输入：</li>
+        </ol>
+        <div class="quote">同一盏灯下，快门从 1/60 调到 1/250，各拍五张。</div>
+        <ol start="3">
+          <li>点击 <strong>「创建尝试」</strong>。</li>
+        </ol>
+        <p class="tip">此时它显示「未开始 · 结果待记录」。只要你不填结果，哪怕过了几个月也只会显示待记录，不会因为时间过去就自动判为失败。</p>
+      </section>
+
+      <section class="step">
+        <div class="step-head"><span class="step-no">STEP 03</span><h3>填写真实的观察结果</h3></div>
+        <ol>
+          <li>进入刚才的尝试详情页（<code>/attempt/…</code>）。</li>
+          <li>状态切到 <strong>「已完成」</strong>，在「结果」里写下你亲眼看到的现象：</li>
+        </ol>
+        <div class="quote">猫走动时清楚了，但画面变暗了。</div>
+        <ol start="3">
+          <li>点击 <strong>「保存」</strong>。结果只由你填写，系统不会替你改写。</li>
+        </ol>
+      </section>
+
+      <section class="step">
+        <div class="step-head"><span class="step-no">STEP 04</span><h3>整理成经验（第 1 版）</h3></div>
+        <ol>
+          <li>在尝试详情页点击 <strong>「整理成经验」</strong>。</li>
+          <li>填写标题、我的理解、适用条件、限制或反例。例如理解为：</li>
+        </ol>
+        <div class="quote">提高快门到 1/250 可明显减轻室内拍猫的动态模糊，但进光量减少会让画面变暗。</div>
+        <ol start="3">
+          <li>点击 <strong>「保存经验」</strong>。经验详情会列出支撑它的原始尝试来源，随时可以点回去核对。</li>
+        </ol>
+      </section>
+
+      <section class="step">
+        <div class="step-head"><span class="step-no">STEP 05</span><h3>搜索旧结果，参考经验再试一步</h3></div>
+        <ol>
+          <li>打开左侧 <strong>「念头」</strong> 页，在顶部搜索框输入 <code>快门</code>，点击 <strong>「搜索」</strong>。</li>
+          <li>点击命中的尝试或经验，确认当时的条件。</li>
+          <li>回到经验详情，参考它创建第二次尝试：</li>
+        </ol>
+        <div class="quote">靠窗自然光下用 1/250 快门复测拍猫</div>
+      </section>
+
+      <section class="step">
+        <div class="step-head"><span class="step-no">STEP 06</span><h3>修订经验，验证版本快照</h3></div>
+        <ol>
+          <li>在经验详情点击 <strong>「编辑」</strong>，把理解补充为：</li>
+        </ol>
+        <div class="quote">第 2 版：提高快门到 1/250 可防动态模糊，室内弱光需配合靠窗自然光或补光。</div>
+        <ol start="2">
+          <li>保存后经验升级为第 2 版。</li>
+          <li>打开第二次尝试：顶部会标明它采用的是经验第 1 版，并可展开对比当时的快照。</li>
+        </ol>
+        <p class="tip">新版本不会篡改旧尝试的依据，这是「可追溯」的含义：你能分清当时凭什么做这个判断。</p>
+      </section>
+    </div>
+
+    <h2 id="advanced">进阶功能</h2>
+    <p class="section-note">这些能力在本地版完整可用；线上体验版会明确提示不可用，而不是悄悄失败。</p>
+
+    <div class="grid">
+      <article class="card">
+        <h3>问我的记录</h3>
+        <p>只读检索你已有的念头、尝试与经验，列出候选材料，由你手动勾选后再交给模型梳理。</p>
+        <p>模型建议不会写成你的实测结果，观察与推断分开标注。</p>
+        <span class="chip">线上体验版：本地检索可用，AI 生成需配置模型</span>
+      </article>
+      <article class="card">
+        <h3>问 AI · 辅助记录</h3>
+        <p>把一段纠结的对话整理成「念头 + 尝试步骤」草案，你确认后才写进记录，尝试固定为待执行。</p>
+        <span class="chip">线上体验版：需配置 OpenAI 兼容模型</span>
+      </article>
+      <article class="card">
+        <h3>知识网络</h3>
+        <p>念头、尝试、经验之间的真实关系画成图谱：包含、引用、手动关联、依据与采用。</p>
+        <p>支持拖拽、物理牵引与 1–2 跳聚焦，连线只表示记录里写下的关系。</p>
+        <span class="chip on">线上体验版：完整可用</span>
+      </article>
+      <article class="card">
+        <h3>主题与下次继续</h3>
+        <p>把围绕同一个问题的记录收进主题，置顶一条未完成的尝试作为「下次继续」，避免线索散掉。</p>
+        <span class="chip on">线上体验版：可用；ZIP 导出本地版</span>
+      </article>
+      <article class="card">
+        <h3>日程与阶段回顾</h3>
+        <p>给尝试安排时间段，在近 12 个月的热力图上看见记录节奏，按周或自定义范围回看实际发生的事。</p>
+        <span class="chip on">线上体验版：可用</span>
+      </article>
+      <article class="card">
+        <h3>GitHub 只读调研</h3>
+        <p>检索公开仓库的 README、许可证与 Release，把外部方案转成一个小实验，而不是整段照搬。</p>
+        <span class="chip">线上体验版：需本地版接入 Token</span>
+      </article>
+    </div>
+
+    <h2>数据与边界</h2>
+    <div class="grid">
+      <article class="card">
+        <h3>数据在哪里</h3>
+        <p>线上体验版的全部记录保存在当前浏览器的 localStorage（键名 <code>shinian.standalone.v1</code>）。不上传、不共享、不跨设备同步。</p>
+        <p>想长期保留，可在「更多」菜单里导出 JSON 备份；换设备时先导出再导入。</p>
+      </article>
+      <article class="card">
+        <h3>什么是它不做的</h3>
+        <p>不自动判断尝试成功或失败，不自动把一次结果概括成普遍规律，不把模型生成的内容伪装成你的观察。</p>
+        <p>经验是否成立，由你结合条件与样本自己判断。</p>
+      </article>
+    </div>
+
+    <h2>常见问题</h2>
+    <details>
+      <summary>刷新页面后记录还在吗？</summary>
+      <p>在同一个浏览器里还在。数据写入 localStorage，刷新、关掉再打开都不影响。清除站点数据、使用无痕窗口或换浏览器会丢失。</p>
+    </details>
+    <details>
+      <summary>为什么 AI 和 GitHub 调研不可用？</summary>
+      <p>线上体验版是纯静态站点，没有后端与密钥托管。模型调用需要你在本地版配置自己的 OpenAI 兼容端点；GitHub 调研需要配置只读 Token。</p>
+    </details>
+    <details>
+      <summary>手机上能用吗？</summary>
+      <p>可以。手机浏览器会自动切换为底部导航与吸底操作栏，适合现场十秒记一条或随手填结果。电脑上则使用三栏深度工作台。</p>
+    </details>
+    <details>
+      <summary>能导出到 Obsidian 吗？</summary>
+      <p>主题的 Markdown ZIP 导出在本地版提供。线上体验版可以将全部数据导出为 JSON，结构完整，可用于备份或自行迁移。</p>
+    </details>
+
+    <section class="closing">
+      <h2>把这一次试错，<br />留给未来的自己。</h2>
+      <p>先记下第一个念头。剩下的，等你真的去试过再回来填。</p>
+      <a class="btn" href="/">打开拾念 →</a>
+      <a class="btn ghost" href="/promo.html">看产品介绍</a>
+    </section>
+  </main>
+
+  <footer>拾念 SHINIAN · 记下念头 → 试一步 → 记录真实结果 → 沉淀经验</footer>
+</body>
+</html>

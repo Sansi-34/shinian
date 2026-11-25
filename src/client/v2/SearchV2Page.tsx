@@ -256,6 +256,7 @@ export default function SearchV2Page() {
     <V2Shell
       leftTitle="记录"
       leftCount={allCaptures.length}
+      mobileLeftLabel="全部念头"
       left={
         <>
           {loading && allCaptures.length === 0 && (
@@ -280,6 +281,7 @@ export default function SearchV2Page() {
               type="button"
               className="v2-leftItem v2-leftBtn"
               style={{ color: 'var(--accent)' }}
+              data-keep-drawer="true"
               onClick={() => setShowAllLeft(true)}
             >
               展开全部 {allCaptures.length} 条 →

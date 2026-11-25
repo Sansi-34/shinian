@@ -18,7 +18,7 @@
   justify-content: space-between;
   gap: 8px;
   width: 100%;
-  min-height: 34px;
+  min-height: 36px;
   padding: 0 11px;
   border: 1px solid var(--line-2);
   border-radius: var(--r-1);
@@ -30,9 +30,32 @@
   cursor: pointer;
   transition: background 120ms var(--ease-out), border-color 120ms var(--ease-out);
 }
-.newChatBtn:hover {
-  background: var(--hover);
-  border-color: var(--cyan-border);
+@media (hover: hover) and (pointer: fine) {
+  .newChatBtn:hover {
+    background: var(--hover);
+    border-color: var(--cyan-border);
+  }
+}
+
+.mobileNewChatBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 11px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-1);
+  background: var(--raise);
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 120ms var(--ease-out), border-color 120ms var(--ease-out);
+}
+.mobileNewChatBtn:active {
+  transform: scale(0.97);
 }
 
 .sideSectionTitle {
@@ -308,13 +331,15 @@
   box-shadow: 0 2px 8px rgba(10, 132, 255, 0.25);
   transition: filter 140ms var(--ease-out), transform 140ms var(--ease-out), opacity 140ms var(--ease-out);
 }
-.primaryTinyBtn:hover:not(:disabled) {
-  filter: brightness(1.08);
-  transform: translateY(-1px);
-}
 .primaryTinyBtn:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+@media (hover: hover) and (pointer: fine) {
+  .primaryTinyBtn:hover:not(:disabled) {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+  }
 }
 
 .ghostActionBtn {
@@ -332,10 +357,12 @@
   cursor: pointer;
   transition: background 140ms var(--ease-out), color 140ms var(--ease-out), border-color 140ms var(--ease-out);
 }
-.ghostActionBtn:hover:not(:disabled) {
-  background: var(--hover);
-  border-color: var(--line-2);
-  color: var(--ink);
+@media (hover: hover) and (pointer: fine) {
+  .ghostActionBtn:hover:not(:disabled) {
+    background: var(--hover);
+    border-color: var(--line-2);
+    color: var(--ink);
+  }
 }
 .ghostActionBtn:disabled {
   opacity: 0.55;
@@ -509,6 +536,7 @@
 }
 
 .composerCard {
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -587,13 +615,15 @@
   cursor: pointer;
   transition: background 140ms var(--ease-out), color 140ms var(--ease-out), transform 180ms var(--ease-spring);
 }
-.plusCircleBtn:hover {
-  background: var(--line-2);
-  color: var(--ink);
-  transform: rotate(90deg);
-}
 .plusCircleBtn:active {
-  transform: rotate(90deg) scale(0.92);
+  transform: scale(0.92);
+}
+@media (hover: hover) and (pointer: fine) {
+  .plusCircleBtn:hover {
+    background: var(--line-2);
+    color: var(--ink);
+    transform: rotate(90deg);
+  }
 }
 
 .ghostSelectBtn {
@@ -612,9 +642,17 @@
   cursor: pointer;
   transition: background 140ms var(--ease-out), color 140ms var(--ease-out);
 }
-.ghostSelectBtn:hover {
-  background: var(--hover);
-  color: var(--ink);
+@media (hover: hover) and (pointer: fine) {
+  .ghostSelectBtn:hover {
+    background: var(--hover);
+    color: var(--ink);
+  }
+}
+
+.modeLabelText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .chevSmall {
@@ -882,11 +920,13 @@
   transition: transform 160ms var(--ease-spring);
 }
 
-.sendBtn:hover:not(:disabled) {
-  background: var(--cta-bg-hover);
-}
-.sendBtn:hover:not(:disabled) svg {
-  transform: translateY(-1.5px);
+@media (hover: hover) and (pointer: fine) {
+  .sendBtn:hover:not(:disabled) {
+    background: var(--cta-bg-hover);
+  }
+  .sendBtn:hover:not(:disabled) svg {
+    transform: translateY(-1.5px);
+  }
 }
 .sendBtn:active:not(:disabled) {
   transform: scale(0.93);
@@ -910,14 +950,121 @@
 }
 
 @media (max-width: 900px) {
+  .stage {
+    min-height: calc(100dvh - var(--mobile-bar, 46px) - var(--tabbar) - env(safe-area-inset-bottom) - env(safe-area-inset-top));
+  }
   .welcomeWrap {
-    padding: 24px 16px 40px;
+    padding: 20px 14px 36px;
+    gap: 20px;
+  }
+  .welcomeTitle {
+    font-size: clamp(20px, 5.6vw, 26px);
   }
   .thread {
-    padding: 16px 14px 110px;
+    padding: 16px 12px 20px;
+    gap: 18px;
   }
   .bottomDock {
     bottom: calc(var(--tabbar) + env(safe-area-inset-bottom));
-    padding: 10px 12px 12px;
+    padding: 8px 12px 10px;
+  }
+  .composerCard {
+    padding: 11px 12px 9px;
+  }
+  .composerBar {
+    flex-wrap: nowrap;
+    gap: 6px;
+    min-width: 0;
+  }
+  .leftControls {
+    min-width: 0;
+    flex: 0 1 auto;
+    gap: 4px;
+  }
+  .sendSide {
+    min-width: 0;
+    flex: 0 1 auto;
+    gap: 4px;
+  }
+  .plusCircleBtn {
+    width: 36px;
+    height: 36px;
+    flex: none;
+  }
+  .ghostSelectBtn {
+    min-height: 36px;
+    height: 36px;
+    max-width: 142px;
+    min-width: 0;
+    padding: 0 7px;
+    font-size: 12px;
+    gap: 4px;
+  }
+  .modelTrigger {
+    min-height: 36px;
+    height: 36px;
+    max-width: clamp(82px, 27vw, 132px);
+    min-width: 0;
+    padding: 0 7px;
+    font-size: 12px;
+    gap: 4px;
+  }
+  .sendBtn {
+    width: 36px;
+    height: 36px;
+    flex: none;
+  }
+  .smallMenu,
+  .modelPopover {
+    max-width: calc(100vw - 24px);
+    max-height: min(340px, 52dvh);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .smallMenuItem {
+    min-height: 42px;
+    padding: 9px 10px;
+  }
+  .modelOption {
+    min-height: 40px;
+    padding: 8px 10px;
+  }
+  .modelMiniBtn {
+    min-height: 36px;
+    height: 36px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+  .modelFilterInput,
+  .modelCustomInput {
+    min-height: 38px;
+    height: 38px;
+  }
+  .inlineInput {
+    min-height: 40px;
+    height: 40px;
+  }
+  .primaryTinyBtn,
+  .ghostActionBtn {
+    min-height: 38px;
+    height: auto;
+    padding: 6px 13px;
+  }
+}
+
+@media (max-width: 640px) {
+  .popWrap,
+  .modelPickerWrap {
+    position: static;
+  }
+  .smallMenu,
+  .modelPopover {
+    left: 0;
+    right: 0;
+    width: 100%;
+    min-width: 0;
+    max-width: calc(100vw - 24px);
+    bottom: calc(100% + 8px);
+    transform-origin: center bottom;
   }
 }

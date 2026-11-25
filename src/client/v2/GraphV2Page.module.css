@@ -589,12 +589,122 @@
   pointer-events: none;
 }
 
+.mobileNodeBar {
+  display: none;
+}
+
 @media (max-width: 900px) {
-  .canvasHintPill {
+  .canvasHintPill,
+  .hoverCard {
     display: none;
   }
-  .hoverCard {
-    max-width: calc(100% - 20px);
-    padding: 8px 10px;
+
+  .searchShell {
+    min-height: 40px;
+    height: 40px;
+  }
+  .searchInput {
+    min-height: 38px;
+  }
+  .clearIconBtn {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+  .searchSubmit {
+    min-height: 40px;
+    height: 40px;
+    padding: 0 14px;
+  }
+  .filterRow {
+    min-height: 40px;
+    padding: 6px 8px;
+  }
+
+  .canvasHud {
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    max-width: calc(100% - 16px);
+    justify-content: space-between;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .canvasHud::-webkit-scrollbar {
+    display: none;
+  }
+  .hudBtn {
+    flex: none;
+    height: 36px;
+    min-width: 36px;
+    padding: 0 8px;
+    font-size: 12px;
+  }
+
+  .mobileNodeBar {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0 var(--sp-2) var(--sp-2);
+    padding: 11px 12px;
+    border: 1px solid var(--line-2);
+    border-radius: var(--r-2);
+    background: var(--raise);
+    animation: graphCardIn 160ms var(--ease-out) both;
+  }
+
+  .mobileNodeHead {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .mobileNodeBadge {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--node-color, var(--accent));
+    background: color-mix(in srgb, var(--node-color, var(--accent)) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--node-color, var(--accent)) 30%, transparent);
+  }
+
+  .mobileNodeTitle {
+    flex: 1;
+    min-width: 0;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mobileNodeDismiss {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--hover);
+    color: var(--ink-2);
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  .mobileNodeActions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
   }
 }

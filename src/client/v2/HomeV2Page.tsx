@@ -1164,7 +1164,7 @@ export default function HomeV2Page() {
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                 )}
               </svg>
-              <span>{MODE_LABEL[mode]}</span>
+              <span className={styles.modeLabelText}>{MODE_LABEL[mode]}</span>
               <span className={styles.chevSmall} aria-hidden="true">
                 ⌄
               </span>
@@ -1414,10 +1414,26 @@ export default function HomeV2Page() {
     <V2Shell
       leftTitle="对话"
       leftCount={asks.length}
+      mobileLeftLabel="历史问答 / 最近念头"
+      mobileTopRight={
+        <button
+          type="button"
+          className={styles.mobileNewChatBtn}
+          onClick={startNewChat}
+          data-testid="home-mobile-new-chat"
+        >
+          + 新对话
+        </button>
+      }
       left={
         <>
           <div className={styles.sideTop}>
-            <button type="button" className={styles.newChatBtn} onClick={startNewChat}>
+            <button
+              type="button"
+              className={styles.newChatBtn}
+              onClick={startNewChat}
+              data-close-drawer="true"
+            >
               <span>+ 开启新对话</span>
               <span style={{ fontSize: 11, color: 'var(--ink-3)' }}>首页</span>
             </button>

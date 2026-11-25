@@ -18,30 +18,30 @@
 
 .v2-root,
 .v2-chrome {
-  /* 间距：严格 4/8 节奏 */
+  /* 间距：严格 4/8 节奏（大间距跟随站点 --site-space） */
   --sp-1: 4px;
   --sp-2: 8px;
   --sp-3: 12px;
-  --sp-4: 16px;
-  --sp-5: 24px;
-  --sp-6: 32px;
+  --sp-4: calc(16px * var(--site-space, 1));
+  --sp-5: calc(24px * var(--site-space, 1));
+  --sp-6: calc(32px * var(--site-space, 1));
 
-  /* 字号：清晰扫描层级 */
+  /* 字号：清晰扫描层级（跟随站点 --site-type） */
   --fs-brand: 18px;
-  --fs-title: 15px;
-  --fs-body: 14px;
-  --fs-meta: 12px;
+  --fs-title: calc(15px * var(--site-type, 1));
+  --fs-body: calc(14px * var(--site-type, 1));
+  --fs-meta: calc(12px * var(--site-type, 1));
 
-  /* 圆角：克制利落的桌面工具圆角 */
-  --r-1: 6px;
-  --r-2: 8px;
+  /* 圆角：克制利落的桌面工具圆角（跟随站点 --site-radius） */
+  --r-1: calc(var(--site-radius, 8px) * 0.75);
+  --r-2: var(--site-radius, 8px);
   --r-pill: 9999px;
 
   --rail: 56px;
   --status: 34px;
   --tabbar: 56px;
 
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
+  --font-sans: var(--site-font, 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif);
   --font-display: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;
   --font-serif: 'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', Georgia, serif;
   --ease-out: cubic-bezier(0.2, 0, 0, 1);
@@ -57,19 +57,19 @@
 .v2-chrome,
 .v2-chrome[data-v2-theme='dark'] {
   color-scheme: dark;
-  --bg: #111113;
-  --panel: #161618;
+  --bg: var(--site-bg, #111113);
+  --panel: var(--site-surface, #161618);
   --raise: #1c1c1f;
   --raise-2: #222226;
   --sunk: #0c0c0e;
-  --ink: #ededef;
-  --ink-2: #a8a8b3;
+  --ink: var(--site-fg, #ededef);
+  --ink-2: var(--site-muted, #a8a8b3);
   --ink-3: #8b8b96;
-  --line: rgba(255, 255, 255, 0.08);
+  --line: var(--site-border, rgba(255, 255, 255, 0.08));
   --line-2: rgba(255, 255, 255, 0.14);
   --hover: rgba(255, 255, 255, 0.055);
-  --accent: #6ea8fe;
-  --accent-ink: #111113;
+  --accent: var(--site-accent, #6ea8fe);
+  --accent-ink: var(--site-on-accent, #111113);
   --accent-soft: rgba(110, 168, 254, 0.12);
 
   /* 克制聚焦与高反差纯色主行动 */

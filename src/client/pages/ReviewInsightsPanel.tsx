@@ -1,5 +1,5 @@
 // 周期回顾 · 近 12 个月全年格子热力图：念头日程表
-import { useMemo, useState, type CSSProperties, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import type { ReviewDailyDay, ReviewDailyResponse } from '../types';
 import { useCalendarColor } from '../v2/preferences';
@@ -136,6 +136,33 @@ function YearLatticeCard({
 }) {
   const colCount = Math.max(weeks.length, 1);
   const gridTemplate = { '--cols': colCount } as CSSProperties;
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [fadeState, setFadeState] = useState<'none' | 'left' | 'right' | 'both'>('none');
+
+  const updateFade = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    if (maxScroll <= 4) {
+      setFadeState('none');
+      return;
+    }
+    const left = el.scrollLeft > 6;
+    const right = el.scrollLeft < maxScroll - 6;
+    setFadeState(left && right ? 'both' : left ? 'left' : right ? 'right' : 'none');
+  }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    // 小屏初次加载时默认定位到最右侧（今天与近期周列），左侧留出渐隐提示可回滑查看全年
+    if (el.scrollWidth > el.clientWidth + 4) {
+      el.scrollLeft = el.scrollWidth;
+    }
+    updateFade();
+    window.addEventListener('resize', updateFade);
+    return () => window.removeEventListener('resize', updateFade);
+  }, [weeks.length, updateFade]);
 
   return (
     <div className={styles.card} aria-label={ariaLabel}>
@@ -167,7 +194,13 @@ function YearLatticeCard({
         </div>
       </div>
 
-      <div className={styles.latticeScroll}>
+      <div className={styles.latticeWrap}>
+        <div
+          ref={scrollRef}
+          className={styles.latticeScroll}
+          data-fade={fadeState}
+          onScroll={updateFade}
+        >
         <div className={styles.latticeInner} style={gridTemplate}>
           <div className={styles.weeksGrid} role="grid" aria-label={`${title}近12个月网格`}>
             {weeks.map((week) => (
@@ -240,6 +273,10 @@ function YearLatticeCard({
             )}
           </div>
         </div>
+        </div>
+        <p className={styles.scrollHint} aria-hidden="true">
+          ↔ 左右滑动查看近 12 个月完整记录
+        </p>
       </div>
 
       {detailNode ?? (

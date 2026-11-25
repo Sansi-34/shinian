@@ -20,14 +20,15 @@ const INSIGHT: RailItem[] = [
   { to: '/review', label: '周期回顾', icon: 'refresh' },
 ];
 
-// 「更多」集中收纳低频入口与「AI 模型设置」；移动端保留周期回顾入口
+// 「更多」集中收纳低频入口与「AI 模型设置」；移动端补齐知识网络与周期回顾入口
 const MORE: Array<RailItem & { mobileOnly?: boolean }> = [
+  { to: '/graph', label: '知识网络', icon: 'graph', mobileOnly: true },
+  { to: '/review', label: '周期回顾', icon: 'refresh', mobileOnly: true },
   { to: '/experiences', label: '经验', icon: 'star' },
   { to: '/schedule', label: '日程', icon: 'clock' },
   { to: '/activity', label: '操作动态', icon: 'pulse' },
   { to: '/research', label: '深度研究', icon: 'search' },
   { to: '/settings/ai', label: 'AI 模型设置', icon: 'gear' },
-  { to: '/review', label: '周期回顾', icon: 'refresh', mobileOnly: true },
 ];
 
 const ICONS = {
@@ -45,6 +46,7 @@ const ICONS = {
   search: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14M20 20l-4-4',
   sun: 'M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4',
   moon: 'M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z',
+  spark: 'M12 3l2.1 5.9L20 11l-5.9 2.1L12 19l-2.1-5.9L4 11l5.9-2.1z',
   out: 'M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10',
 } as const;
 
@@ -118,7 +120,7 @@ export default function Rail() {
   return (
     <>
       <aside className={styles.rail} aria-label="主导航">
-        <a href="/promo" className={styles.brand} aria-label="拾念宣传页" title="查看拾念宣传页">
+        <a href="/promo.html" className={styles.brand} aria-label="拾念宣传页" title="查看拾念宣传页">
           拾
         </a>
         <div className={styles.group}>
@@ -192,6 +194,28 @@ export default function Rail() {
               </NavLink>
             ))}
             <div className={styles.panelSep} aria-hidden="true" />
+            <button
+              type="button"
+              role="menuitem"
+              className={`${styles.panelItem} ${styles.mobileOnly}`}
+              onClick={() => {
+                changeTheme(theme === 'dark' ? 'paper' : 'dark');
+                setOpen(false);
+              }}
+            >
+              <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={16} />
+              {theme === 'dark' ? '切换到纸张模式' : '切换到暗色模式'}
+            </button>
+            <a
+              href="/promo.html"
+              role="menuitem"
+              className={`${styles.panelItem} ${styles.mobileOnly}`}
+              onClick={() => setOpen(false)}
+            >
+              <Icon name="spark" size={16} />
+              拾念介绍
+            </a>
+            <div className={`${styles.panelSep} ${styles.mobileOnly}`} aria-hidden="true" />
             <button type="button" role="menuitem" className={styles.panelItem} onClick={() => void logout()}>
               <Icon name="out" size={16} />
               退出登录

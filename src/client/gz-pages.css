@@ -415,7 +415,15 @@
   cursor: pointer;
   animation: gz-enter-rise var(--enter-duration) var(--ease-editorial) backwards;
 }
-.activity-back-top:hover { background: var(--accent); color: var(--accent-on); }
+@media (hover: hover) and (pointer: fine) {
+  .activity-back-top:hover { background: var(--accent); color: var(--accent-on); }
+}
+@media (max-width: 900px) {
+  .activity-back-top {
+    right: 16px;
+    bottom: calc(var(--tabbar, 56px) + env(safe-area-inset-bottom) + 16px);
+  }
+}
 @keyframes gz-dot-pop { from { transform: scale(0); } to { transform: scale(1); } }
 .activity-event-item { position: relative; }
 
@@ -2132,10 +2140,12 @@ select:focus:not(.v2-root *):not(.v2-chrome *) {
   box-shadow: var(--shadow-card);
   transition: all var(--dur-fast-2) var(--ease-standard);
 }
-.card:hover {
-  border-color: var(--accent-border, #c7d2fe);
-  box-shadow: var(--shadow-hover);
-  transform: translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+  .card:hover {
+    border-color: var(--accent-border, #c7d2fe);
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-1px);
+  }
 }
 
 .card-text strong {
@@ -2324,6 +2334,6 @@ select:focus:not(.v2-root *):not(.v2-chrome *) {
     margin-left: 0;
   }
   .app.legacy-with-rail .app-main {
-    padding: 20px 16px 88px;
+    padding: 20px 16px calc(var(--tabbar, 56px) + env(safe-area-inset-bottom) + 32px);
   }
 }

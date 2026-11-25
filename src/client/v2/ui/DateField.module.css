@@ -1,6 +1,7 @@
 .field {
   position: relative;
   display: inline-block;
+  max-width: 100%;
 }
 
 .row {
@@ -25,9 +26,11 @@
   cursor: pointer;
   transition: border-color 120ms ease-out, color 120ms ease-out, background 120ms ease-out;
 }
-.dateBtn:hover {
-  background: var(--hover);
-  color: var(--ink);
+@media (hover: hover) and (pointer: fine) {
+  .dateBtn:hover {
+    background: var(--hover);
+    color: var(--ink);
+  }
 }
 .dateBtn:focus-visible {
   outline: 2px solid var(--accent);
@@ -47,7 +50,7 @@
 }
 
 .timeInput {
-  width: 84px;
+  width: 88px;
   min-height: 40px;
   padding: 0 var(--sp-3);
   border: 1px solid var(--line-2);
@@ -75,9 +78,11 @@
   font-size: var(--fs-meta);
   cursor: pointer;
 }
-.quick:hover {
-  background: var(--hover);
-  color: var(--ink);
+@media (hover: hover) and (pointer: fine) {
+  .quick:hover {
+    background: var(--hover);
+    color: var(--ink);
+  }
 }
 .quick:focus-visible {
   outline: 2px solid var(--accent);
@@ -89,7 +94,7 @@
 .pop {
   position: fixed;
   z-index: 130; /* 必须高于 Modal 遮罩(100)，否则弹窗里的日历会被压住 */
-  width: 264px;
+  width: min(264px, calc(100vw - 24px));
   padding: var(--sp-3);
   border: 1px solid var(--line-2);
   border-radius: var(--r-2);
@@ -119,9 +124,11 @@
   line-height: 1;
   cursor: pointer;
 }
-.navBtn:hover {
-  background: var(--hover);
-  color: var(--ink);
+@media (hover: hover) and (pointer: fine) {
+  .navBtn:hover {
+    background: var(--hover);
+    color: var(--ink);
+  }
 }
 
 .week,
@@ -148,9 +155,11 @@
   font-variant-numeric: tabular-nums;
   cursor: pointer;
 }
-.day:hover {
-  background: var(--hover);
-  color: var(--ink);
+@media (hover: hover) and (pointer: fine) {
+  .day:hover {
+    background: var(--hover);
+    color: var(--ink);
+  }
 }
 .day:focus-visible {
   outline: 2px solid var(--accent);
@@ -172,4 +181,21 @@
   margin-top: var(--sp-2);
   border-top: 1px solid var(--line);
   padding-top: var(--sp-2);
+}
+
+@media (max-width: 900px) {
+  .timeInput {
+    width: 100px;
+    padding: 0 var(--sp-2);
+  }
+  .pop {
+    width: min(288px, calc(100vw - 24px));
+  }
+  .navBtn {
+    width: 36px;
+    height: 36px;
+  }
+  .day {
+    height: 36px;
+  }
 }

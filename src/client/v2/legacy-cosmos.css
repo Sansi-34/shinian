@@ -398,12 +398,14 @@
     background-color 150ms ease-out;
 }
 
-.app.legacy-with-rail .stat-card:hover,
-.app.legacy-with-rail .review-record:hover,
-.app.legacy-with-rail .candidate-card:hover,
-.app.legacy-with-rail .experiment-card:hover,
-.app.legacy-with-rail .activity-event:hover {
-  transform: translateY(-1.5px);
+@media (hover: hover) and (pointer: fine) {
+  .app.legacy-with-rail .stat-card:hover,
+  .app.legacy-with-rail .review-record:hover,
+  .app.legacy-with-rail .candidate-card:hover,
+  .app.legacy-with-rail .experiment-card:hover,
+  .app.legacy-with-rail .activity-event:hover {
+    transform: translateY(-1.5px);
+  }
 }
 
 .app.legacy-with-rail .btn,

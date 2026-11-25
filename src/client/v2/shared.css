@@ -607,19 +607,56 @@ a.v2-groupItem:hover {
   outline: none;
 }
 @media (max-width: 900px) {
+  .v2-compose {
+    padding: 10px var(--sp-3);
+  }
+  .v2-compose input {
+    min-height: 40px;
+  }
+  .v2-toolbar {
+    gap: var(--sp-2);
+    padding: var(--sp-3);
+  }
+  .v2-searchBox {
+    flex: 1 1 160px;
+    min-width: 0;
+    min-height: 40px;
+  }
+  .v2-searchBox input {
+    min-height: 38px;
+  }
+  .v2-input {
+    max-width: 100%;
+    width: 100%;
+    min-height: 40px;
+  }
+  .v2-miniBtn {
+    min-height: 36px;
+    min-width: 36px;
+    padding: 0 var(--sp-3);
+  }
   .v2-graphWrap {
-    height: min(58vh, 460px);
+    height: min(56vh, 440px);
     margin: var(--sp-2);
   }
   .v2-form,
   .v2-writer {
-    padding-bottom: calc(var(--tabbar) + 28px);
+    padding-bottom: calc(var(--tabbar) + env(safe-area-inset-bottom) + 28px);
   }
   .v2-form input,
   .v2-form textarea,
   .v2-writer textarea,
   .v2-captureActions {
     scroll-margin-bottom: 120px;
+  }
+}
+
+@media (max-width: 640px) {
+  .v2-toolbar:has(.v2-searchBox) > .v2-searchBox {
+    flex: 1 1 calc(100% - 92px);
+  }
+  .v2-toolbar:has(.v2-searchBox) > [role='group'] {
+    order: 3;
   }
 }
 

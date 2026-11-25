@@ -2,11 +2,12 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react()],
   root: '.',
   build: {
-    outDir: 'dist/client',
+    // 线上体验版单独输出，避免覆盖本地服务使用的 dist/client。
+    outDir: mode === 'standalone' ? 'dist/site' : 'dist/client',
     emptyOutDir: true,
   },
   resolve: {
@@ -22,4 +23,4 @@ export default defineConfig({
       '/api': process.env.VITE_API_TARGET || 'http://127.0.0.1:3000',
     },
   },
-});
+}));

@@ -65,24 +65,39 @@ export default function DateField({
     setTimeDraft(time);
   }, [time]);
 
-  /** 按按钮位置算弹层坐标：空间不够就向上翻，左右夹进视口 */
+  /** 按按钮位置算弹层坐标：移动端扣除底栏与安全区，空间不够向上翻，左右安全夹进视口 */
   const reposition = useCallback(() => {
     const btn = btnRef.current;
     if (!btn) return;
     const r = btn.getBoundingClientRect();
     const vh = window.innerHeight;
     const vw = window.innerWidth;
-    const below = vh - r.bottom;
-    const openUp = below < POP_H + GAP * 2 && r.top > POP_H + GAP * 2;
-    const top = openUp ? Math.max(GAP, r.top - POP_H - GAP) : Math.min(vh - POP_H - GAP, r.bottom + GAP);
-    const left = Math.max(GAP, Math.min(r.left, vw - POP_W - GAP));
+    const isMobile = vw <= 900;
+    const railRect = isMobile
+      ? document.querySelector('aside[aria-label="主导航"]')?.getBoundingClientRect()
+      : null;
+    const bottomReserve = isMobile ? Math.max(64, Math.round(railRect?.height ?? 56) + 8) : 0;
+    const usableBottom = vh - bottomReserve;
+    const popW = popRef.current?.offsetWidth || POP_W;
+    const popH = popRef.current?.offsetHeight || POP_H;
+    const edge = vw <= 640 ? 12 : GAP;
+    const below = usableBottom - r.bottom;
+    const openUp = below < popH + edge * 2 && r.top > popH + edge;
+    const top = openUp
+      ? Math.max(edge, r.top - popH - GAP)
+      : Math.max(edge, Math.min(usableBottom - popH - edge, r.bottom + GAP));
+    const left =
+      vw <= 420
+        ? Math.max(edge, Math.round((vw - popW) / 2))
+        : Math.max(edge, Math.min(r.left, vw - popW - edge));
     setPos({ top, left });
   }, []);
 
   useEffect(() => {
     if (!open) return;
     reposition();
-    const onDown = (e: MouseEvent) => {
+    const rafInit = window.requestAnimationFrame(reposition);
+    const onDown = (e: PointerEvent) => {
       const t = e.target as Node;
       if (btnRef.current?.contains(t) || popRef.current?.contains(t)) return;
       setOpen(false);
@@ -99,12 +114,13 @@ export default function DateField({
         reposition();
       });
     };
-    document.addEventListener('mousedown', onDown);
+    document.addEventListener('pointerdown', onDown);
     document.addEventListener('keydown', onKey);
     window.addEventListener('resize', reposition);
     window.addEventListener('scroll', onScroll, true);
     return () => {
-      document.removeEventListener('mousedown', onDown);
+      window.cancelAnimationFrame(rafInit);
+      document.removeEventListener('pointerdown', onDown);
       document.removeEventListener('keydown', onKey);
       window.removeEventListener('resize', reposition);
       window.removeEventListener('scroll', onScroll, true);

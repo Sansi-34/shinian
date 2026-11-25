@@ -40,18 +40,27 @@
   color: var(--ink-3);
   border-color: var(--line);
 }
-.primary:hover:not(:disabled) {
-  background: var(--cta-bg-hover);
-}
 
 .ghost {
   background: var(--raise);
   border-color: var(--line-2);
   color: var(--ink);
 }
-.ghost:hover:not(:disabled) {
-  background: var(--hover);
-  border-color: var(--cyan-border);
+
+@media (hover: hover) and (pointer: fine) {
+  .primary:hover:not(:disabled) {
+    background: var(--cta-bg-hover);
+  }
+  .ghost:hover:not(:disabled) {
+    background: var(--hover);
+    border-color: var(--cyan-border);
+  }
+}
+
+@media (max-width: 900px) {
+  .btn {
+    min-height: 38px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

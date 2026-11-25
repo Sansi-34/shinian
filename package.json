@@ -7,6 +7,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:site": "vite build --mode standalone",
     "typecheck": "tsc --noEmit",
     "serve": "tsx src/server/index.ts",
     "start": "npm run build && npm run serve",

@@ -19,14 +19,21 @@
     transform 140ms var(--ease-spring);
 }
 
-.chip:hover {
-  border-color: var(--cyan-border);
-  background: var(--hover);
-  color: var(--ink);
-  transform: translateY(-1px);
-}
 .chip:active {
   transform: translateY(0) scale(0.975);
+}
+@media (hover: hover) and (pointer: fine) {
+  .chip:hover {
+    border-color: var(--cyan-border);
+    background: var(--hover);
+    color: var(--ink);
+    transform: translateY(-1px);
+  }
+}
+@media (max-width: 900px) {
+  .chip {
+    min-height: 36px;
+  }
 }
 
 .chip:focus-visible {

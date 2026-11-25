@@ -34,14 +34,16 @@
   line-height: 1;
   color: var(--cta-ink);
   text-decoration: none;
-  transition: opacity 140ms var(--ease-out), transform 180ms var(--ease-spring);
-}
-.brand:hover {
-  opacity: 0.92;
-  transform: scale(1.05);
+  transition: opacity calc(140ms * var(--site-motion, 1)) var(--ease-out), transform calc(180ms * var(--site-motion, 1)) var(--ease-spring);
 }
 .brand:active {
   transform: scale(0.95);
+}
+@media (hover: hover) and (pointer: fine) {
+  .brand:hover {
+    opacity: 0.92;
+    transform: scale(1.05);
+  }
 }
 .brand:focus-visible {
   outline: 2px solid var(--accent);
@@ -84,15 +86,17 @@
 .link svg {
   transition: transform 180ms var(--ease-spring);
 }
-.link:hover {
-  background: var(--hover);
-  color: var(--ink);
-}
-.link:hover svg {
-  transform: translateY(-1px) scale(1.06);
-}
 .link:active svg {
   transform: scale(0.92);
+}
+@media (hover: hover) and (pointer: fine) {
+  .link:hover {
+    background: var(--hover);
+    color: var(--ink);
+  }
+  .link:hover svg {
+    transform: translateY(-1px) scale(1.06);
+  }
 }
 .link:focus-visible {
   outline: 2px solid var(--accent);
@@ -147,10 +151,15 @@
   }
 }
 
-.link:hover .tip,
 .link:focus-visible .tip {
   display: block;
   animation: tipSlide 140ms var(--ease-spring);
+}
+@media (hover: hover) and (pointer: fine) {
+  .link:hover .tip {
+    display: block;
+    animation: tipSlide 140ms var(--ease-spring);
+  }
 }
 
 .tabLabel {
@@ -228,9 +237,11 @@
   cursor: pointer;
   transition: background 120ms var(--ease-out), color 120ms var(--ease-out);
 }
-.panelItem:hover {
-  background: var(--hover);
-  color: var(--ink);
+@media (hover: hover) and (pointer: fine) {
+  .panelItem:hover {
+    background: var(--hover);
+    color: var(--ink);
+  }
 }
 .panelItem:focus-visible {
   outline: 2px solid var(--accent);
@@ -272,11 +283,6 @@
     display: none;
   }
 
-  .active::before,
-  .activeDesktop::before {
-    display: none;
-  }
-
   .group {
     display: contents;
   }
@@ -302,31 +308,25 @@
   .activeDesktop::before {
     display: none;
   }
+
+  .active,
   .activeMobile {
     color: var(--accent);
     background: transparent;
   }
+  .active::before,
   .activeMobile::before {
     content: '';
+    display: block;
     position: absolute;
     left: 50%;
     top: 0;
+    bottom: auto;
     translate: -50% 0;
     width: 24px;
     height: 2px;
     border-radius: var(--r-pill);
     background: var(--accent);
-  }
-
-  .active {
-    background: transparent;
-  }
-  .active::before {
-    left: 50%;
-    top: 0;
-    translate: -50% 0;
-    width: 24px;
-    height: 2px;
   }
 
   .tip {
@@ -345,7 +345,15 @@
     left: auto;
     right: var(--sp-3);
     bottom: calc(var(--tabbar) + env(safe-area-inset-bottom) + var(--sp-2));
-    min-width: 196px;
+    min-width: 208px;
+    max-width: calc(100vw - 24px);
+    max-height: calc(100dvh - var(--tabbar) - env(safe-area-inset-bottom) - 24px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .panelItem {
+    min-height: 44px;
   }
 }
 

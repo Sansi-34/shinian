@@ -96,6 +96,9 @@ import type {
 
 const API_BASE = '/api';
 
+// 线上体验版（Qoder Site）不接后端，请求改为读写访问者浏览器里的 localStorage。
+const STANDALONE_MODE = import.meta.env.VITE_SHINIAN_STANDALONE === '1';
+
 // 本地时间戳：shinian-export-YYYYMMDD-HHmmss.json
 function exportStamp(date = new Date()): string {
   const pad = (n: number) => String(n).padStart(2, '0');
@@ -115,6 +118,13 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  if (STANDALONE_MODE) {
+    const { localRequest } = await import('./standalone');
+    const { status, body } = await localRequest(path, options);
+    if (status >= 400) throw new ApiError(status, body);
+    return body as T;
+  }
+
   const res = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {
@@ -781,6 +791,13 @@ export const api = {
     },
     signal?: AbortSignal
   ): Promise<AssistCaptureResponse> {
+    if (STANDALONE_MODE) {
+      return request<AssistCaptureResponse>('/ai/assist-capture/stream', {
+        method: 'POST',
+        body: JSON.stringify(input),
+        signal,
+      });
+    }
     const res = await fetch(`${API_BASE}/ai/assist-capture/stream`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1251,6 +1268,10 @@ export const api = {
 
   // 导出：返回文件 blob 与服务端建议的文件名
   async exportData() {
+    if (STANDALONE_MODE) {
+      const { localExport } = await import('./standalone');
+      return localExport();
+    }
     const res = await fetch(`${API_BASE}/export`, {
       method: 'GET',
       headers: { Accept: 'application/json' },
@@ -1874,6 +1895,12 @@ export const api = {
     id: string,
     input: TopicExportDownloadInput
   ): Promise<TopicExportDownloadResult> {
+    if (STANDALONE_MODE) {
+      throw new ApiError(400, {
+        error: 'export_unavailable',
+        message: '线上体验版暂不支持 ZIP 导出，请在本地版使用。',
+      });
+    }
     const res = await fetch(`${API_BASE}/topics/${encodeURIComponent(id)}/export`, {
       method: 'POST',
       headers: {
